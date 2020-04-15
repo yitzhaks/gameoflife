@@ -1,6 +1,5 @@
 ﻿namespace GameOfLife.Lib
 {
-	using System;
 	using System.Diagnostics.CodeAnalysis;
 
 	[SuppressMessage("Performance", "CA1815:Override equals and operator equals on value types", Justification = "Doesn't make sense for a tile.")]

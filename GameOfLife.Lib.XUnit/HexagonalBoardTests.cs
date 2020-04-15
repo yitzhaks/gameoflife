@@ -1,11 +1,11 @@
-namespace GameOfLife.Lib.XUnit
+﻿namespace GameOfLife.Lib.XUnit
 {
-	using System;
 	using System.Collections.Generic;
 	using System.Linq;
-	using Xunit;
 
 	using Game.Lib;
+
+	using Xunit;
 
 	public class HexagonalBoardTests
 	{
