@@ -1,4 +1,4 @@
-﻿namespace GameOfLife.Lib
+﻿namespace GameOfLife.Library
 {
 	using System;
 	using System.Collections.Generic;
@@ -6,7 +6,7 @@
 	using System.Diagnostics;
 	using System.Linq;
 
-	using Game.Lib;
+	using Game.Library;
 
 	/// <summary>
 	/// A hexagonal-shaped board of hexagons.

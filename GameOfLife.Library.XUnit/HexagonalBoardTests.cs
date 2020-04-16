@@ -1,9 +1,9 @@
-﻿namespace GameOfLife.Lib.XUnit
+﻿namespace GameOfLife.Library.XUnit
 {
 	using System.Collections.Generic;
 	using System.Linq;
 
-	using Game.Lib;
+	using Game.Library;
 
 	using Xunit;
 

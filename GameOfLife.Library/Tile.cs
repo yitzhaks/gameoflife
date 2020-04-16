@@ -1,4 +1,4 @@
-﻿namespace GameOfLife.Lib
+﻿namespace GameOfLife.Library
 {
 	using System.Diagnostics.CodeAnalysis;
 
