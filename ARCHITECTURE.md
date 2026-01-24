@@ -89,18 +89,16 @@ public class World<TIdentity, TState> where TIdentity : notnull
 
 ### Timeline&lt;TIdentity, TState&gt;
 
-Holds a `World`, current state, and history. This is where state lives.
+Holds a `World` and current state. This is where state lives.
 
 ```csharp
 public class Timeline<TIdentity, TState> where TIdentity : notnull
 {
     public World<TIdentity, TState> World { get; }
     public IGeneration<TIdentity, TState> Current { get; }
-    public IReadOnlyList<IGeneration<TIdentity, TState>> History { get; }
 
     public void Step();              // Advance one generation
     public void Step(int count);     // Advance multiple generations
-    public void Rewind(int count);   // Go back in history
 }
 ```
 
