@@ -42,22 +42,19 @@ The identity **is** the node - no separate ID system needed.
 
 ### Generation&lt;TIdentity, TState&gt;
 
-A snapshot of state at a moment in time. Sparse - only stores non-default states.
+A snapshot of state at a moment in time. Immutable.
 
 ```csharp
-public class Generation<TIdentity, TState> where TIdentity : notnull
+public interface IGeneration<TIdentity, TState> where TIdentity : notnull
 {
-    public TState DefaultState { get; }
-    public IEnumerable<TIdentity> ActiveNodes { get; }  // Nodes with non-default state
-
-    public TState this[TIdentity node] => GetState(node);
-
-    public TState GetState(TIdentity node)
-        => _states.TryGetValue(node, out var state) ? state : DefaultState;
+    TState this[TIdentity node] { get; }
 }
 ```
 
-**Why sparse?** Only nodes with non-default states are stored. For a large board with few alive cells, this is efficient. For dense states, it still works - just stores more entries.
+That's it. How state is stored internally is an implementation detail:
+- Sparse dictionary for large boards with few active nodes
+- 2D array for small fixed grids
+- Whatever fits the use case
 
 ### IRules&lt;TState&gt;
 
@@ -202,7 +199,7 @@ src/
 
 2. **Everything is immutable**: Topologies never change. State maps never change. `Tick()` returns a *new* game with a *new* state map. This enables safe sharing, caching, and easy undo/history.
 
-3. **State is sparse**: Only positions with non-default states are stored in the state map. This is efficient for typical Game of Life patterns (mostly dead cells) while still supporting dense states.
+3. **Generation storage is flexible**: Implementations can be sparse (dictionary), dense (array), or anything else. The interface only requires retrieving state by identity.
 
 4. **Nodes are their own identity**: No separate ID system. A `Point2D` node is identified by its coordinates. A `string` node is identified by its value. Generic `TIdentity` keeps it flexible.
 
