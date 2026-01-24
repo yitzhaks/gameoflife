@@ -31,12 +31,16 @@ Everything else - coordinates, shapes, rendering - is metadata for construction 
 Defines the **structure** of a board - nodes and their neighbor relationships. No state, purely structural.
 
 ```csharp
-public interface ITopology<TIdentity> where TIdentity : notnull
+public interface ITopology<TIdentity> where TIdentity : notnull, IEquatable<TIdentity>
 {
     IEnumerable<TIdentity> Nodes { get; }
     IEnumerable<TIdentity> GetNeighbors(TIdentity node);
 }
 ```
+
+**Constraints:**
+- `TIdentity` must implement `IEquatable<TIdentity>` for efficient lookups and hash-based storage.
+- Each identity must appear exactly once. Implementations should enforce uniqueness and provide O(1) lookup.
 
 `TIdentity` is whatever identifies a node in the topology. Examples:
 
@@ -55,7 +59,7 @@ The identity **is** the node - no separate ID system needed.
 A snapshot of state at a moment in time. Immutable.
 
 ```csharp
-public interface IGeneration<TIdentity, TState> where TIdentity : notnull
+public interface IGeneration<TIdentity, TState> where TIdentity : notnull, IEquatable<TIdentity>
 {
     TState this[TIdentity node] { get; }
 }
@@ -88,7 +92,7 @@ Classic Game of Life uses `TState = bool` with B3/S23 rules.
 The "engine" - combines topology with rules. Stateless. Computes next generations from input.
 
 ```csharp
-public class World<TIdentity, TState> where TIdentity : notnull
+public class World<TIdentity, TState> where TIdentity : notnull, IEquatable<TIdentity>
 {
     public ITopology<TIdentity> Topology { get; }
     public IRules<TState> Rules { get; }
@@ -102,7 +106,7 @@ public class World<TIdentity, TState> where TIdentity : notnull
 Holds a `World` and current state. This is where state lives.
 
 ```csharp
-public class Timeline<TIdentity, TState> where TIdentity : notnull
+public class Timeline<TIdentity, TState> where TIdentity : notnull, IEquatable<TIdentity>
 {
     public World<TIdentity, TState> World { get; }
     public IGeneration<TIdentity, TState> Current { get; }
