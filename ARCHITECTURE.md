@@ -126,12 +126,20 @@ See [RENDERING.md](RENDERING.md).
 ```
 GameOfLife.slnx                      # Solution file
 src/
-└── GameOfLife.Core/                 # Core library
-    ├── ITopology.cs
-    ├── IGeneration.cs
-    ├── IRules.cs
-    ├── World.cs
-    └── Timeline.cs
+├── GameOfLife.Core/                 # Core library (no rendering dependencies)
+│   ├── ITopology.cs
+│   ├── IGeneration.cs
+│   ├── IRules.cs
+│   ├── World.cs
+│   └── Timeline.cs
+├── GameOfLife.Rendering/            # Base rendering abstractions
+│   ├── ILayout.cs
+│   ├── IStateStyle.cs
+│   └── IRenderer.cs
+├── GameOfLife.Rendering.Console/    # Console renderer
+│   └── ConsoleRenderer.cs
+└── GameOfLife.Rendering.Image/      # Image renderer (ImageSharp dependency)
+    └── ImageRenderer.cs
 
 tests/
 └── GameOfLife.Core.Tests/           # Unit tests (xUnit + Coverlet)
