@@ -121,20 +121,20 @@ public class Timeline<TIdentity, TState> where TIdentity : notnull, IEquatable<T
 
 See [RENDERING.md](RENDERING.md).
 
-## Project Structure (Planned)
+## Project Structure
 
 ```
+GameOfLife.slnx                      # Solution file
 src/
-├── Topology/                    # Core structural abstractions
-│   └── ITopology.cs
-│
-├── CellularAutomata/            # Core logic (generic over state)
-│   ├── IGeneration.cs
-│   ├── IRules.cs
-│   ├── World.cs
-│   └── Timeline.cs
-│
-└── Rendering/                   # Display (future)
+└── GameOfLife.Core/                 # Core library
+    ├── ITopology.cs
+    ├── IGeneration.cs
+    ├── IRules.cs
+    ├── World.cs
+    └── Timeline.cs
+
+tests/
+└── GameOfLife.Core.Tests/           # Unit tests (xUnit + Coverlet)
     └── ...
 ```
 

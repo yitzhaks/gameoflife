@@ -2,12 +2,6 @@
 
 ## Current Sprint
 
-### Project Setup
-- [ ] Create GitHub Actions CI pipeline (.NET 10, build, test, coverage)
-- [ ] Create solution and project structure:
-  - `src/GameOfLife.Core/` - core interfaces and abstractions
-  - `tests/GameOfLife.Core.Tests/` - unit tests with xUnit + Coverlet
-
 ### Core Interfaces
 - [ ] Create `ITopology<TIdentity>` interface
 - [ ] Create `IGeneration<TIdentity, TState>` interface
@@ -38,3 +32,5 @@
 - [x] Clean up old code
 - [x] Update .editorconfig with modern C# style and analyzers
 - [x] Regenerate .gitignore for .NET projects
+- [x] Create GitHub Actions CI pipeline (.NET 10, build, test, coverage)
+- [x] Create solution and project structure
