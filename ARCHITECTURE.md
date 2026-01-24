@@ -16,13 +16,13 @@ Everything else - coordinates, shapes, rendering - is metadata for construction 
 
 ## Taxonomy
 
-| Type | Role |
-|------|------|
-| `ITopology<TIdentity>` | Structure - nodes and neighbor relationships |
-| `IGeneration<TIdentity, TState>` | State snapshot at a moment in time |
-| `IRules<TState>` | Logic for computing next state |
-| `World<TIdentity, TState>` | Engine - combines topology + rules, computes ticks |
-| `Timeline<TIdentity, TState>` | Runner - holds world + current state, steps forward |
+| Concept | Role |
+|---------|------|
+| Topology | Structure - nodes and neighbor relationships |
+| Generation | State snapshot at a moment in time |
+| Rules | Logic for computing next state |
+| World | Engine - combines topology + rules, computes ticks |
+| Timeline | Runner - holds world + current state, steps forward |
 
 ## Core Abstractions
 
