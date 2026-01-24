@@ -26,7 +26,7 @@ Everything else - coordinates, shapes, rendering - is metadata for construction 
 
 ## Core Abstractions
 
-### ITopology&lt;TIdentity&gt;
+### ITopology<TIdentity>
 
 Defines the **structure** of a board - nodes and their neighbor relationships. No state, purely structural.
 
@@ -55,7 +55,7 @@ public interface ITopology<TIdentity> where TIdentity : notnull, IEquatable<TIde
 
 The identity **is** the node - no separate ID system needed.
 
-### Generation&lt;TIdentity, TState&gt;
+### Generation<TIdentity, TState>
 
 A snapshot of state at a moment in time. Immutable.
 
@@ -102,7 +102,7 @@ public class World<TIdentity, TState> where TIdentity : notnull, IEquatable<TIde
 }
 ```
 
-### Timeline&lt;TIdentity, TState&gt;
+### Timeline<TIdentity, TState>
 
 Holds a `World` and current state. This is where state lives.
 
