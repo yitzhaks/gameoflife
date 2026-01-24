@@ -1,44 +1,21 @@
-﻿
+
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.30001.183
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{B8BF1ECA-4861-4DA3-A1B9-7DFC7CBF752C}") = "GameOfLife.Library", "GameOfLife.Library\GameOfLife.Library.csproj", "{4E5910E3-2E52-4211-AD3E-9B3BE6DEB741}"
-EndProject
-Project("{1DB70460-25CE-4806-AB16-A53721A8FC65}") = "GameOfLife.Library.XUnit", "GameOfLife.Library.XUnit\GameOfLife.Library.XUnit.csproj", "{1BF4DF09-641E-4664-87F8-01C8B8C67672}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{45C42CE0-8BF7-49ED-82EA-F36704BEE51A}"
 	ProjectSection(SolutionItems) = preProject
 		.editorconfig = .editorconfig
-		azure-pipelines.yml = azure-pipelines.yml
+		README.md = README.md
+		ARCHITECTURE.md = ARCHITECTURE.md
+		CLAUDE.md = CLAUDE.md
+		TASKS.md = TASKS.md
 	EndProjectSection
-EndProject
-Project("{7ABB8ABB-E257-4FFA-82D2-92B969621386}") = "GameOfLife.Console", "GameOfLife.Console\GameOfLife.Console.csproj", "{429CB637-C724-4D1D-9849-C2C66820241C}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Game.Library", "Game.Library\Game.Library.csproj", "{4905DA40-E880-42E7-B68F-4C5F1FCAF82D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Release|Any CPU = Release|Any CPU
-	EndGlobalSection
-	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{4E5910E3-2E52-4211-AD3E-9B3BE6DEB741}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{4E5910E3-2E52-4211-AD3E-9B3BE6DEB741}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{4E5910E3-2E52-4211-AD3E-9B3BE6DEB741}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{4E5910E3-2E52-4211-AD3E-9B3BE6DEB741}.Release|Any CPU.Build.0 = Release|Any CPU
-		{1BF4DF09-641E-4664-87F8-01C8B8C67672}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{1BF4DF09-641E-4664-87F8-01C8B8C67672}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{1BF4DF09-641E-4664-87F8-01C8B8C67672}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{1BF4DF09-641E-4664-87F8-01C8B8C67672}.Release|Any CPU.Build.0 = Release|Any CPU
-		{429CB637-C724-4D1D-9849-C2C66820241C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{429CB637-C724-4D1D-9849-C2C66820241C}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{429CB637-C724-4D1D-9849-C2C66820241C}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{429CB637-C724-4D1D-9849-C2C66820241C}.Release|Any CPU.Build.0 = Release|Any CPU
-		{4905DA40-E880-42E7-B68F-4C5F1FCAF82D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{4905DA40-E880-42E7-B68F-4C5F1FCAF82D}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{4905DA40-E880-42E7-B68F-4C5F1FCAF82D}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{4905DA40-E880-42E7-B68F-4C5F1FCAF82D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
