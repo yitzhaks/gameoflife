@@ -42,6 +42,7 @@ public readonly record struct LayoutBounds(double Width, double Height);
 - `Bounds` gives the overall size for viewport/canvas sizing
 - Implementations compute position from identity (e.g., `Point2D(3,4)` → `LayoutPosition(3, 4)`)
 - Layouts may require topology at construction time for bounds calculation, even though position mapping is identity-based
+- `GetPosition` should be pure and deterministic - same identity always returns same position. Layouts should not maintain mutable state.
 
 #### Standard Implementations
 
@@ -107,6 +108,8 @@ public interface IRenderer<TIdentity, TState> where TIdentity : notnull, IEquata
     void Render(ITopology<TIdentity> topology, IGeneration<TIdentity, TState> generation);
 }
 ```
+
+**Why both topology and generation?** Topology provides the list of nodes to render (via `Nodes`). Generation provides each node's current state. They are independent: topology is structural and immutable, while generation changes each tick. Passing both keeps the interface explicit and avoids coupling generation to topology.
 
 Renderers are configured with layout and style at construction time:
 
@@ -204,6 +207,11 @@ while (true)
 - Domain-specific layout strategies
 
 These will be addressed when such topologies are implemented.
+
+**Expected approach:** Callers will provide a custom `ILayout<TIdentity>` implementation with positions either:
+- Computed via an external layout library (e.g., force-directed graph layout)
+- Specified explicitly via a dictionary mapping identities to positions
+- Derived from domain-specific logic (e.g., geographic coordinates)
 
 ## Design Decisions
 
