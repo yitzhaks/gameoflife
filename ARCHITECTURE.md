@@ -14,6 +14,16 @@ The Game of Life algorithm doesn't care about coordinates or geometry. It only n
 
 Everything else - coordinates, shapes, rendering - is metadata for construction and display.
 
+## Taxonomy
+
+| Type | Role |
+|------|------|
+| `ITopology<TIdentity>` | Structure - nodes and neighbor relationships |
+| `IGeneration<TIdentity, TState>` | State snapshot at a moment in time |
+| `IRules<TState>` | Logic for computing next state |
+| `World<TIdentity, TState>` | Engine - combines topology + rules, computes ticks |
+| `Timeline<TIdentity, TState>` | Runner - holds world + current state, steps forward |
+
 ## Core Abstractions
 
 ### ITopology&lt;TIdentity&gt;
@@ -125,14 +135,14 @@ src/
 
 ## Design Decisions
 
-1. **Structure and state are separate**: Topology defines *what* nodes exist and *who* neighbors whom. State defines *what* each node currently is. This separation keeps the topology immutable and reusable.
+1. **Structure and state are separate**: Topology defines *what* nodes exist and *who* neighbors whom. Generation defines *what* each node currently is. This separation keeps the topology immutable and reusable across generations.
 
-2. **Everything is immutable**: Topologies never change. State maps never change. `Tick()` returns a *new* game with a *new* state map. This enables safe sharing, caching, and easy undo/history.
+2. **Immutability**: Topologies never change. Generations never change. `Tick()` returns a *new* generation. This enables safe sharing, caching, and simplifies reasoning.
 
-3. **Generation storage is flexible**: Implementations can be sparse (dictionary), dense (array), or anything else. The interface only requires retrieving state by identity.
+3. **World is stateless**: World is just an engine (topology + rules). State lives in Timeline or is passed through `Tick()`. This keeps World simple and reusable.
 
-4. **Nodes are their own identity**: No separate ID system. A `Point2D` node is identified by its coordinates. A `string` node is identified by its value. Generic `TIdentity` keeps it flexible.
+4. **Generation storage is flexible**: Implementations can be sparse (dictionary), dense (array), or anything else. The interface only requires retrieving state by identity.
 
-5. **Rules are generic over state**: `IRules<TState>` supports any state type - `bool` for classic Game of Life, `enum` for multi-state automata like Brian's Brain, or custom types for more complex simulations.
+5. **Nodes are their own identity**: No separate ID system. A `Point2D` is identified by its coordinates. A `string` is identified by its value. Generic `TIdentity` keeps it flexible.
 
-6. **Builders, not inheritance**: Grid topologies are built by helper classes, not by subclassing. This avoids deep inheritance hierarchies and keeps the core interface simple.
+6. **Rules are generic over state**: `IRules<TState>` supports any state type - `bool` for classic Game of Life, `enum` for multi-state automata, or custom types for complex simulations.
