@@ -4,31 +4,41 @@
 
 **Structure and state are separate concerns.**
 
-- **Structure** (topology): What positions exist? Who neighbors whom? *Immutable.*
-- **State**: What is the current state at each position? *Immutable, but replaced each generation.*
+- **Structure** (topology): What nodes exist? Who neighbors whom? *Immutable.*
+- **State**: What is the current state at each node? *Immutable, but replaced each generation.*
 
 The Game of Life algorithm doesn't care about coordinates or geometry. It only needs to know:
-1. What positions exist?
-2. For each position, who are its neighbors?
-3. What is the current state at each position?
+1. What nodes exist?
+2. For each node, who are its neighbors?
+3. What is the current state at each node?
 
 Everything else - coordinates, shapes, rendering - is metadata for construction and display.
 
 ## Core Abstractions
 
-### ITopology&lt;TPosition&gt;
+### ITopology&lt;TIdentity&gt;
 
-Defines the **structure** of a board - positions and their neighbor relationships. No state, purely structural.
+Defines the **structure** of a board - nodes and their neighbor relationships. No state, purely structural.
 
 ```csharp
-public interface ITopology<TPosition> where TPosition : notnull
+public interface ITopology<TIdentity> where TIdentity : notnull
 {
-    IEnumerable<TPosition> Positions { get; }
-    IEnumerable<TPosition> GetNeighbors(TPosition position);
+    IEnumerable<TIdentity> Nodes { get; }
+    IEnumerable<TIdentity> GetNeighbors(TIdentity node);
 }
 ```
 
-`TPosition` can be anything: `string`, `int`, `Point2D`, a custom struct - whatever identifies a location in the topology.
+`TIdentity` is whatever identifies a node in the topology. Examples:
+
+| Identity Type | Use Case |
+|---------------|----------|
+| `Point2D` | Square or hexagonal grids with 2D coordinates |
+| `Point3D` | 3D cubic lattices |
+| `string` | Named regions ("Sector7", "RoomA") in Doom-like maps |
+| `int` | Simple numeric IDs for arbitrary graphs |
+| Custom struct | Domain-specific identifiers |
+
+The identity **is** the node - no separate ID system needed.
 
 ### IRules&lt;TState&gt;
 
@@ -42,42 +52,42 @@ public interface IRules<TState>
 }
 ```
 
-- `DefaultState`: What unspecified positions default to (e.g., `false`/dead for Game of Life)
+- `DefaultState`: What unspecified nodes default to (e.g., `false`/dead for Game of Life)
 - `GetNextState`: Given current state and neighbor states, compute the next state
 
 Classic Game of Life uses `TState = bool` with B3/S23 rules.
 
-### Game&lt;TPosition, TState&gt;
+### Game&lt;TIdentity, TState&gt;
 
 Combines topology with rules and a **sparse state map**. Each tick produces a new `Game` with updated state.
 
 ```csharp
-public class Game<TPosition, TState> where TPosition : notnull
+public class Game<TIdentity, TState> where TIdentity : notnull
 {
-    public ITopology<TPosition> Topology { get; }
+    public ITopology<TIdentity> Topology { get; }
     public IRules<TState> Rules { get; }
-    public IReadOnlyDictionary<TPosition, TState> States { get; }  // Sparse!
+    public IReadOnlyDictionary<TIdentity, TState> States { get; }  // Sparse!
 
-    public TState GetState(TPosition position)
-        => States.TryGetValue(position, out var state) ? state : Rules.DefaultState;
+    public TState GetState(TIdentity node)
+        => States.TryGetValue(node, out var state) ? state : Rules.DefaultState;
 
-    public Game<TPosition, TState> Tick();  // Returns NEW game with new state map
+    public Game<TIdentity, TState> Tick();  // Returns NEW game with new state map
 }
 ```
 
-**Why sparse?** Only positions with non-default states are stored. For a large board with few alive cells, this is efficient. For dense states, it still works - just stores more entries.
+**Why sparse?** Only nodes with non-default states are stored. For a large board with few alive cells, this is efficient. For dense states, it still works - just stores more entries.
 
 ## Topology Implementations
 
-### GraphTopology&lt;TPosition&gt;
+### GraphTopology&lt;TIdentity&gt;
 
-The most flexible implementation. Manually define positions and their connections.
+The most flexible implementation. Manually define nodes and their connections.
 
 ```csharp
 var topology = new GraphTopologyBuilder<string>()
-    .AddPosition("A")
-    .AddPosition("B")
-    .AddPosition("C")
+    .AddNode("A")
+    .AddNode("B")
+    .AddNode("C")
     .Connect("A", "B")
     .Connect("B", "C")
     .Build();
@@ -101,10 +111,10 @@ Joins multiple topologies together with explicit portal connections.
 var hex = HexGridBuilder.Create(radius: 5);
 var square = SquareGridBuilder.Create(10, 10);
 
-var composite = new CompositeTopologyBuilder<Position>()
+var composite = new CompositeTopologyBuilder<INodeIdentity>()
     .Add("hex", hex)
     .Add("square", square)
-    .Connect(hex.GetPosition(...), square.GetPosition(...))
+    .Connect(hex.GetNode(...), square.GetNode(...))
     .Build();
 ```
 
@@ -115,11 +125,11 @@ This enables hybrid boards: a hexagonal region connected to a square grid connec
 Topology defines structure, not visual position. Rendering requires additional metadata:
 
 ```csharp
-public interface IRenderer<TPosition, TState>
+public interface IRenderer<TIdentity, TState>
 {
-    Vector2 GetRenderPosition(TPosition position);  // Where to draw
-    Shape GetShape(TPosition position);             // What shape
-    Color GetColor(TState state);                   // How to color based on state
+    Vector2 GetRenderPosition(TIdentity node);  // Where to draw
+    Shape GetShape(TIdentity node);             // What shape
+    Color GetColor(TState state);               // How to color based on state
 }
 ```
 
@@ -154,13 +164,13 @@ src/
 
 ## Design Decisions
 
-1. **Structure and state are separate**: Topology defines *where* positions are and *who* neighbors whom. State defines *what* each position currently is. This separation keeps the topology immutable and reusable.
+1. **Structure and state are separate**: Topology defines *what* nodes exist and *who* neighbors whom. State defines *what* each node currently is. This separation keeps the topology immutable and reusable.
 
 2. **Everything is immutable**: Topologies never change. State maps never change. `Tick()` returns a *new* game with a *new* state map. This enables safe sharing, caching, and easy undo/history.
 
 3. **State is sparse**: Only positions with non-default states are stored in the state map. This is efficient for typical Game of Life patterns (mostly dead cells) while still supporting dense states.
 
-4. **Positions are their own identity**: No separate ID system. A `Point2D` position is identified by its coordinates. A `string` position is identified by its value. Generic `TPosition` keeps it flexible.
+4. **Nodes are their own identity**: No separate ID system. A `Point2D` node is identified by its coordinates. A `string` node is identified by its value. Generic `TIdentity` keeps it flexible.
 
 5. **Rules are generic over state**: `IRules<TState>` supports any state type - `bool` for classic Game of Life, `enum` for multi-state automata like Brian's Brain, or custom types for more complex simulations.
 
