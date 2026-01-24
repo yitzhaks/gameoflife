@@ -6,6 +6,12 @@ This file provides context for Claude (AI assistant) when working on this codeba
 
 This is a C# implementation of Conway's Game of Life with support for arbitrary board topologies (not just square grids).
 
+## Technology Stack
+
+- **Language**: C# (.NET 10)
+- **Testing**: xUnit with Coverlet for code coverage
+- **Coverage Goal**: As close to 100% branch coverage as practical
+
 ## Key Documents
 
 - **[ARCHITECTURE.md](ARCHITECTURE.md)**: Core design principles and abstractions. Read this first to understand the graph-based topology approach.
@@ -28,7 +34,19 @@ This is a C# implementation of Conway's Game of Life with support for arbitrary 
 ```bash
 dotnet build
 dotnet test
+dotnet test --collect:"XPlat Code Coverage"  # Generate coverage report
 ```
+
+## Testing Requirements
+
+- **Framework**: xUnit (modern, widely adopted in .NET ecosystem)
+- **Coverage Tool**: Coverlet (integrated via `coverlet.collector` package)
+- **Goal**: Near 100% branch coverage - every `if`, `switch`, `??`, `?.`, ternary, etc.
+- **Approach**:
+  - Write tests against interfaces (`ITopology<TCell>`) where possible
+  - Test edge cases: empty collections, null handling, boundary conditions
+  - Each new feature/class should have corresponding tests before merging
+  - Use descriptive test names: `MethodName_Scenario_ExpectedBehavior`
 
 ## Project Structure
 
