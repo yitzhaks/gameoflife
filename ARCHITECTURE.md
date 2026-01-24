@@ -75,30 +75,28 @@ Classic Game of Life uses `TState = bool` with B3/S23 rules.
 
 ### World&lt;TIdentity, TState&gt;
 
-Combines topology with rules and current state. Computes next generations.
+The "engine" - combines topology with rules. Stateless. Computes next generations from input.
 
 ```csharp
 public class World<TIdentity, TState> where TIdentity : notnull
 {
     public ITopology<TIdentity> Topology { get; }
     public IRules<TState> Rules { get; }
-    public Generation<TIdentity, TState> State { get; }
 
-    public Generation<TIdentity, TState> Tick();  // Returns next generation
-    public World<TIdentity, TState> WithState(Generation<TIdentity, TState> state);
+    public IGeneration<TIdentity, TState> Tick(IGeneration<TIdentity, TState> current);
 }
 ```
 
 ### Timeline&lt;TIdentity, TState&gt;
 
-Wraps a `World` and tracks history. Use this when you need undo/replay.
+Holds a `World`, current state, and history. This is where state lives.
 
 ```csharp
 public class Timeline<TIdentity, TState> where TIdentity : notnull
 {
     public World<TIdentity, TState> World { get; }
-    public Generation<TIdentity, TState> Current { get; }
-    public IReadOnlyList<Generation<TIdentity, TState>> History { get; }
+    public IGeneration<TIdentity, TState> Current { get; }
+    public IReadOnlyList<IGeneration<TIdentity, TState>> History { get; }
 
     public void Step();              // Advance one generation
     public void Step(int count);     // Advance multiple generations
