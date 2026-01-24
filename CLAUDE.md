@@ -20,13 +20,7 @@ This is a C# implementation of Conway's Game of Life with support for arbitrary 
 
 ## Taxonomy
 
-| Concept | Role |
-|---------|------|
-| Topology | Structure - nodes and neighbor relationships |
-| Generation | State snapshot at a moment in time |
-| Rules | Logic for computing next state |
-| World | Engine - combines topology + rules, computes ticks |
-| Timeline | Runner - holds world + current state, steps forward |
+See the [Taxonomy section in ARCHITECTURE.md](ARCHITECTURE.md#taxonomy).
 
 ## Development Principles
 
