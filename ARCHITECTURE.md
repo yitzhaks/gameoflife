@@ -2,69 +2,82 @@
 
 ## Core Principle
 
-**A board is a graph.** Cells are nodes, neighbor relationships are edges.
+**Structure and state are separate concerns.**
+
+- **Structure** (topology): What positions exist? Who neighbors whom? *Immutable.*
+- **State**: What is the current state at each position? *Immutable, but replaced each generation.*
 
 The Game of Life algorithm doesn't care about coordinates or geometry. It only needs to know:
-1. What cells exist?
-2. For each cell, who are its neighbors?
+1. What positions exist?
+2. For each position, who are its neighbors?
+3. What is the current state at each position?
 
-Everything else - coordinates, positions, shapes - is metadata for rendering and construction.
+Everything else - coordinates, shapes, rendering - is metadata for construction and display.
 
 ## Core Abstractions
 
-### ITopology<TCell>
+### ITopology&lt;TPosition&gt;
 
-The fundamental interface. Defines the structure of a board without any game state.
+Defines the **structure** of a board - positions and their neighbor relationships. No state, purely structural.
 
 ```csharp
-public interface ITopology<TCell> where TCell : notnull
+public interface ITopology<TPosition> where TPosition : notnull
 {
-    IEnumerable<TCell> Cells { get; }
-    IEnumerable<TCell> GetNeighbors(TCell cell);
+    IEnumerable<TPosition> Positions { get; }
+    IEnumerable<TPosition> GetNeighbors(TPosition position);
 }
 ```
 
-`TCell` can be anything: `string`, `int`, `Point2D`, a custom struct - whatever makes sense for the topology. The cell **is** its own identity.
+`TPosition` can be anything: `string`, `int`, `Point2D`, a custom struct - whatever identifies a location in the topology.
 
-### IRules
+### IRules&lt;TState&gt;
 
-Defines the birth/survival rules for the cellular automaton.
+Defines how state evolves. Generic over `TState` to support multi-state automata.
 
 ```csharp
-public interface IRules
+public interface IRules<TState>
 {
-    bool ShouldBeAlive(bool currentlyAlive, int aliveNeighborCount);
+    TState DefaultState { get; }
+    TState GetNextState(TState current, IEnumerable<TState> neighborStates);
 }
 ```
 
-Classic Game of Life is B3/S23: birth with 3 neighbors, survive with 2 or 3.
+- `DefaultState`: What unspecified positions default to (e.g., `false`/dead for Game of Life)
+- `GetNextState`: Given current state and neighbor states, compute the next state
 
-### Game<TCell>
+Classic Game of Life uses `TState = bool` with B3/S23 rules.
 
-Combines a topology with rules and manages cell state over generations.
+### Game&lt;TPosition, TState&gt;
+
+Combines topology with rules and a **sparse state map**. Each tick produces a new `Game` with updated state.
 
 ```csharp
-public class Game<TCell> where TCell : notnull
+public class Game<TPosition, TState> where TPosition : notnull
 {
-    public ITopology<TCell> Topology { get; }
-    public IRules Rules { get; }
-    public IReadOnlySet<TCell> AliveCells { get; }
+    public ITopology<TPosition> Topology { get; }
+    public IRules<TState> Rules { get; }
+    public IReadOnlyDictionary<TPosition, TState> States { get; }  // Sparse!
 
-    public Game<TCell> Tick(); // Returns next generation
+    public TState GetState(TPosition position)
+        => States.TryGetValue(position, out var state) ? state : Rules.DefaultState;
+
+    public Game<TPosition, TState> Tick();  // Returns NEW game with new state map
 }
 ```
+
+**Why sparse?** Only positions with non-default states are stored. For a large board with few alive cells, this is efficient. For dense states, it still works - just stores more entries.
 
 ## Topology Implementations
 
-### GraphTopology<TCell>
+### GraphTopology&lt;TPosition&gt;
 
-The most flexible implementation. Manually define cells and their connections.
+The most flexible implementation. Manually define positions and their connections.
 
 ```csharp
 var topology = new GraphTopologyBuilder<string>()
-    .AddCell("A")
-    .AddCell("B")
-    .AddCell("C")
+    .AddPosition("A")
+    .AddPosition("B")
+    .AddPosition("C")
     .Connect("A", "B")
     .Connect("B", "C")
     .Build();
@@ -72,7 +85,7 @@ var topology = new GraphTopologyBuilder<string>()
 
 ### Grid Builders
 
-Helper classes that generate `GraphTopology` instances with regular patterns:
+Helper classes that generate topologies with regular patterns:
 
 - **SquareGridBuilder**: Traditional 2D grid (4 or 8 neighbors)
 - **HexGridBuilder**: Hexagonal grid using cube coordinates (6 neighbors)
@@ -88,10 +101,10 @@ Joins multiple topologies together with explicit portal connections.
 var hex = HexGridBuilder.Create(radius: 5);
 var square = SquareGridBuilder.Create(10, 10);
 
-var composite = new CompositeTopologyBuilder<Cell>()
+var composite = new CompositeTopologyBuilder<Position>()
     .Add("hex", hex)
     .Add("square", square)
-    .Connect(hex.GetCell(...), square.GetCell(...))
+    .Connect(hex.GetPosition(...), square.GetPosition(...))
     .Build();
 ```
 
@@ -99,13 +112,14 @@ This enables hybrid boards: a hexagonal region connected to a square grid connec
 
 ## Rendering (Separate Concern)
 
-Topology defines structure, not position. Rendering requires additional metadata:
+Topology defines structure, not visual position. Rendering requires additional metadata:
 
 ```csharp
-public interface IRenderable<TCell>
+public interface IRenderer<TPosition, TState>
 {
-    Vector2 GetRenderPosition(TCell cell);  // Where to draw
-    Shape GetCellShape(TCell cell);         // How to draw
+    Vector2 GetRenderPosition(TPosition position);  // Where to draw
+    Shape GetShape(TPosition position);             // What shape
+    Color GetColor(TState state);                   // How to color based on state
 }
 ```
 
@@ -115,9 +129,10 @@ Grid builders can provide default render info. Custom topologies supply their ow
 
 ```
 src/
-├── Topology/                    # Core abstractions
+├── Topology/                    # Core structural abstractions
 │   ├── ITopology.cs
 │   ├── GraphTopology.cs
+│   ├── GraphTopologyBuilder.cs
 │   └── CompositeTopology.cs
 │
 ├── Topology.Grids/              # Grid builders (optional)
@@ -125,23 +140,28 @@ src/
 │   ├── HexGridBuilder.cs
 │   └── CubicGridBuilder.cs
 │
-├── GameOfLife/                  # Game logic
+├── CellularAutomata/            # Game logic (generic over state)
 │   ├── IRules.cs
-│   ├── ClassicRules.cs
-│   └── Game.cs
+│   ├── Game.cs
+│   └── Rules/
+│       ├── GameOfLifeRules.cs   # Classic B3/S23
+│       ├── HighLifeRules.cs     # B36/S23
+│       └── BriansBrainRules.cs  # 3-state example
 │
-└── GameOfLife.Rendering/        # Display (future)
+└── Rendering/                   # Display (future)
     └── ...
 ```
 
 ## Design Decisions
 
-1. **Topology is immutable**: Once built, the structure doesn't change. This enables safe sharing and caching.
+1. **Structure and state are separate**: Topology defines *where* positions are and *who* neighbors whom. State defines *what* each position currently is. This separation keeps the topology immutable and reusable.
 
-2. **State lives in Game, not Topology**: The topology defines structure; the game tracks which cells are alive. This separates concerns cleanly.
+2. **Everything is immutable**: Topologies never change. State maps never change. `Tick()` returns a *new* game with a *new* state map. This enables safe sharing, caching, and easy undo/history.
 
-3. **Cells are their own identity**: No separate ID system. A `Point2D` cell is identified by its coordinates. A `string` cell is identified by its value. Generic `TCell` keeps it flexible.
+3. **State is sparse**: Only positions with non-default states are stored in the state map. This is efficient for typical Game of Life patterns (mostly dead cells) while still supporting dense states.
 
-4. **Builders, not inheritance**: Grid topologies are built by helper classes, not by subclassing. This avoids deep inheritance hierarchies and keeps the core interface simple.
+4. **Positions are their own identity**: No separate ID system. A `Point2D` position is identified by its coordinates. A `string` position is identified by its value. Generic `TPosition` keeps it flexible.
 
-5. **Rules are pluggable**: Different cellular automata (HighLife, Day & Night, Seeds, etc.) just implement `IRules`.
+5. **Rules are generic over state**: `IRules<TState>` supports any state type - `bool` for classic Game of Life, `enum` for multi-state automata like Brian's Brain, or custom types for more complex simulations.
+
+6. **Builders, not inheritance**: Grid topologies are built by helper classes, not by subclassing. This avoids deep inheritance hierarchies and keeps the core interface simple.
