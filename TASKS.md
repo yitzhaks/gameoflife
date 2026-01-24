@@ -3,7 +3,7 @@
 ## Current Sprint
 
 ### Design
-- [ ] Design and document rendering strategy in [RENDERING.md](RENDERING.md)
+- [x] Design and document rendering strategy in [RENDERING.md](RENDERING.md)
 
 ### Core Interfaces
 - [ ] Create `ITopology<TIdentity>` interface
