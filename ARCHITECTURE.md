@@ -41,6 +41,7 @@ public interface ITopology<TIdentity> where TIdentity : notnull, IEquatable<TIde
 **Constraints:**
 - `TIdentity` must implement `IEquatable<TIdentity>` for efficient lookups and hash-based storage.
 - Each identity must appear exactly once. Implementations should enforce uniqueness and provide O(1) lookup.
+- Neighbors must be symmetric: if A is a neighbor of B, then B must be a neighbor of A. Builders should validate this when constructing the topology.
 
 `TIdentity` is whatever identifies a node in the topology. Examples:
 
@@ -61,11 +62,11 @@ A snapshot of state at a moment in time. Immutable.
 ```csharp
 public interface IGeneration<TIdentity, TState> where TIdentity : notnull, IEquatable<TIdentity>
 {
-    TState this[TIdentity node] { get; }
+    TState this[TIdentity node] { get; }  // Throws if node is unknown
 }
 ```
 
-That's it. How state is stored internally is an implementation detail:
+The indexer throws if the node is unknown to the generation. How state is stored internally is an implementation detail:
 - Sparse dictionary for large boards with few active nodes
 - 2D array for small fixed grids
 - Whatever fits the use case
