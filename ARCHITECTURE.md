@@ -123,6 +123,8 @@ See [RENDERING.md](RENDERING.md).
 
 ## Project Structure
 
+*Planned structure. Rendering projects are not yet implemented.*
+
 ```
 GameOfLife.slnx                      # Solution file
 src/

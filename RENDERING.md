@@ -149,6 +149,8 @@ Renders to image files (PNG, GIF).
 
 ## Project Structure
 
+*Planned structure. Rendering assemblies will be created when implementation begins.*
+
 ```
 src/
 ├── GameOfLife.Core/              # Core library (no rendering)
