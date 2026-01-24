@@ -102,20 +102,9 @@ public class Timeline<TIdentity, TState> where TIdentity : notnull
 }
 ```
 
-## Rendering (Separate Concern)
+## Rendering
 
-Topology defines structure, not visual position. Rendering requires additional metadata:
-
-```csharp
-public interface IRenderer<TIdentity, TState>
-{
-    Vector2 GetRenderPosition(TIdentity node);  // Where to draw
-    Shape GetShape(TIdentity node);             // What shape
-    Color GetColor(TState state);               // How to color based on state
-}
-```
-
-Grid builders can provide default render info. Custom topologies supply their own.
+See [RENDERING.md](RENDERING.md).
 
 ## Project Structure
 
