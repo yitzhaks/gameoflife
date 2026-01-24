@@ -40,6 +40,25 @@ public interface ITopology<TIdentity> where TIdentity : notnull
 
 The identity **is** the node - no separate ID system needed.
 
+### Generation&lt;TIdentity, TState&gt;
+
+A snapshot of state at a moment in time. Sparse - only stores non-default states.
+
+```csharp
+public class Generation<TIdentity, TState> where TIdentity : notnull
+{
+    public TState DefaultState { get; }
+    public IEnumerable<TIdentity> ActiveNodes { get; }  // Nodes with non-default state
+
+    public TState this[TIdentity node] => GetState(node);
+
+    public TState GetState(TIdentity node)
+        => _states.TryGetValue(node, out var state) ? state : DefaultState;
+}
+```
+
+**Why sparse?** Only nodes with non-default states are stored. For a large board with few alive cells, this is efficient. For dense states, it still works - just stores more entries.
+
 ### IRules&lt;TState&gt;
 
 Defines how state evolves. Generic over `TState` to support multi-state automata.
@@ -59,23 +78,36 @@ Classic Game of Life uses `TState = bool` with B3/S23 rules.
 
 ### Game&lt;TIdentity, TState&gt;
 
-Combines topology with rules and a **sparse state map**. Each tick produces a new `Game` with updated state.
+Combines topology with rules and current state. Computes next generations.
 
 ```csharp
 public class Game<TIdentity, TState> where TIdentity : notnull
 {
     public ITopology<TIdentity> Topology { get; }
     public IRules<TState> Rules { get; }
-    public IReadOnlyDictionary<TIdentity, TState> States { get; }  // Sparse!
+    public Generation<TIdentity, TState> State { get; }
 
-    public TState GetState(TIdentity node)
-        => States.TryGetValue(node, out var state) ? state : Rules.DefaultState;
-
-    public Game<TIdentity, TState> Tick();  // Returns NEW game with new state map
+    public Generation<TIdentity, TState> Tick();  // Returns next generation
+    public Game<TIdentity, TState> WithState(Generation<TIdentity, TState> state);
 }
 ```
 
-**Why sparse?** Only nodes with non-default states are stored. For a large board with few alive cells, this is efficient. For dense states, it still works - just stores more entries.
+### Simulation&lt;TIdentity, TState&gt;
+
+Wraps a `Game` and tracks history. Use this when you need undo/replay.
+
+```csharp
+public class Simulation<TIdentity, TState> where TIdentity : notnull
+{
+    public Game<TIdentity, TState> Game { get; }
+    public Generation<TIdentity, TState> Current { get; }
+    public IReadOnlyList<Generation<TIdentity, TState>> History { get; }
+
+    public void Step();              // Advance one generation
+    public void Step(int count);     // Advance multiple generations
+    public void Rewind(int count);   // Go back in history
+}
+```
 
 ## Topology Implementations
 
@@ -151,8 +183,10 @@ src/
 │   └── CubicGridBuilder.cs
 │
 ├── CellularAutomata/            # Game logic (generic over state)
+│   ├── Generation.cs
 │   ├── IRules.cs
 │   ├── Game.cs
+│   ├── Simulation.cs
 │   └── Rules/
 │       ├── GameOfLifeRules.cs   # Classic B3/S23
 │       ├── HighLifeRules.cs     # B36/S23
