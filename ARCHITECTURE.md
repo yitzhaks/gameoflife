@@ -76,30 +76,30 @@ public interface IRules<TState>
 
 Classic Game of Life uses `TState = bool` with B3/S23 rules.
 
-### Game&lt;TIdentity, TState&gt;
+### World&lt;TIdentity, TState&gt;
 
 Combines topology with rules and current state. Computes next generations.
 
 ```csharp
-public class Game<TIdentity, TState> where TIdentity : notnull
+public class World<TIdentity, TState> where TIdentity : notnull
 {
     public ITopology<TIdentity> Topology { get; }
     public IRules<TState> Rules { get; }
     public Generation<TIdentity, TState> State { get; }
 
     public Generation<TIdentity, TState> Tick();  // Returns next generation
-    public Game<TIdentity, TState> WithState(Generation<TIdentity, TState> state);
+    public World<TIdentity, TState> WithState(Generation<TIdentity, TState> state);
 }
 ```
 
-### Simulation&lt;TIdentity, TState&gt;
+### Timeline&lt;TIdentity, TState&gt;
 
-Wraps a `Game` and tracks history. Use this when you need undo/replay.
+Wraps a `World` and tracks history. Use this when you need undo/replay.
 
 ```csharp
-public class Simulation<TIdentity, TState> where TIdentity : notnull
+public class Timeline<TIdentity, TState> where TIdentity : notnull
 {
-    public Game<TIdentity, TState> Game { get; }
+    public World<TIdentity, TState> World { get; }
     public Generation<TIdentity, TState> Current { get; }
     public IReadOnlyList<Generation<TIdentity, TState>> History { get; }
 
@@ -182,11 +182,11 @@ src/
 │   ├── HexGridBuilder.cs
 │   └── CubicGridBuilder.cs
 │
-├── CellularAutomata/            # Game logic (generic over state)
+├── CellularAutomata/            # Core logic (generic over state)
 │   ├── Generation.cs
 │   ├── IRules.cs
-│   ├── Game.cs
-│   ├── Simulation.cs
+│   ├── World.cs
+│   ├── Timeline.cs
 │   └── Rules/
 │       ├── GameOfLifeRules.cs   # Classic B3/S23
 │       ├── HighLifeRules.cs     # B36/S23
