@@ -102,49 +102,6 @@ public class Timeline<TIdentity, TState> where TIdentity : notnull
 }
 ```
 
-## Topology Implementations
-
-### GraphTopology&lt;TIdentity&gt;
-
-The most flexible implementation. Manually define nodes and their connections.
-
-```csharp
-var topology = new GraphTopologyBuilder<string>()
-    .AddNode("A")
-    .AddNode("B")
-    .AddNode("C")
-    .Connect("A", "B")
-    .Connect("B", "C")
-    .Build();
-```
-
-### Grid Builders
-
-Helper classes that generate topologies with regular patterns:
-
-- **SquareGridBuilder**: Traditional 2D grid (4 or 8 neighbors)
-- **HexGridBuilder**: Hexagonal grid using cube coordinates (6 neighbors)
-- **CubicGridBuilder**: 3D cubic lattice (6 or 26 neighbors)
-
-These are conveniences - they produce standard `ITopology<T>` instances.
-
-### CompositeTopology
-
-Joins multiple topologies together with explicit portal connections.
-
-```csharp
-var hex = HexGridBuilder.Create(radius: 5);
-var square = SquareGridBuilder.Create(10, 10);
-
-var composite = new CompositeTopologyBuilder<INodeIdentity>()
-    .Add("hex", hex)
-    .Add("square", square)
-    .Connect(hex.GetNode(...), square.GetNode(...))
-    .Build();
-```
-
-This enables hybrid boards: a hexagonal region connected to a square grid connected to a 3D section.
-
 ## Rendering (Separate Concern)
 
 Topology defines structure, not visual position. Rendering requires additional metadata:
@@ -165,25 +122,13 @@ Grid builders can provide default render info. Custom topologies supply their ow
 ```
 src/
 ├── Topology/                    # Core structural abstractions
-│   ├── ITopology.cs
-│   ├── GraphTopology.cs
-│   ├── GraphTopologyBuilder.cs
-│   └── CompositeTopology.cs
-│
-├── Topology.Grids/              # Grid builders (optional)
-│   ├── SquareGridBuilder.cs
-│   ├── HexGridBuilder.cs
-│   └── CubicGridBuilder.cs
+│   └── ITopology.cs
 │
 ├── CellularAutomata/            # Core logic (generic over state)
-│   ├── Generation.cs
+│   ├── IGeneration.cs
 │   ├── IRules.cs
 │   ├── World.cs
-│   ├── Timeline.cs
-│   └── Rules/
-│       ├── GameOfLifeRules.cs   # Classic B3/S23
-│       ├── HighLifeRules.cs     # B36/S23
-│       └── BriansBrainRules.cs  # 3-state example
+│   └── Timeline.cs
 │
 └── Rendering/                   # Display (future)
     └── ...
