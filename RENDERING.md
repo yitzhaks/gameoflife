@@ -41,6 +41,7 @@ public readonly record struct LayoutBounds(double Width, double Height);
 - Uses `double` for positions to support fractional/scaled layouts
 - `Bounds` gives the overall size for viewport/canvas sizing
 - Implementations compute position from identity (e.g., `Point2D(3,4)` → `LayoutPosition(3, 4)`)
+- Layouts may require topology at construction time for bounds calculation, even though position mapping is identity-based
 
 #### Standard Implementations
 
