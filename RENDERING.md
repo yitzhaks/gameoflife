@@ -52,7 +52,7 @@ public readonly record struct LayoutBounds(double Width, double Height);
 
 For non-standard topologies, implement `ILayout<TIdentity>` with custom logic.
 
-### IStateStyle<TState>
+### IStateStyle<TState, TVisual>
 
 Maps cell states to visual representation. Abstract over output format.
 
