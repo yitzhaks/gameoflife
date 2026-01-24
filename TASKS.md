@@ -2,6 +2,9 @@
 
 ## Current Sprint
 
+### Design
+- [ ] Design and document rendering strategy in [RENDERING.md](RENDERING.md)
+
 ### Core Interfaces
 - [ ] Create `ITopology<TIdentity>` interface
 - [ ] Create `IGeneration<TIdentity, TState>` interface
@@ -19,7 +22,7 @@
 ## Future Work
 
 ### Rendering
-- [ ] See [RENDERING.md](RENDERING.md)
+- [ ] Implement rendering per [RENDERING.md](RENDERING.md)
 
 ### Additional Topologies
 - [ ] `HexagonalTopology` (6-neighbor hex grid using cube coordinates)
