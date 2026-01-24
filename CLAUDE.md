@@ -14,20 +14,31 @@ This is a C# implementation of Conway's Game of Life with support for arbitrary 
 
 ## Key Documents
 
-- **[ARCHITECTURE.md](ARCHITECTURE.md)**: Core design principles and abstractions. Read this first to understand the graph-based topology approach.
+- **[ARCHITECTURE.md](ARCHITECTURE.md)**: Core design principles and abstractions. Read this first.
 - **[TASKS.md](TASKS.md)**: Current backlog and planned work.
+- **[RENDERING.md](RENDERING.md)**: Rendering design (TBD).
+
+## Taxonomy
+
+| Concept | Role |
+|---------|------|
+| Topology | Structure - nodes and neighbor relationships |
+| Generation | State snapshot at a moment in time |
+| Rules | Logic for computing next state |
+| World | Engine - combines topology + rules, computes ticks |
+| Timeline | Runner - holds world + current state, steps forward |
 
 ## Development Principles
 
-1. **Topology is a graph**: The board is fundamentally a graph of cells and neighbor relationships. Geometry is a rendering concern.
+1. **Structure and state are separate**: Topology defines nodes and neighbors. Generation defines state. They don't mix.
 
-2. **Keep abstractions minimal**: `ITopology<TCell>` only needs `Cells` and `GetNeighbors()`. Resist adding more.
+2. **Immutability**: Topologies and generations never change. `Tick()` returns a new generation.
 
-3. **Immutability**: Topologies and game states should be immutable. Return new instances rather than mutating.
+3. **World is stateless**: World is just an engine. State lives in Timeline or flows through `Tick()`.
 
-4. **Builders over inheritance**: Use builder classes to construct topologies, not deep inheritance hierarchies.
+4. **TIdentity must be equatable**: All identity types must implement `IEquatable<TIdentity>` for O(1) lookups.
 
-5. **Test at the interface level**: Tests should work against `ITopology<TCell>`, not specific implementations.
+5. **Test at the interface level**: Tests should work against `ITopology<TIdentity>`, not specific implementations.
 
 ## Build & Test
 
@@ -39,15 +50,7 @@ dotnet test --collect:"XPlat Code Coverage"  # Generate coverage report
 
 ## Testing Requirements
 
-- **Framework**: xUnit (modern, widely adopted in .NET ecosystem)
-- **Coverage Tool**: Coverlet (integrated via `coverlet.collector` package)
-- **Goal**: Near 100% branch coverage - every `if`, `switch`, `??`, `?.`, ternary, etc.
-- **Approach**:
-  - Write tests against interfaces (`ITopology<TCell>`) where possible
-  - Test edge cases: empty collections, null handling, boundary conditions
-  - Each new feature/class should have corresponding tests before merging
-  - Use descriptive test names: `MethodName_Scenario_ExpectedBehavior`
-
-## Project Structure
-
-See [ARCHITECTURE.md](ARCHITECTURE.md) for the planned structure. The codebase is currently being rebuilt from scratch.
+- **Framework**: xUnit
+- **Coverage Tool**: Coverlet (via `coverlet.collector` package)
+- **Goal**: Near 100% branch coverage
+- **Naming**: `MethodName_Scenario_ExpectedBehavior`
