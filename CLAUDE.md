@@ -36,6 +36,8 @@ See the [Taxonomy section in ARCHITECTURE.md](ARCHITECTURE.md#taxonomy).
 
 ## Build & Test
 
+> **Note**: These commands will work once the project structure is created. The repository is currently in the design phase with architecture documentation only.
+
 ```bash
 dotnet build
 dotnet test

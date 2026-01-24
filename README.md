@@ -17,7 +17,7 @@ The key insight is that the Game of Life algorithm only asks one question: *"Who
 
 ## Status
 
-This project is under active development. See [ARCHITECTURE.md](ARCHITECTURE.md) for the design and [TASKS.md](TASKS.md) for the backlog.
+This project is in the **design phase**. The architecture has been defined but the implementation has not yet started. See [ARCHITECTURE.md](ARCHITECTURE.md) for the design and [TASKS.md](TASKS.md) for the backlog.
 
 ## License
 

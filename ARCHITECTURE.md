@@ -121,7 +121,7 @@ public class Timeline<TIdentity, TState> where TIdentity : notnull, IEquatable<T
 
 See [RENDERING.md](RENDERING.md).
 
-## Project Structure
+## Project Structure (Planned)
 
 ```
 src/
