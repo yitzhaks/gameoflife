@@ -6,13 +6,16 @@ Topology defines structure, not visual position. Displaying nodes on screen requ
 
 **Layout and rendering are separate concerns.**
 
-- **Layout**: Maps abstract node identities to grid coordinates. Pure geometry.
+- **Layout engine**: Defines mapping rules from identities to grid coordinates and builds layout snapshots.
+- **Layout**: Snapshot bound to a specific topology; exposes nodes, bounds, and positions.
 - **Rendering**: Converts grid coordinates to concrete visual outputs, applies visual styling, outputs to target.
 
 ```
 Topology (structure)
     ↓
-Layout (geometry) — TIdentity → Point2D/Point3D, bounds
+LayoutEngine (rules)
+    ↓
+Layout (geometry snapshot) — nodes, bounds, TIdentity → Point2D/Point3D
     ↓
 Renderer (visuals) — cell size, shape, colors, output target
 ```
@@ -21,14 +24,26 @@ Renderer (visuals) — cell size, shape, colors, output target
 
 | Concept | Role |
 |---------|------|
-| Layout | Maps `TIdentity` → grid position (`Point2D` or `Point3D`) |
+| LayoutEngine | Builds layout snapshots from topology (mapping rules) |
+| Layout | Snapshot bound to topology; maps `TIdentity` → grid position (`Point2D` or `Point3D`) |
 | Bounds | Size of the grid in layout coordinates |
 | Renderer | Converts layout to concrete outputs, applies styling, outputs |
 | StateStyle | Maps `TState` → visual appearance (color, character) |
 
 ## Layout
 
-Maps node identities to grid positions. Positions are integers representing logical grid coordinates, not output units.
+Layout engines map node identities to grid positions and produce layout snapshots bound to a topology. Positions are integers representing logical grid coordinates, not output units.
+
+### `ILayoutEngine<TIdentity, TCoordinate>`
+
+```csharp
+public interface ILayoutEngine<TIdentity, TCoordinate>
+    where TIdentity : notnull, IEquatable<TIdentity>
+    where TCoordinate : struct
+{
+    ILayout<TIdentity, TCoordinate> CreateLayout(ITopology<TIdentity> topology);
+}
+```
 
 ### `ILayout<TIdentity, TCoordinate>`
 
@@ -37,6 +52,7 @@ public interface ILayout<TIdentity, TCoordinate>
     where TIdentity : notnull, IEquatable<TIdentity>
     where TCoordinate : struct
 {
+    IEnumerable<TIdentity> Nodes { get; }
     TCoordinate GetPosition(TIdentity node);
     IBounds<TCoordinate> Bounds { get; }
 }
@@ -50,8 +66,9 @@ public interface IBounds<TCoordinate> where TCoordinate : struct
 
 **Design notes:**
 - `TCoordinate` is `Point2D` or `Point3D` (integer-based grid positions)
-- `GetPosition` should be pure and deterministic
-- Layouts may require topology at construction for bounds calculation
+- `ILayoutEngine` should be reusable and stateless
+- Layouts are bound to the topology used to create them; `Nodes` is a fixed snapshot
+- `GetPosition` should be pure and deterministic and throws if the node is unknown to the layout
 - Layouts should not maintain mutable state
 
 ### Coordinate Types
@@ -67,10 +84,10 @@ The difference between square and hex grids is in how identities map to grid pos
 
 | Implementation | Description |
 |----------------|-------------|
-| `IdentityLayout` | For `Point2D`/`Point3D` identities, returns identity as-is |
-| `HexLayout` | Maps axial hex coordinates to staggered 2D grid positions |
+| `IdentityLayoutEngine` | For `Point2D`/`Point3D` identities, returns identity as-is |
+| `HexLayoutEngine` | Maps axial hex coordinates to staggered 2D grid positions |
 
-For non-standard topologies, implement `ILayout<TIdentity, TCoordinate>` with custom logic.
+For non-standard topologies, implement `ILayoutEngine<TIdentity, TCoordinate>` with custom logic.
 
 ## Rendering
 
@@ -79,28 +96,28 @@ Converts layout positions to visual output. Handles output-specific concerns.
 ### Renderer Responsibilities
 
 - **Grid to outputs**: Cell size, spacing between cells
+- **Node enumeration**: Use `layout.Nodes` as the authoritative list of nodes to render
 - **Cell shape**: Square, hexagon, circle (independent of topology)
 - **Cell styling**: Colors, characters, borders based on state
 - **Output**: Console, image file, animation
 
-### `IRenderer<TIdentity, TState>`
+### `IRenderer<TIdentity, TState, TCoordinate>`
 
 ```csharp
-public interface IRenderer<TIdentity, TState>
+public interface IRenderer<TIdentity, TState, TCoordinate>
     where TIdentity : notnull, IEquatable<TIdentity>
+    where TCoordinate : struct
 {
     void Render(
-        ILayout<TIdentity, Point2D> layout,
-        ITopology<TIdentity> topology,
+        ILayout<TIdentity, TCoordinate> layout,
         IGeneration<TIdentity, TState> generation);
 }
 ```
 
 **Design notes:**
-- **2D only**: The interface is typed to `Point2D`. 3D rendering is future work and would require a separate `IRenderer3D` or a generic coordinate parameter.
-- **Why topology parameter?** Layout may be constructed from topology, but the renderer needs topology to enumerate nodes. The topology passed to `Render` must be the same instance (or at least equivalent) as the one used to construct the layout to avoid mismatches.
-- `layout`: Provides grid positions for each node
-- `topology`: Provides the list of nodes to render (via `Nodes`)
+- **Coordinate-specific**: Renderers are bound to a coordinate type via `TCoordinate`. Current renderers target `Point2D`; 3D renderers are future work.
+- **Layout is authoritative**: Renderers enumerate `layout.Nodes`; if `generation` does not know a node, renderers should treat it as an error (e.g., propagate the exception).
+- `layout`: Provides grid positions and the list of nodes to render
 - `generation`: Provides each node's current state
 
 ### `IStateStyle<TState, TVisual>`
@@ -197,7 +214,8 @@ var world = new World<Point2D, bool>(topology, new ConwayRules());
 var timeline = new Timeline<Point2D, bool>(world, initialGeneration);
 
 // Layout (identity layout for Point2D topology)
-var layout = new IdentityLayout<Point2D>(topology);
+var layoutEngine = new IdentityLayoutEngine<Point2D, Point2D>();
+var layout = layoutEngine.CreateLayout(topology);
 
 // Rendering
 var style = new BoolConsoleStyle();
@@ -206,7 +224,7 @@ var renderer = new ConsoleRenderer<Point2D, bool>(style, cellWidth: 2);
 // Game loop
 while (true)
 {
-    renderer.Render(layout, topology, timeline.Current);
+    renderer.Render(layout, timeline.Current);
     timeline.Step();
     Thread.Sleep(100);
 }
@@ -216,7 +234,7 @@ while (true)
 
 *TBD* - Rendering arbitrary graph topologies (e.g., named regions, social networks) requires layouts that assign grid positions to non-geometric identities.
 
-**Expected approach:** Callers provide a custom `ILayout<TIdentity, Point2D>` with positions from:
+**Expected approach:** Callers provide a custom `ILayoutEngine<TIdentity, Point2D>` that builds layouts from:
 - External layout library (force-directed graph algorithms)
 - Explicit dictionary mapping identities to positions
 - Domain-specific logic (geographic coordinates)
@@ -225,7 +243,7 @@ while (true)
 
 1. **Layout is geometry, rendering is visuals**: Layout produces integer grid coordinates. Rendering handles output units, shapes, colors.
 
-2. **Integer coordinates for layout**: Grid positions are integers. Pixel conversion (including fractional offsets for hex) happens in the renderer.
+2. **Integer coordinates for layout**: Grid positions are integers. Output conversion (including fractional offsets for hex) happens in the renderer.
 
 3. **Cell shape is a rendering choice**: The same layout can render as squares or hexagons. Topology and layout don't dictate visual shape.
 
