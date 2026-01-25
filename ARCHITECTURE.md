@@ -133,8 +133,11 @@ src/
 │   ├── IGeneration.cs
 │   ├── IRules.cs
 │   ├── World.cs
-│   └── Timeline.cs
+│   ├── Timeline.cs
+│   ├── Point2D.cs                   # Coordinate/identity type
+│   └── Point3D.cs                   # Coordinate/identity type
 ├── GameOfLife.Rendering/            # Base rendering abstractions
+│   ├── ILayoutEngine.cs
 │   ├── ILayout.cs
 │   ├── IBounds.cs
 │   ├── IRenderer.cs

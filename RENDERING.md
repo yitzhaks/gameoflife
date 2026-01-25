@@ -52,6 +52,7 @@ public interface ILayout<TIdentity, TCoordinate>
     where TIdentity : notnull, IEquatable<TIdentity>
     where TCoordinate : struct
 {
+    ITopology<TIdentity> Topology { get; }
     IEnumerable<TIdentity> Nodes { get; }
     TCoordinate GetPosition(TIdentity node);
     IBounds<TCoordinate> Bounds { get; }
@@ -85,9 +86,18 @@ The difference between square and hex grids is in how identities map to grid pos
 | Implementation | Description |
 |----------------|-------------|
 | `IdentityLayoutEngine` | For `Point2D`/`Point3D` identities, returns identity as-is |
-| `HexLayoutEngine` | Maps axial hex coordinates to staggered 2D grid positions |
+| `HexLayoutEngine` | Maps cube hex coordinates to staggered 2D grid positions |
 
 For non-standard topologies, implement `ILayoutEngine<TIdentity, TCoordinate>` with custom logic.
+
+### Non-Grid Topologies
+
+*TBD* - Rendering arbitrary graph topologies (e.g., named regions, social networks) requires layouts that assign grid positions to non-geometric identities.
+
+**Expected approach:** Callers provide a custom `ILayoutEngine<TIdentity, Point2D>` that builds layouts from:
+- External layout library (force-directed graph algorithms)
+- Explicit dictionary mapping identities to positions
+- Domain-specific logic (geographic coordinates)
 
 ## Rendering
 
@@ -158,6 +168,7 @@ public class BoolConsoleStyle : IStateStyle<bool, ConsoleCell>
 **Console renderer options:**
 - Cell width (characters per cell, to adjust aspect ratio)
 - Border characters (optional grid lines)
+- Style (`IStateStyle`) is injected via constructor
 
 ### Image Rendering
 
@@ -177,7 +188,11 @@ public class BoolColorStyle : IStateStyle<bool, Color>
 - Cell spacing/padding
 - Border width and color
 - Output format (PNG, GIF)
-- Animation support (multiple generations → animated GIF)
+- Style (`IStateStyle`) is injected via constructor
+
+**Output target:**
+- Image renderers accept an output path or stream via constructor
+- `Render()` writes to the configured target, keeping the interface uniform with console rendering
 
 **Dependencies:**
 - Image rendering uses ImageSharp (or similar)
@@ -190,7 +205,10 @@ public class BoolColorStyle : IStateStyle<bool, Color>
 ```
 src/
 ├── GameOfLife.Core/              # Core library (no rendering)
+│   ├── Point2D.cs                # Coordinate/identity type
+│   └── Point3D.cs                # Coordinate/identity type
 ├── GameOfLife.Rendering/         # Base abstractions
+│   ├── ILayoutEngine.cs
 │   ├── ILayout.cs
 │   ├── IBounds.cs
 │   ├── IRenderer.cs
@@ -229,15 +247,6 @@ while (true)
     Thread.Sleep(100);
 }
 ```
-
-## Non-Grid Topologies
-
-*TBD* - Rendering arbitrary graph topologies (e.g., named regions, social networks) requires layouts that assign grid positions to non-geometric identities.
-
-**Expected approach:** Callers provide a custom `ILayoutEngine<TIdentity, Point2D>` that builds layouts from:
-- External layout library (force-directed graph algorithms)
-- Explicit dictionary mapping identities to positions
-- Domain-specific logic (geographic coordinates)
 
 ## Design Decisions
 
