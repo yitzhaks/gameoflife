@@ -123,7 +123,7 @@ See [RENDERING.md](RENDERING.md).
 
 ## Project Structure
 
-*Planned structure. Core and rendering projects are not yet implemented. File lists are abbreviated—see RENDERING.md for complete rendering API.*
+*Planned structure. Core APIs are not yet fully implemented, and rendering projects are planned but not created. File lists are abbreviated—see RENDERING.md for complete rendering API.*
 
 ```
 GameOfLife.slnx                      # Solution file
