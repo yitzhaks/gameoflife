@@ -1,0 +1,16 @@
+<Project>
+  <!-- Import parent Directory.Build.props to inherit strict settings -->
+  <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))" />
+
+  <PropertyGroup>
+    <!-- Tests don't need XML documentation -->
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+
+    <!-- Suppress warnings that are not practical for test code -->
+    <!-- CS1591: Missing XML comment (tests don't need docs) -->
+    <!-- CA1852: Type can be sealed (test helpers don't need to be sealed) -->
+    <!-- CA1861: Prefer static readonly arrays (inline arrays in tests are fine) -->
+    <!-- IDE0005: Remove unnecessary using (requires GenerateDocumentationFile) -->
+    <NoWarn>$(NoWarn);CS1591;CA1852;CA1861;IDE0005</NoWarn>
+  </PropertyGroup>
+</Project>
