@@ -7,7 +7,7 @@ Topology defines structure, not visual position. Displaying nodes on screen requ
 **Layout and rendering are separate concerns.**
 
 - **Layout**: Maps abstract node identities to grid coordinates. Pure geometry.
-- **Rendering**: Converts grid coordinates to pixels, applies visual styling, outputs to target.
+- **Rendering**: Converts grid coordinates to concrete visual outputs, applies visual styling, outputs to target.
 
 ```
 Topology (structure)
@@ -23,12 +23,12 @@ Renderer (visuals) — cell size, shape, colors, output target
 |---------|------|
 | Layout | Maps `TIdentity` → grid position (`Point2D` or `Point3D`) |
 | Bounds | Size of the grid in layout coordinates |
-| Renderer | Converts layout to pixels, applies styling, outputs |
+| Renderer | Converts layout to concrete outputs, applies styling, outputs |
 | StateStyle | Maps `TState` → visual appearance (color, character) |
 
 ## Layout
 
-Maps node identities to grid positions. Positions are integers representing logical grid coordinates, not pixels.
+Maps node identities to grid positions. Positions are integers representing logical grid coordinates, not output units.
 
 ### `ILayout<TIdentity, TCoordinate>`
 
@@ -74,11 +74,11 @@ For non-standard topologies, implement `ILayout<TIdentity, TCoordinate>` with cu
 
 ## Rendering
 
-Converts layout positions to visual output. Handles all pixel-level concerns.
+Converts layout positions to visual output. Handles output-specific concerns.
 
 ### Renderer Responsibilities
 
-- **Grid to pixels**: Cell size, spacing between cells
+- **Grid to outputs**: Cell size, spacing between cells
 - **Cell shape**: Square, hexagon, circle (independent of topology)
 - **Cell styling**: Colors, characters, borders based on state
 - **Output**: Console, image file, animation
@@ -155,7 +155,7 @@ public class BoolColorStyle : IStateStyle<bool, Color>
 ```
 
 **Image renderer options:**
-- Cell size (pixels)
+- Cell size (output units)
 - Cell shape (square, hexagon, circle)
 - Cell spacing/padding
 - Border width and color
@@ -223,7 +223,7 @@ while (true)
 
 ## Design Decisions
 
-1. **Layout is geometry, rendering is visuals**: Layout produces integer grid coordinates. Rendering handles pixels, shapes, colors.
+1. **Layout is geometry, rendering is visuals**: Layout produces integer grid coordinates. Rendering handles output units, shapes, colors.
 
 2. **Integer coordinates for layout**: Grid positions are integers. Pixel conversion (including fractional offsets for hex) happens in the renderer.
 
