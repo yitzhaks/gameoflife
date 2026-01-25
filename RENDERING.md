@@ -1,65 +1,112 @@
 # Rendering
 
-Topology defines structure, not visual position. Rendering requires additional metadata to display nodes on screen.
+Topology defines structure, not visual position. Displaying nodes on screen requires two additional layers: **Layout** (geometry) and **Rendering** (visuals).
 
 ## Core Principle
 
-**Rendering is separate from simulation.**
+**Layout and rendering are separate concerns.**
 
-The Game of Life engine (World, Timeline) knows nothing about pixels, characters, or colors. Rendering is a separate layer that:
-1. Maps node identities to screen positions (Layout)
-2. Maps cell states to visual appearance (StateStyle)
-3. Produces output for a specific target (Renderer)
+- **Layout**: Maps abstract node identities to grid coordinates. Pure geometry.
+- **Rendering**: Converts grid coordinates to pixels, applies visual styling, outputs to target.
+
+```
+Topology (structure)
+    ↓
+Layout (geometry) — TIdentity → Point2D/Point3D, bounds
+    ↓
+Renderer (visuals) — cell size, shape, colors, output target
+```
 
 ## Taxonomy
 
 | Concept | Role |
 |---------|------|
-| Layout | Maps `TIdentity` → screen position |
-| StateStyle | Maps `TState` → visual appearance |
-| Renderer | Combines layout + style → output |
+| Layout | Maps `TIdentity` → grid position (`Point2D` or `Point3D`) |
+| Bounds | Size of the grid in layout coordinates |
+| Renderer | Converts layout to pixels, applies styling, outputs |
+| CellStyle | Maps `TState` → visual appearance (color, character) |
 
-## Core Abstractions
+## Layout
 
-### ILayout<TIdentity>
+Maps node identities to grid positions. Positions are integers representing logical grid coordinates, not pixels.
 
-Maps node identities to screen positions. Positions are in a logical coordinate space (not pixels).
+### ILayout<TIdentity, TCoordinate>
 
 ```csharp
-public interface ILayout<TIdentity> where TIdentity : notnull, IEquatable<TIdentity>
+public interface ILayout<TIdentity, TCoordinate>
+    where TIdentity : notnull, IEquatable<TIdentity>
+    where TCoordinate : struct
 {
-    LayoutPosition GetPosition(TIdentity node);
-    LayoutBounds Bounds { get; }
+    TCoordinate GetPosition(TIdentity node);
+    IBounds<TCoordinate> Bounds { get; }
 }
 
-public readonly record struct LayoutPosition(double X, double Y);
-
-public readonly record struct LayoutBounds(double Width, double Height);
+public interface IBounds<TCoordinate> where TCoordinate : struct
+{
+    TCoordinate Min { get; }
+    TCoordinate Max { get; }
+}
 ```
 
 **Design notes:**
-- Uses `double` for positions to support fractional/scaled layouts
-- `Bounds` gives the overall size for viewport/canvas sizing
-- Implementations compute position from identity (e.g., `Point2D(3,4)` → `LayoutPosition(3, 4)`)
-- Layouts may require topology at construction time for bounds calculation, even though position mapping is identity-based
-- `GetPosition` should be pure and deterministic - same identity always returns same position. Layouts should not maintain mutable state.
+- `TCoordinate` is `Point2D` or `Point3D` (integer-based grid positions)
+- `GetPosition` should be pure and deterministic
+- Layouts may require topology at construction for bounds calculation
+- Layouts should not maintain mutable state
 
-#### Standard Implementations
+### Coordinate Types
+
+| Type | Use Case |
+|------|----------|
+| `Point2D` | Standard 2D grids (rectangular, hex projected to 2D) |
+| `Point3D` | 3D visualizations, layered grids |
+
+The difference between square and hex grids is in how identities map to grid positions—the renderer decides the visual shape.
+
+### Standard Implementations
 
 | Implementation | Description |
 |----------------|-------------|
-| `GridLayout` | Maps `Point2D` directly to positions (1:1) |
-| `ScaledGridLayout` | Maps `Point2D` with configurable cell size |
-| `HexLayout` | Maps hex coordinates to staggered positions |
+| `IdentityLayout` | For `Point2D`/`Point3D` identities, returns identity as-is |
+| `HexLayout` | Maps axial hex coordinates to staggered 2D grid positions |
 
-For non-standard topologies, implement `ILayout<TIdentity>` with custom logic.
+For non-standard topologies, implement `ILayout<TIdentity, TCoordinate>` with custom logic.
 
-### IStateStyle<TState, TVisual>
+## Rendering
 
-Maps cell states to visual representation. Abstract over output format.
+Converts layout positions to visual output. Handles all pixel-level concerns.
+
+### Renderer Responsibilities
+
+- **Grid to pixels**: Cell size, spacing between cells
+- **Cell shape**: Square, hexagon, circle (independent of topology)
+- **Cell styling**: Colors, characters, borders based on state
+- **Output**: Console, image file, animation
+
+### IRenderer<TIdentity, TState>
 
 ```csharp
-public interface IStateStyle<TState, TVisual>
+public interface IRenderer<TIdentity, TState>
+    where TIdentity : notnull, IEquatable<TIdentity>
+{
+    void Render(
+        ILayout<TIdentity, Point2D> layout,
+        ITopology<TIdentity> topology,
+        IGeneration<TIdentity, TState> generation);
+}
+```
+
+**Why three parameters?**
+- `layout`: Provides grid positions for each node
+- `topology`: Provides the list of nodes to render (via `Nodes`)
+- `generation`: Provides each node's current state
+
+### ICellStyle<TState, TVisual>
+
+Maps cell states to visual representation.
+
+```csharp
+public interface ICellStyle<TState, TVisual>
 {
     TVisual GetVisual(TState state);
 }
@@ -69,15 +116,18 @@ public interface IStateStyle<TState, TVisual>
 
 | Renderer | TVisual | Example |
 |----------|---------|---------|
-| Console | `ConsoleCell` | `('█', ConsoleColor.Green)` |
+| Console | `ConsoleCell` | `('█', Green, Black)` |
 | Image | `Color` | `Color.FromRgb(0, 255, 0)` |
 
-#### Console Visuals
+### Console Rendering
 
 ```csharp
-public readonly record struct ConsoleCell(char Character, ConsoleColor Foreground, ConsoleColor Background);
+public readonly record struct ConsoleCell(
+    char Character,
+    ConsoleColor Foreground,
+    ConsoleColor Background);
 
-public class BoolConsoleStyle : IStateStyle<bool, ConsoleCell>
+public class BoolConsoleStyle : ICellStyle<bool, ConsoleCell>
 {
     public ConsoleCell Alive { get; init; } = new('█', ConsoleColor.Green, ConsoleColor.Black);
     public ConsoleCell Dead { get; init; } = new(' ', ConsoleColor.Black, ConsoleColor.Black);
@@ -86,10 +136,14 @@ public class BoolConsoleStyle : IStateStyle<bool, ConsoleCell>
 }
 ```
 
-#### Image Visuals
+**Console renderer options:**
+- Cell width (characters per cell, to adjust aspect ratio)
+- Border characters (optional grid lines)
+
+### Image Rendering
 
 ```csharp
-public class BoolColorStyle : IStateStyle<bool, Color>
+public class BoolColorStyle : ICellStyle<bool, Color>
 {
     public Color Alive { get; init; } = Color.White;
     public Color Dead { get; init; } = Color.Black;
@@ -98,83 +152,38 @@ public class BoolColorStyle : IStateStyle<bool, Color>
 }
 ```
 
-### IRenderer<TIdentity, TState>
-
-Renders a generation to a specific output target.
-
-```csharp
-public interface IRenderer<TIdentity, TState> where TIdentity : notnull, IEquatable<TIdentity>
-{
-    void Render(ITopology<TIdentity> topology, IGeneration<TIdentity, TState> generation);
-}
-```
-
-**Why both topology and generation?** Topology provides the list of nodes to render (via `Nodes`). Generation provides each node's current state. They are independent: topology is structural and immutable, while generation changes each tick. Passing both keeps the interface explicit and avoids coupling generation to topology.
-
-Renderers are configured with layout and style at construction time:
-
-```csharp
-public class ConsoleRenderer<TIdentity, TState> : IRenderer<TIdentity, TState>
-    where TIdentity : notnull, IEquatable<TIdentity>
-{
-    public ConsoleRenderer(ILayout<TIdentity> layout, IStateStyle<TState, ConsoleCell> style) { ... }
-
-    public void Render(ITopology<TIdentity> topology, IGeneration<TIdentity, TState> generation) { ... }
-}
-```
-
-## Output Targets
-
-### Console
-
-Renders to terminal using characters and colors.
-
-**Features:**
-- Cursor positioning for in-place updates
-- Configurable characters and colors via `IStateStyle<TState, ConsoleCell>`
-- Respects terminal dimensions
-
-**Limitations:**
-- Character aspect ratio (~2:1) distorts square grids
-- Limited color palette (16 colors standard, 256 with ANSI)
-
-### Image
-
-Renders to image files (PNG, GIF).
-
-**Features:**
-- Configurable cell size in pixels
-- True color support
-- Animation support (GIF) for multiple generations
+**Image renderer options:**
+- Cell size (pixels)
+- Cell shape (square, hexagon, circle)
+- Cell spacing/padding
+- Border width and color
+- Output format (PNG, GIF)
+- Animation support (multiple generations → animated GIF)
 
 **Dependencies:**
-- Image rendering will use a lightweight library (e.g., ImageSharp)
-- Kept in a separate assembly to avoid core dependency
+- Image rendering uses ImageSharp (or similar)
+- Kept in separate assembly to avoid core dependency
 
 ## Project Structure
 
-*Planned structure. Rendering assemblies will be created when implementation begins.*
+*Planned structure. These assemblies will be created when implementation begins.*
 
 ```
 src/
 ├── GameOfLife.Core/              # Core library (no rendering)
-├── GameOfLife.Rendering/         # Base rendering abstractions
+├── GameOfLife.Rendering/         # Base abstractions
 │   ├── ILayout.cs
-│   ├── IStateStyle.cs
+│   ├── IBounds.cs
 │   ├── IRenderer.cs
-│   ├── LayoutPosition.cs
-│   ├── LayoutBounds.cs
-│   └── Layouts/
-│       └── GridLayout.cs
+│   └── ICellStyle.cs
 ├── GameOfLife.Rendering.Console/ # Console renderer
-│   ├── ConsoleCell.cs
 │   ├── ConsoleRenderer.cs
-│   └── Styles/
-│       └── BoolConsoleStyle.cs
-└── GameOfLife.Rendering.Image/   # Image renderer (ImageSharp dependency)
+│   ├── ConsoleCell.cs
+│   └── BoolConsoleStyle.cs
+└── GameOfLife.Rendering.Image/   # Image renderer
     ├── ImageRenderer.cs
-    └── Styles/
-        └── BoolColorStyle.cs
+    ├── CellShape.cs              # Square, Hexagon, Circle
+    └── BoolColorStyle.cs
 ```
 
 ## Usage Example
@@ -185,15 +194,17 @@ var topology = new RectangularTopology(width: 40, height: 20);
 var world = new World<Point2D, bool>(topology, new ConwayRules());
 var timeline = new Timeline<Point2D, bool>(world, initialGeneration);
 
+// Layout (identity layout for Point2D topology)
+var layout = new IdentityLayout<Point2D>(topology);
+
 // Rendering
-var layout = new GridLayout(topology);
 var style = new BoolConsoleStyle();
-var renderer = new ConsoleRenderer<Point2D, bool>(layout, style);
+var renderer = new ConsoleRenderer<Point2D, bool>(style, cellWidth: 2);
 
 // Game loop
 while (true)
 {
-    renderer.Render(topology, timeline.Current);
+    renderer.Render(layout, topology, timeline.Current);
     timeline.Step();
     Thread.Sleep(100);
 }
@@ -201,26 +212,21 @@ while (true)
 
 ## Non-Grid Topologies
 
-*TBD* - Rendering arbitrary graph topologies (e.g., named regions, social networks) requires different approaches:
-- Force-directed layout algorithms
-- Manual position specification
-- Domain-specific layout strategies
+*TBD* - Rendering arbitrary graph topologies (e.g., named regions, social networks) requires layouts that assign grid positions to non-geometric identities.
 
-These will be addressed when such topologies are implemented.
-
-**Expected approach:** Callers will provide a custom `ILayout<TIdentity>` implementation with positions either:
-- Computed via an external layout library (e.g., force-directed graph layout)
-- Specified explicitly via a dictionary mapping identities to positions
-- Derived from domain-specific logic (e.g., geographic coordinates)
+**Expected approach:** Callers provide a custom `ILayout<TIdentity, Point2D>` with positions from:
+- External layout library (force-directed graph algorithms)
+- Explicit dictionary mapping identities to positions
+- Domain-specific logic (geographic coordinates)
 
 ## Design Decisions
 
-1. **Rendering is pluggable**: Core library has no rendering dependencies. Renderers are separate assemblies.
+1. **Layout is geometry, rendering is visuals**: Layout produces integer grid coordinates. Rendering handles pixels, shapes, colors.
 
-2. **Layout is computed**: Default layouts derive position from identity. Custom layouts can override for special cases.
+2. **Integer coordinates for layout**: Grid positions are integers. Pixel conversion (including fractional offsets for hex) happens in the renderer.
 
-3. **Style is generic**: `IStateStyle<TState, TVisual>` allows any state type to map to any visual representation.
+3. **Cell shape is a rendering choice**: The same layout can render as squares or hexagons. Topology and layout don't dictate visual shape.
 
-4. **Renderers own their dependencies**: `ConsoleRenderer` knows about console APIs. `ImageRenderer` knows about image libraries. The interface stays clean.
+4. **Rendering is pluggable**: Core library has no rendering dependencies. Renderers are separate assemblies.
 
-5. **Double precision for positions**: Allows fractional positions for hex grids, scaled layouts, and smooth animations without integer rounding issues.
+5. **Style is generic**: `ICellStyle<TState, TVisual>` allows any state type to map to any visual representation.

@@ -136,8 +136,9 @@ src/
 │   └── Timeline.cs
 ├── GameOfLife.Rendering/            # Base rendering abstractions
 │   ├── ILayout.cs
-│   ├── IStateStyle.cs
-│   └── IRenderer.cs
+│   ├── IBounds.cs
+│   ├── IRenderer.cs
+│   └── ICellStyle.cs
 ├── GameOfLife.Rendering.Console/    # Console renderer
 │   └── ConsoleRenderer.cs
 └── GameOfLife.Rendering.Image/      # Image renderer (ImageSharp dependency)
