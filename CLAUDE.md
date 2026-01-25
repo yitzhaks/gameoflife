@@ -34,6 +34,10 @@ See the [Taxonomy section in ARCHITECTURE.md](ARCHITECTURE.md#taxonomy).
 
 5. **Test at the interface level**: Tests should work against `ITopology<TIdentity>`, not specific implementations.
 
+## Documentation Updates
+
+Architecture may evolve during development, and that is expected. When it does, update both [ARCHITECTURE.md](ARCHITECTURE.md) and [RENDERING.md](RENDERING.md) to keep the design documentation current.
+
 ## Build & Test
 
 > **Note**: These commands will work once the project structure is created. The repository is currently in the design phase with architecture documentation only.
