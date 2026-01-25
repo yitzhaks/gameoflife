@@ -117,6 +117,11 @@ public class Timeline<TIdentity, TState> where TIdentity : notnull, IEquatable<T
 }
 ```
 
+#### Future improvements
+
+- Timeline is named to reflect planned history support.
+- Add history retention and the ability to step backward through prior generations.
+
 ## Rendering
 
 See [RENDERING.md](RENDERING.md).
