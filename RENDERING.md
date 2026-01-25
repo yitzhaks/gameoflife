@@ -17,7 +17,7 @@ Topology (structure)
     ↓
 LayoutEngine (rules)
     ↓
-Layout (geometry snapshot) — bounds, ordering, TIdentity → Point2D/Point3D
+Layout (geometry snapshot) — bounds, ordering, TIdentity → TCoordinate (e.g., Point2D/Point3D)
     ↓
 Renderer (visuals) — cell size, shape, colors, output target
 ```
