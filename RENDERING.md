@@ -185,7 +185,7 @@ public class BoolColorStyle : IStateStyle<bool, Color>
 
 ## Project Structure
 
-*Planned structure. These assemblies will be created when implementation begins. File lists are abbreviated—see interface definitions above for complete API surface.*
+*Planned structure. Rendering assemblies/APIs will be created when implementation begins. File lists are abbreviated—see interface definitions above for complete API surface.*
 
 ```
 src/

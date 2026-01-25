@@ -16,7 +16,7 @@ This is a C# implementation of Conway's Game of Life with support for arbitrary 
 
 - **[ARCHITECTURE.md](ARCHITECTURE.md)**: Core design principles and abstractions. Read this first.
 - **[TASKS.md](TASKS.md)**: Current backlog and planned work.
-- **[RENDERING.md](RENDERING.md)**: Rendering design (TBD).
+- **[RENDERING.md](RENDERING.md)**: Rendering architecture and design documentation.
 
 ## Taxonomy
 
@@ -39,8 +39,6 @@ See the [Taxonomy section in ARCHITECTURE.md](ARCHITECTURE.md#taxonomy).
 Architecture may evolve during development, and that is expected. When it does, update both [ARCHITECTURE.md](ARCHITECTURE.md) and [RENDERING.md](RENDERING.md) to keep the design documentation current.
 
 ## Build & Test
-
-> **Note**: These commands will work once the project structure is created. The repository is currently in the design phase with architecture documentation only.
 
 ```bash
 dotnet build
