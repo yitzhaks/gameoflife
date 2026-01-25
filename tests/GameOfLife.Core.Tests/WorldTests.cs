@@ -253,4 +253,78 @@ public class WorldTests
     }
 
     #endregion
+
+    #region Integration Tests - Classic Patterns
+
+    [Fact]
+    public void Tick_BlockPattern_RemainsStable()
+    {
+        // Block is a 2x2 still life pattern that never changes
+        // ##
+        // ##
+        var topology = new Grid2DTopology(4, 4);
+        var rules = new ClassicRules();
+        var world = new World<Point2D, bool>(topology, rules);
+
+        var blockCells = new Dictionary<Point2D, bool>
+        {
+            [new Point2D(1, 1)] = true,
+            [new Point2D(2, 1)] = true,
+            [new Point2D(1, 2)] = true,
+            [new Point2D(2, 2)] = true
+        };
+        var generation = new DictionaryGeneration<Point2D, bool>(blockCells, false);
+
+        var nextGeneration = world.Tick(generation);
+
+        // Block should remain unchanged
+        Assert.True(nextGeneration[new Point2D(1, 1)]);
+        Assert.True(nextGeneration[new Point2D(2, 1)]);
+        Assert.True(nextGeneration[new Point2D(1, 2)]);
+        Assert.True(nextGeneration[new Point2D(2, 2)]);
+
+        // Surrounding cells should remain dead
+        Assert.False(nextGeneration[new Point2D(0, 0)]);
+        Assert.False(nextGeneration[new Point2D(3, 3)]);
+    }
+
+    [Fact]
+    public void Tick_BlinkerPattern_Oscillates()
+    {
+        // Blinker is a period-2 oscillator
+        // Phase 1 (vertical):  Phase 2 (horizontal):
+        //   .#.                  ...
+        //   .#.        ->        ###
+        //   .#.                  ...
+        var topology = new Grid2DTopology(5, 5);
+        var rules = new ClassicRules();
+        var world = new World<Point2D, bool>(topology, rules);
+
+        // Start with vertical blinker
+        var verticalBlinker = new Dictionary<Point2D, bool>
+        {
+            [new Point2D(2, 1)] = true,
+            [new Point2D(2, 2)] = true,
+            [new Point2D(2, 3)] = true
+        };
+        var generation1 = new DictionaryGeneration<Point2D, bool>(verticalBlinker, false);
+
+        // After one tick, should be horizontal
+        var generation2 = world.Tick(generation1);
+        Assert.False(generation2[new Point2D(2, 1)]);
+        Assert.True(generation2[new Point2D(1, 2)]);
+        Assert.True(generation2[new Point2D(2, 2)]);
+        Assert.True(generation2[new Point2D(3, 2)]);
+        Assert.False(generation2[new Point2D(2, 3)]);
+
+        // After two ticks, should be back to vertical
+        var generation3 = world.Tick(generation2);
+        Assert.True(generation3[new Point2D(2, 1)]);
+        Assert.True(generation3[new Point2D(2, 2)]);
+        Assert.True(generation3[new Point2D(2, 3)]);
+        Assert.False(generation3[new Point2D(1, 2)]);
+        Assert.False(generation3[new Point2D(3, 2)]);
+    }
+
+    #endregion
 }

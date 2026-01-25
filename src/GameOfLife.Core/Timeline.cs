@@ -25,8 +25,11 @@ public class Timeline<TIdentity, TState> where TIdentity : notnull, IEquatable<T
     /// <param name="initial">The initial generation state.</param>
     public Timeline(World<TIdentity, TState> world, IGeneration<TIdentity, TState> initial)
     {
-        World = world ?? throw new ArgumentNullException(nameof(world));
-        Current = initial ?? throw new ArgumentNullException(nameof(initial));
+        ArgumentNullException.ThrowIfNull(world);
+        ArgumentNullException.ThrowIfNull(initial);
+
+        World = world;
+        Current = initial;
     }
 
     /// <summary>

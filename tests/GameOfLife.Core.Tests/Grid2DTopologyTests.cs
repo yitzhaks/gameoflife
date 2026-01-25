@@ -237,13 +237,9 @@ public class Grid2DTopologyTests
             new Point2D(2, 2)
         };
 
-        foreach (var corner in corners)
-        {
-            var cornerNeighbors = topology.GetNeighbors(corner).ToList();
-
-            Assert.All(cornerNeighbors, neighbor =>
-                Assert.Contains(corner, topology.GetNeighbors(neighbor)));
-        }
+        Assert.All(corners, corner =>
+            Assert.All(topology.GetNeighbors(corner), neighbor =>
+                Assert.Contains(corner, topology.GetNeighbors(neighbor))));
     }
 
     #endregion

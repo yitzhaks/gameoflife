@@ -25,8 +25,11 @@ public class World<TIdentity, TState> where TIdentity : notnull, IEquatable<TIde
     /// <param name="rules">The rules defining state transitions.</param>
     public World(ITopology<TIdentity> topology, IRules<TState> rules)
     {
-        Topology = topology ?? throw new ArgumentNullException(nameof(topology));
-        Rules = rules ?? throw new ArgumentNullException(nameof(rules));
+        ArgumentNullException.ThrowIfNull(topology);
+        ArgumentNullException.ThrowIfNull(rules);
+
+        Topology = topology;
+        Rules = rules;
     }
 
     /// <summary>
