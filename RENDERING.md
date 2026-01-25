@@ -142,7 +142,7 @@ public interface IRenderer<TIdentity, TCoordinate, TBounds, TState>
 - `TBounds` is part of the renderer contract so the renderer can hold an `ILayoutEngine<TIdentity, TCoordinate, TBounds>`.
 - Renderers are constructed with an output target (console, stream, image path, etc.) because `Render()` returns `void`
 - Renderers are constructed with an `ILayoutEngine` instance; additional constructor inputs are allowed as needed for the rendering domain
-- **Layout is authoritative**: Renderers use the configured `ILayoutEngine` to create a layout for the provided topology, then enumerate `layout.EnumerateNodes(...)`. `generation` is expected to provide a state for each layout node. If a node is missing, treat it as an error (e.g., propagate the exception). Callers using sparse generations should wrap/adapter them to provide default states before rendering.
+- **Layout is authoritative**: Renderers use the configured `ILayoutEngine` to create a layout for the provided topology, then enumerate `layout.EnumerateNodes(...)`. `generation` is expected to provide a state for each layout node. If a node is missing, treat it as an error (e.g., propagate the exception). Callers using sparse generations should wrap or adapt them to provide default states before rendering.
 
 #### Future improvements
 
