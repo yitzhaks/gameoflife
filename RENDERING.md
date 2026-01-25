@@ -123,7 +123,7 @@ Converts layout positions (built from topology via a layout engine) to visual ou
 - **Cell styling**: Colors, characters, borders based on state
 - **Output**: Console, image file, animation
 
-### `IRenderer<TIdentity, TState, TCoordinate, TBounds>`
+### `IRenderer<TIdentity, TCoordinate, TBounds, TState>`
 
 ```csharp
 public interface IRenderer<TIdentity, TCoordinate, TBounds, TState>
