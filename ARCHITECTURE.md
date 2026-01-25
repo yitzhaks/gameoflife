@@ -26,7 +26,7 @@ Everything else - coordinates, shapes, rendering - is metadata for construction 
 
 ## Core Abstractions
 
-### ITopology<TIdentity>
+### `ITopology<TIdentity>`
 
 Defines the **structure** of a board - nodes and their neighbor relationships. No state, purely structural.
 
@@ -55,7 +55,7 @@ public interface ITopology<TIdentity> where TIdentity : notnull, IEquatable<TIde
 
 The identity **is** the node - no separate ID system needed.
 
-### Generation<TIdentity, TState>
+### `IGeneration<TIdentity, TState>`
 
 A snapshot of state at a moment in time. Immutable.
 
@@ -71,7 +71,7 @@ The indexer throws if the node is unknown to the generation. How state is stored
 - 2D array for small fixed grids
 - Whatever fits the use case
 
-### IRules&lt;TState&gt;
+### `IRules<TState>`
 
 Defines how state evolves. Generic over `TState` to support multi-state automata.
 
@@ -88,7 +88,7 @@ public interface IRules<TState>
 
 Classic Game of Life uses `TState = bool` with B3/S23 rules.
 
-### World&lt;TIdentity, TState&gt;
+### `World<TIdentity, TState>`
 
 The "engine" - combines topology with rules. Stateless. Computes next generations from input.
 
@@ -102,7 +102,7 @@ public class World<TIdentity, TState> where TIdentity : notnull, IEquatable<TIde
 }
 ```
 
-### Timeline<TIdentity, TState>
+### `Timeline<TIdentity, TState>`
 
 Holds a `World` and current state. This is where state lives.
 
@@ -123,7 +123,7 @@ See [RENDERING.md](RENDERING.md).
 
 ## Project Structure
 
-*Planned structure. Rendering projects are not yet implemented.*
+*Planned structure. Rendering projects are not yet implemented. File lists are abbreviated—see RENDERING.md for complete rendering API.*
 
 ```
 GameOfLife.slnx                      # Solution file

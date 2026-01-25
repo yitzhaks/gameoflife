@@ -30,7 +30,7 @@ Renderer (visuals) — cell size, shape, colors, output target
 
 Maps node identities to grid positions. Positions are integers representing logical grid coordinates, not pixels.
 
-### ILayout<TIdentity, TCoordinate>
+### `ILayout<TIdentity, TCoordinate>`
 
 ```csharp
 public interface ILayout<TIdentity, TCoordinate>
@@ -83,7 +83,7 @@ Converts layout positions to visual output. Handles all pixel-level concerns.
 - **Cell styling**: Colors, characters, borders based on state
 - **Output**: Console, image file, animation
 
-### IRenderer<TIdentity, TState>
+### `IRenderer<TIdentity, TState>`
 
 ```csharp
 public interface IRenderer<TIdentity, TState>
@@ -96,12 +96,14 @@ public interface IRenderer<TIdentity, TState>
 }
 ```
 
-**Why three parameters?**
+**Design notes:**
+- **2D only**: The interface is typed to `Point2D`. 3D rendering is future work and would require a separate `IRenderer3D` or a generic coordinate parameter.
+- **Why topology parameter?** Layout may be constructed from topology, but the renderer needs topology to enumerate nodes. Passing it explicitly avoids coupling layout to a specific topology instance and makes the dependency clear.
 - `layout`: Provides grid positions for each node
 - `topology`: Provides the list of nodes to render (via `Nodes`)
 - `generation`: Provides each node's current state
 
-### ICellStyle<TState, TVisual>
+### `ICellStyle<TState, TVisual>`
 
 Maps cell states to visual representation.
 
@@ -166,7 +168,7 @@ public class BoolColorStyle : ICellStyle<bool, Color>
 
 ## Project Structure
 
-*Planned structure. These assemblies will be created when implementation begins.*
+*Planned structure. These assemblies will be created when implementation begins. File lists are abbreviated—see interface definitions above for complete API surface.*
 
 ```
 src/
