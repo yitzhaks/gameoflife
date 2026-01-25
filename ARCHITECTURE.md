@@ -145,8 +145,7 @@ src/
 │   ├── ILayoutEngine.cs
 │   ├── ILayout.cs
 │   ├── IBounds.cs
-│   ├── IRenderer.cs
-│   └── IStateStyle.cs
+│   └── IRenderer.cs
 ├── GameOfLife.Rendering.Console/    # Console renderer
 │   └── ConsoleRenderer.cs
 └── GameOfLife.Rendering.Image/      # Image renderer (ImageSharp dependency)
