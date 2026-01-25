@@ -24,7 +24,7 @@ Renderer (visuals) — cell size, shape, colors, output target
 | Layout | Maps `TIdentity` → grid position (`Point2D` or `Point3D`) |
 | Bounds | Size of the grid in layout coordinates |
 | Renderer | Converts layout to pixels, applies styling, outputs |
-| CellStyle | Maps `TState` → visual appearance (color, character) |
+| StateStyle | Maps `TState` → visual appearance (color, character) |
 
 ## Layout
 
@@ -98,17 +98,17 @@ public interface IRenderer<TIdentity, TState>
 
 **Design notes:**
 - **2D only**: The interface is typed to `Point2D`. 3D rendering is future work and would require a separate `IRenderer3D` or a generic coordinate parameter.
-- **Why topology parameter?** Layout may be constructed from topology, but the renderer needs topology to enumerate nodes. Passing it explicitly avoids coupling layout to a specific topology instance and makes the dependency clear.
+- **Why topology parameter?** Layout may be constructed from topology, but the renderer needs topology to enumerate nodes. The topology passed to `Render` must be the same instance (or at least equivalent) as the one used to construct the layout to avoid mismatches.
 - `layout`: Provides grid positions for each node
 - `topology`: Provides the list of nodes to render (via `Nodes`)
 - `generation`: Provides each node's current state
 
-### `ICellStyle<TState, TVisual>`
+### `IStateStyle<TState, TVisual>`
 
 Maps cell states to visual representation.
 
 ```csharp
-public interface ICellStyle<TState, TVisual>
+public interface IStateStyle<TState, TVisual>
 {
     TVisual GetVisual(TState state);
 }
@@ -118,7 +118,7 @@ public interface ICellStyle<TState, TVisual>
 
 | Renderer | TVisual | Example |
 |----------|---------|---------|
-| Console | `ConsoleCell` | `('█', Green, Black)` |
+| Console | `ConsoleCell` | `('█', ConsoleColor.Green, ConsoleColor.Black)` |
 | Image | `Color` | `Color.FromRgb(0, 255, 0)` |
 
 ### Console Rendering
@@ -129,7 +129,7 @@ public readonly record struct ConsoleCell(
     ConsoleColor Foreground,
     ConsoleColor Background);
 
-public class BoolConsoleStyle : ICellStyle<bool, ConsoleCell>
+public class BoolConsoleStyle : IStateStyle<bool, ConsoleCell>
 {
     public ConsoleCell Alive { get; init; } = new('█', ConsoleColor.Green, ConsoleColor.Black);
     public ConsoleCell Dead { get; init; } = new(' ', ConsoleColor.Black, ConsoleColor.Black);
@@ -145,7 +145,7 @@ public class BoolConsoleStyle : ICellStyle<bool, ConsoleCell>
 ### Image Rendering
 
 ```csharp
-public class BoolColorStyle : ICellStyle<bool, Color>
+public class BoolColorStyle : IStateStyle<bool, Color>
 {
     public Color Alive { get; init; } = Color.White;
     public Color Dead { get; init; } = Color.Black;
@@ -177,7 +177,7 @@ src/
 │   ├── ILayout.cs
 │   ├── IBounds.cs
 │   ├── IRenderer.cs
-│   └── ICellStyle.cs
+│   └── IStateStyle.cs
 ├── GameOfLife.Rendering.Console/ # Console renderer
 │   ├── ConsoleRenderer.cs
 │   ├── ConsoleCell.cs
@@ -231,4 +231,4 @@ while (true)
 
 4. **Rendering is pluggable**: Core library has no rendering dependencies. Renderers are separate assemblies.
 
-5. **Style is generic**: `ICellStyle<TState, TVisual>` allows any state type to map to any visual representation.
+5. **Style is generic**: `IStateStyle<TState, TVisual>` allows any state type to map to any visual representation.

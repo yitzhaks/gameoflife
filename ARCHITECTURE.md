@@ -123,7 +123,7 @@ See [RENDERING.md](RENDERING.md).
 
 ## Project Structure
 
-*Planned structure. Rendering projects are not yet implemented. File lists are abbreviated—see RENDERING.md for complete rendering API.*
+*Planned structure. Core and rendering projects are not yet implemented. File lists are abbreviated—see RENDERING.md for complete rendering API.*
 
 ```
 GameOfLife.slnx                      # Solution file
@@ -138,7 +138,7 @@ src/
 │   ├── ILayout.cs
 │   ├── IBounds.cs
 │   ├── IRenderer.cs
-│   └── ICellStyle.cs
+│   └── IStateStyle.cs
 ├── GameOfLife.Rendering.Console/    # Console renderer
 │   └── ConsoleRenderer.cs
 └── GameOfLife.Rendering.Image/      # Image renderer (ImageSharp dependency)
