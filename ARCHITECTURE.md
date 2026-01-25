@@ -26,7 +26,7 @@ Everything else - coordinates, shapes, rendering - is metadata for construction 
 
 ## Core Abstractions
 
-### ITopology&lt;TIdentity&gt;
+### `ITopology<TIdentity>`
 
 Defines the **structure** of a board - nodes and their neighbor relationships. No state, purely structural.
 
@@ -55,7 +55,7 @@ public interface ITopology<TIdentity> where TIdentity : notnull, IEquatable<TIde
 
 The identity **is** the node - no separate ID system needed.
 
-### Generation&lt;TIdentity, TState&gt;
+### `IGeneration<TIdentity, TState>`
 
 A snapshot of state at a moment in time. Immutable.
 
@@ -71,7 +71,7 @@ The indexer throws if the node is unknown to the generation. How state is stored
 - 2D array for small fixed grids
 - Whatever fits the use case
 
-### IRules&lt;TState&gt;
+### `IRules<TState>`
 
 Defines how state evolves. Generic over `TState` to support multi-state automata.
 
@@ -88,7 +88,7 @@ public interface IRules<TState>
 
 Classic Game of Life uses `TState = bool` with B3/S23 rules.
 
-### World&lt;TIdentity, TState&gt;
+### `World<TIdentity, TState>`
 
 The "engine" - combines topology with rules. Stateless. Computes next generations from input.
 
@@ -102,7 +102,7 @@ public class World<TIdentity, TState> where TIdentity : notnull, IEquatable<TIde
 }
 ```
 
-### Timeline&lt;TIdentity, TState&gt;
+### `Timeline<TIdentity, TState>`
 
 Holds a `World` and current state. This is where state lives.
 
@@ -117,21 +117,39 @@ public class Timeline<TIdentity, TState> where TIdentity : notnull, IEquatable<T
 }
 ```
 
+#### Future improvements
+
+- Timeline is named to reflect planned history support.
+- Add history retention and the ability to step backward through prior generations.
+
 ## Rendering
 
 See [RENDERING.md](RENDERING.md).
 
 ## Project Structure
 
+*Planned structure. Core APIs are not yet fully implemented, and rendering projects are planned but not created. File lists are abbreviated—see RENDERING.md for complete rendering API.*
+
 ```
 GameOfLife.slnx                      # Solution file
 src/
-└── GameOfLife.Core/                 # Core library
-    ├── ITopology.cs
-    ├── IGeneration.cs
-    ├── IRules.cs
-    ├── World.cs
-    └── Timeline.cs
+├── GameOfLife.Core/                 # Core library (no rendering dependencies)
+│   ├── ITopology.cs
+│   ├── IGeneration.cs
+│   ├── IRules.cs
+│   ├── World.cs
+│   ├── Timeline.cs
+│   ├── Point2D.cs                   # Coordinate/identity type
+│   └── Point3D.cs                   # Coordinate/identity type
+├── GameOfLife.Rendering/            # Base rendering abstractions
+│   ├── ILayoutEngine.cs
+│   ├── ILayout.cs
+│   ├── IBounds.cs
+│   └── IRenderer.cs
+├── GameOfLife.Rendering.Console/    # Console renderer
+│   └── ConsoleRenderer.cs
+└── GameOfLife.Rendering.Image/      # Image renderer (ImageSharp dependency)
+    └── ImageRenderer.cs
 
 tests/
 └── GameOfLife.Core.Tests/           # Unit tests (xUnit + Coverlet)
