@@ -13,5 +13,9 @@ public interface IGeneration<TIdentity, TState> where TIdentity : notnull, IEqua
     /// </summary>
     /// <param name="node">The node to get state for.</param>
     /// <returns>The state of the node.</returns>
+    /// <remarks>
+    /// Behavior for nodes not in the topology is implementation-specific.
+    /// Implementations may return a default state or throw an exception.
+    /// </remarks>
     TState this[TIdentity node] { get; }
 }

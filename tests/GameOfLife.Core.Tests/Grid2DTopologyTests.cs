@@ -207,11 +207,8 @@ public class Grid2DTopologyTests
         var centerNode = new Point2D(2, 2);
         var centerNeighbors = topology.GetNeighbors(centerNode).ToList();
 
-        foreach (var neighbor in centerNeighbors)
-        {
-            var neighborOfNeighbor = topology.GetNeighbors(neighbor).ToList();
-            Assert.Contains(centerNode, neighborOfNeighbor);
-        }
+        Assert.All(centerNeighbors, neighbor =>
+            Assert.Contains(centerNode, topology.GetNeighbors(neighbor)));
     }
 
     [Fact]
@@ -223,11 +220,8 @@ public class Grid2DTopologyTests
         var edgeNode = new Point2D(0, 1);
         var edgeNeighbors = topology.GetNeighbors(edgeNode).ToList();
 
-        foreach (var neighbor in edgeNeighbors)
-        {
-            var neighborOfNeighbor = topology.GetNeighbors(neighbor).ToList();
-            Assert.Contains(edgeNode, neighborOfNeighbor);
-        }
+        Assert.All(edgeNeighbors, neighbor =>
+            Assert.Contains(edgeNode, topology.GetNeighbors(neighbor)));
     }
 
     [Fact]
@@ -247,11 +241,8 @@ public class Grid2DTopologyTests
         {
             var cornerNeighbors = topology.GetNeighbors(corner).ToList();
 
-            foreach (var neighbor in cornerNeighbors)
-            {
-                var neighborOfNeighbor = topology.GetNeighbors(neighbor).ToList();
-                Assert.Contains(corner, neighborOfNeighbor);
-            }
+            Assert.All(cornerNeighbors, neighbor =>
+                Assert.Contains(corner, topology.GetNeighbors(neighbor)));
         }
     }
 

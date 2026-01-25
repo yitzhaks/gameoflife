@@ -45,7 +45,12 @@ public class World<TIdentity, TState> where TIdentity : notnull, IEquatable<TIde
             var currentState = current[node];
             var neighborStates = Topology.GetNeighbors(node).Select(neighbor => current[neighbor]);
             var nextState = Rules.GetNextState(currentState, neighborStates);
-            nextStates[node] = nextState;
+
+            // Only store non-default states for sparse storage efficiency
+            if (!EqualityComparer<TState>.Default.Equals(nextState, Rules.DefaultState))
+            {
+                nextStates[node] = nextState;
+            }
         }
 
         return new DictionaryGeneration<TIdentity, TState>(nextStates, Rules.DefaultState);

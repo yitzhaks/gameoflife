@@ -20,15 +20,7 @@ public class ClassicRules : IRules<bool>
     {
         var aliveNeighbors = neighborStates.Count(s => s);
 
-        if (current)
-        {
-            // Survival: alive cell with 2 or 3 neighbors survives
-            return aliveNeighbors is 2 or 3;
-        }
-        else
-        {
-            // Birth: dead cell with exactly 3 neighbors becomes alive
-            return aliveNeighbors == 3;
-        }
+        // Survival (alive with 2-3 neighbors) or Birth (dead with exactly 3 neighbors)
+        return current ? aliveNeighbors is 2 or 3 : aliveNeighbors == 3;
     }
 }
