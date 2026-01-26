@@ -56,3 +56,29 @@ dotnet test --collect:"XPlat Code Coverage"  # Generate coverage report
 ## Style Preferences
 
 - **Command-line arguments**: Always use full parameter syntax (e.g., `--start-autoplay` not `-a`, `--inject` not `-i`, `--width` not `-w`)
+
+## Project Structure
+
+```
+src/
+  GameOfLife.Core/           # Core abstractions (Topology, Generation, World)
+  GameOfLife.Rendering/      # Rendering interfaces
+  GameOfLife.Rendering.Console/  # Console renderer implementation
+  GameOfLife.Console/        # Console application
+    patterns/                # Pattern files (*.txt) for --inject
+tests/
+  GameOfLife.Core.Tests/
+  GameOfLife.Rendering.Console.Tests/
+```
+
+## Available Patterns
+
+Patterns are in `src/GameOfLife.Console/patterns/` and loaded via `--inject <name>@<x>,<y>`:
+
+| Category | Patterns |
+|----------|----------|
+| Still lifes | block, beehive, loaf, boat, tub |
+| Oscillators | blinker, toad, beacon, clock, pulsar, pentadecathlon |
+| Spaceships | glider, lwss, mwss, hwss |
+| Methuselahs | r-pentomino, acorn, diehard |
+| Complex | gosper-glider-gun, spaceship-flotilla, infinite-growth |

@@ -170,9 +170,10 @@ public sealed class ConsoleRenderer : IRenderer<Point2D, Point2D, RectangularBou
     /// </summary>
     /// <param name="topology">The topology defining the structure.</param>
     /// <param name="generation">The generation state to render.</param>
+    /// <param name="viewport">Optional viewport for clipping large boards.</param>
     /// <returns>A token enumerator that yields rendering tokens.</returns>
     /// <exception cref="ArgumentNullException">Thrown if topology or generation is null.</exception>
-    public TokenEnumerator GetTokenEnumerator(ITopology<Point2D> topology, IGeneration<Point2D, bool> generation)
+    public TokenEnumerator GetTokenEnumerator(ITopology<Point2D> topology, IGeneration<Point2D, bool> generation, Viewport? viewport = null)
     {
         ArgumentNullException.ThrowIfNull(topology);
         ArgumentNullException.ThrowIfNull(generation);
@@ -180,7 +181,7 @@ public sealed class ConsoleRenderer : IRenderer<Point2D, Point2D, RectangularBou
         var layout = _layoutEngine.CreateLayout(topology);
         var nodeSet = new HashSet<Point2D>(topology.Nodes);
 
-        return new TokenEnumerator(layout, generation, nodeSet, _theme);
+        return new TokenEnumerator(layout, generation, nodeSet, _theme, viewport);
     }
 
     /// <summary>
@@ -188,11 +189,12 @@ public sealed class ConsoleRenderer : IRenderer<Point2D, Point2D, RectangularBou
     /// </summary>
     /// <param name="topology">The topology defining the structure.</param>
     /// <param name="generation">The generation state to render.</param>
+    /// <param name="viewport">Optional viewport for clipping large boards.</param>
     /// <returns>A color-normalized glyph enumerator.</returns>
     /// <exception cref="ArgumentNullException">Thrown if topology or generation is null.</exception>
-    public ColorNormalizedGlyphEnumerator GetGlyphEnumerator(ITopology<Point2D> topology, IGeneration<Point2D, bool> generation)
+    public ColorNormalizedGlyphEnumerator GetGlyphEnumerator(ITopology<Point2D> topology, IGeneration<Point2D, bool> generation, Viewport? viewport = null)
     {
-        var tokenEnumerator = GetTokenEnumerator(topology, generation);
+        var tokenEnumerator = GetTokenEnumerator(topology, generation, viewport);
         var glyphEnumerator = GlyphReader.FromTokens(tokenEnumerator);
         return AnsiStateTracker.FromGlyphs(glyphEnumerator);
     }

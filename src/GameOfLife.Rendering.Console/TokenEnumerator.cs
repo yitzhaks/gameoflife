@@ -15,7 +15,12 @@ public ref struct TokenEnumerator
     private readonly HashSet<Point2D> _nodeSet;
     private readonly ConsoleTheme _theme;
     private readonly RectangularBounds _bounds;
+    private readonly Viewport? _viewport;
     private readonly int _width;
+    private readonly int _renderStartX;
+    private readonly int _renderStartY;
+    private readonly int _renderEndX;
+    private readonly int _renderEndY;
 
     private int _x;
     private int _y;
@@ -42,20 +47,40 @@ public ref struct TokenEnumerator
     /// <param name="generation">The generation state to render.</param>
     /// <param name="nodeSet">The set of valid nodes in the topology.</param>
     /// <param name="theme">The rendering theme.</param>
+    /// <param name="viewport">Optional viewport for clipping and viewport-aware borders.</param>
     public TokenEnumerator(
         ILayout<Point2D, Point2D, RectangularBounds> layout,
         IGeneration<Point2D, bool> generation,
         HashSet<Point2D> nodeSet,
-        ConsoleTheme theme)
+        ConsoleTheme theme,
+        Viewport? viewport = null)
     {
         _generation = generation;
         _nodeSet = nodeSet;
         _theme = theme;
         _bounds = layout.Bounds;
-        _width = _bounds.Max.X - _bounds.Min.X + 1;
+        _viewport = viewport;
 
-        _x = _bounds.Min.X;
-        _y = _bounds.Min.Y;
+        // Calculate render bounds based on viewport
+        if (viewport is not null)
+        {
+            _renderStartX = _bounds.Min.X + viewport.OffsetX;
+            _renderStartY = _bounds.Min.Y + viewport.OffsetY;
+            _renderEndX = Math.Min(_renderStartX + viewport.Width - 1, _bounds.Max.X);
+            _renderEndY = Math.Min(_renderStartY + viewport.Height - 1, _bounds.Max.Y);
+            _width = _renderEndX - _renderStartX + 1;
+        }
+        else
+        {
+            _renderStartX = _bounds.Min.X;
+            _renderStartY = _bounds.Min.Y;
+            _renderEndX = _bounds.Max.X;
+            _renderEndY = _bounds.Max.Y;
+            _width = _bounds.Max.X - _bounds.Min.X + 1;
+        }
+
+        _x = _renderStartX;
+        _y = _renderStartY;
         _phase = theme.ShowBorder ? RenderPhase.TopBorder : RenderPhase.CellColor;
         _borderPosition = 0;
         _lastColor = null;
@@ -142,10 +167,15 @@ public ref struct TokenEnumerator
     private bool MoveNextTopBorder()
     {
         // Top border: color, left corner, horizontals, right corner, newline
+        var isAtTop = _viewport?.IsAtTop ?? true;
+        var isAtLeft = _viewport?.IsAtLeft ?? true;
+        var isAtRight = _viewport?.IsAtRight ?? true;
+        var borderColor = (_viewport is not null && !isAtTop) ? AnsiSequence.ForegroundDarkGray : AnsiSequence.ForegroundGray;
+
         if (_borderPosition == 0)
         {
             // Border color
-            if (TryEmitColor(AnsiSequence.ForegroundGray))
+            if (TryEmitColor(borderColor))
             {
                 _borderPosition++;
                 return true;
@@ -157,15 +187,15 @@ public ref struct TokenEnumerator
         if (_borderPosition == 1)
         {
             // Top left corner
-            Current = Token.Char(ConsoleTheme.Border.TopLeft);
+            Current = Token.Char(GetTopLeftCorner(isAtTop, isAtLeft));
             _borderPosition++;
             return true;
         }
 
         if (_borderPosition <= _width + 1)
         {
-            // Horizontal bars
-            Current = Token.Char(ConsoleTheme.Border.Horizontal);
+            // Horizontal bars or up arrows
+            Current = Token.Char(isAtTop ? ConsoleTheme.Border.Horizontal : ConsoleTheme.ViewportBorder.Up);
             _borderPosition++;
             return true;
         }
@@ -173,7 +203,7 @@ public ref struct TokenEnumerator
         if (_borderPosition == _width + 2)
         {
             // Top right corner
-            Current = Token.Char(ConsoleTheme.Border.TopRight);
+            Current = Token.Char(GetTopRightCorner(isAtTop, isAtRight));
             _borderPosition++;
             return true;
         }
@@ -190,6 +220,46 @@ public ref struct TokenEnumerator
         return false;
     }
 
+    private static char GetTopLeftCorner(bool isAtTop, bool isAtLeft)
+    {
+        if (isAtTop && isAtLeft)
+        {
+            return ConsoleTheme.Border.TopLeft;
+        }
+
+        if (isAtTop)
+        {
+            return ConsoleTheme.Border.Horizontal;
+        }
+
+        if (isAtLeft)
+        {
+            return ConsoleTheme.Border.Vertical;
+        }
+
+        return ConsoleTheme.ViewportBorder.DiagonalTopLeft;
+    }
+
+    private static char GetTopRightCorner(bool isAtTop, bool isAtRight)
+    {
+        if (isAtTop && isAtRight)
+        {
+            return ConsoleTheme.Border.TopRight;
+        }
+
+        if (isAtTop)
+        {
+            return ConsoleTheme.Border.Horizontal;
+        }
+
+        if (isAtRight)
+        {
+            return ConsoleTheme.Border.Vertical;
+        }
+
+        return ConsoleTheme.ViewportBorder.DiagonalTopRight;
+    }
+
     private bool MoveNextLeftBorder()
     {
         if (!_theme.ShowBorder)
@@ -198,10 +268,13 @@ public ref struct TokenEnumerator
             return false;
         }
 
-        // Left border: color, vertical bar
+        var isAtLeft = _viewport?.IsAtLeft ?? true;
+        var borderColor = (_viewport is not null && !isAtLeft) ? AnsiSequence.ForegroundDarkGray : AnsiSequence.ForegroundGray;
+
+        // Left border: color, vertical bar or left arrow
         if (_borderPosition == 0)
         {
-            if (TryEmitColor(AnsiSequence.ForegroundGray))
+            if (TryEmitColor(borderColor))
             {
                 _borderPosition++;
                 return true;
@@ -212,7 +285,7 @@ public ref struct TokenEnumerator
 
         if (_borderPosition == 1)
         {
-            Current = Token.Char(ConsoleTheme.Border.Vertical);
+            Current = Token.Char(isAtLeft ? ConsoleTheme.Border.Vertical : ConsoleTheme.ViewportBorder.Left);
             _borderPosition = 0;
             _phase = RenderPhase.CellColor;
             return true;
@@ -267,7 +340,7 @@ public ref struct TokenEnumerator
         Current = Token.Char(character);
         _x++;
 
-        if (_x > _bounds.Max.X)
+        if (_x > _renderEndX)
         {
             _phase = _theme.ShowBorder ? RenderPhase.RightBorder : RenderPhase.RowNewline;
         }
@@ -281,10 +354,13 @@ public ref struct TokenEnumerator
 
     private bool MoveNextRightBorder()
     {
-        // Right border: color, vertical bar
+        var isAtRight = _viewport?.IsAtRight ?? true;
+        var borderColor = (_viewport is not null && !isAtRight) ? AnsiSequence.ForegroundDarkGray : AnsiSequence.ForegroundGray;
+
+        // Right border: color, vertical bar or right arrow
         if (_borderPosition == 0)
         {
-            if (TryEmitColor(AnsiSequence.ForegroundGray))
+            if (TryEmitColor(borderColor))
             {
                 _borderPosition++;
                 return true;
@@ -295,7 +371,7 @@ public ref struct TokenEnumerator
 
         if (_borderPosition == 1)
         {
-            Current = Token.Char(ConsoleTheme.Border.Vertical);
+            Current = Token.Char(isAtRight ? ConsoleTheme.Border.Vertical : ConsoleTheme.ViewportBorder.Right);
             _borderPosition = 0;
             _phase = RenderPhase.RowNewline;
             return true;
@@ -309,13 +385,13 @@ public ref struct TokenEnumerator
         Current = WellKnownTokens.Newline;
         _y++;
 
-        if (_y > _bounds.Max.Y)
+        if (_y > _renderEndY)
         {
             _phase = _theme.ShowBorder ? RenderPhase.BottomBorder : RenderPhase.Done;
         }
         else
         {
-            _x = _bounds.Min.X;
+            _x = _renderStartX;
             _phase = _theme.ShowBorder ? RenderPhase.LeftBorder : RenderPhase.CellColor;
         }
 
@@ -325,9 +401,14 @@ public ref struct TokenEnumerator
     private bool MoveNextBottomBorder()
     {
         // Bottom border: color, left corner, horizontals, right corner, newline
+        var isAtBottom = _viewport?.IsAtBottom ?? true;
+        var isAtLeft = _viewport?.IsAtLeft ?? true;
+        var isAtRight = _viewport?.IsAtRight ?? true;
+        var borderColor = (_viewport is not null && !isAtBottom) ? AnsiSequence.ForegroundDarkGray : AnsiSequence.ForegroundGray;
+
         if (_borderPosition == 0)
         {
-            if (TryEmitColor(AnsiSequence.ForegroundGray))
+            if (TryEmitColor(borderColor))
             {
                 _borderPosition++;
                 return true;
@@ -338,21 +419,21 @@ public ref struct TokenEnumerator
 
         if (_borderPosition == 1)
         {
-            Current = Token.Char(ConsoleTheme.Border.BottomLeft);
+            Current = Token.Char(GetBottomLeftCorner(isAtBottom, isAtLeft));
             _borderPosition++;
             return true;
         }
 
         if (_borderPosition <= _width + 1)
         {
-            Current = Token.Char(ConsoleTheme.Border.Horizontal);
+            Current = Token.Char(isAtBottom ? ConsoleTheme.Border.Horizontal : ConsoleTheme.ViewportBorder.Down);
             _borderPosition++;
             return true;
         }
 
         if (_borderPosition == _width + 2)
         {
-            Current = Token.Char(ConsoleTheme.Border.BottomRight);
+            Current = Token.Char(GetBottomRightCorner(isAtBottom, isAtRight));
             _borderPosition++;
             return true;
         }
@@ -365,6 +446,46 @@ public ref struct TokenEnumerator
         }
 
         return false;
+    }
+
+    private static char GetBottomLeftCorner(bool isAtBottom, bool isAtLeft)
+    {
+        if (isAtBottom && isAtLeft)
+        {
+            return ConsoleTheme.Border.BottomLeft;
+        }
+
+        if (isAtBottom)
+        {
+            return ConsoleTheme.Border.Horizontal;
+        }
+
+        if (isAtLeft)
+        {
+            return ConsoleTheme.Border.Vertical;
+        }
+
+        return ConsoleTheme.ViewportBorder.DiagonalBottomLeft;
+    }
+
+    private static char GetBottomRightCorner(bool isAtBottom, bool isAtRight)
+    {
+        if (isAtBottom && isAtRight)
+        {
+            return ConsoleTheme.Border.BottomRight;
+        }
+
+        if (isAtBottom)
+        {
+            return ConsoleTheme.Border.Horizontal;
+        }
+
+        if (isAtRight)
+        {
+            return ConsoleTheme.Border.Vertical;
+        }
+
+        return ConsoleTheme.ViewportBorder.DiagonalBottomRight;
     }
 
     private bool TryEmitColor(AnsiSequence color)

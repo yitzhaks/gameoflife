@@ -144,6 +144,74 @@ public interface IRenderer<TIdentity, TCoordinate, TBounds, TState>
 - Renderers are constructed with an `ILayoutEngine` instance; additional constructor inputs are allowed as needed for the rendering domain
 - **Layout is authoritative**: Renderers use the configured `ILayoutEngine` to create a layout for the provided topology, then enumerate `layout.EnumerateNodes(...)`. `generation` is expected to provide a state for each layout node. If a node is missing, treat it as an error (e.g., propagate the exception). Callers using sparse generations should wrap or adapt them to provide default states before rendering.
 
+## Console Rendering Pipeline
+
+The console renderer uses a multi-stage pipeline optimized for differential updates.
+
+### Pipeline Stages
+
+```
+Generation + Viewport
+        ↓
+   TokenEnumerator      → Yields Token (char or ANSI sequence)
+        ↓
+   GlyphReader          → Combines tokens into Glyph (color + char)
+        ↓
+   AnsiStateTracker     → Normalizes colors across glyphs
+        ↓
+   StreamingDiff        → Compares against frame buffer, outputs only changes
+        ↓
+   Terminal Output
+```
+
+### Key Components
+
+| Component | Purpose |
+|-----------|---------|
+| `TokenEnumerator` | Iterates grid cells and borders, yields characters and ANSI color codes |
+| `Viewport` | Clips rendering to visible region for large boards |
+| `Glyph` | A character with its associated color |
+| `StreamingDiff` | Compares current frame against cached previous frame |
+
+### Frame Buffer Differential Rendering
+
+To minimize terminal output, the renderer caches the previous frame's glyphs and only writes changes:
+
+```csharp
+// Double-buffered: swap between frames
+List<Glyph>[] frameBuffers = [[], []];
+
+// First frame: write everything, capture to buffer
+StreamingDiff.WriteFullAndCapture(ref enumerator, output, frameBuffer, startRow);
+
+// Subsequent frames: diff against previous, capture new frame
+StreamingDiff.ApplyAndCapture(previousBuffer, ref enumerator, output, currentBuffer, startRow);
+```
+
+This approach handles both:
+- **Generation changes**: Different cells become alive/dead
+- **Viewport scrolling**: Same generation, different visible region
+
+For sparse boards (mostly dead cells), scrolling produces few actual screen changes since dead cells remain dead at most positions.
+
+### Viewport System
+
+When the board exceeds console dimensions, a `Viewport` clips the visible region:
+
+```csharp
+var viewport = new Viewport(
+    viewportWidth: 80,    // Visible columns
+    viewportHeight: 40,   // Visible rows
+    boardWidth: 200,      // Total board width
+    boardHeight: 100);    // Total board height
+
+viewport.Move(deltaX: 1, deltaY: 0);  // Pan right (clamped to bounds)
+```
+
+Border characters indicate content direction:
+- Solid borders (`═║╔╗╚╝`) at board edges
+- Arrow borders (`↑↓←→↖↗↙↘`) where more content exists
+
 #### Future improvements
 
 - 3D renderers (e.g., `Point3D`-based rendering)

@@ -128,9 +128,30 @@ internal sealed class GameController
         var theme = ConsoleTheme.Default;
         var renderer = new ConsoleRenderer(_output, layoutEngine, theme);
 
+        // Create viewport if board is larger than console
+        Viewport? viewport = null;
+        var viewportHeight = _options.Height;
+
+        if (isInteractiveConsole)
+        {
+            // Account for borders (2 chars each side) and header/controls (4 rows reserved)
+            var availableWidth = System.Console.WindowWidth - 2;
+            var availableHeight = System.Console.WindowHeight - 6; // Header(2) + Controls(2) + margins
+
+            if (_options.Width > availableWidth || _options.Height > availableHeight)
+            {
+                var viewportWidth = Math.Min(_options.Width, availableWidth);
+                viewportHeight = Math.Min(_options.Height, availableHeight);
+                viewport = new Viewport(viewportWidth, viewportHeight, _options.Width, _options.Height);
+            }
+        }
+
         // Run game loop
         int generation = 0;
-        IGeneration<Point2D, bool>? previousGeneration = null;
+
+        // Double-buffered frame storage for differential rendering
+        List<Glyph>[] frameBuffers = [[], []];
+        int currentBufferIndex = 0;
 
         // Header takes 2 lines (Generation: X + blank line), so board starts at row 3
         const int BoardStartRow = 3;
@@ -169,9 +190,12 @@ internal sealed class GameController
 
             if (isInteractiveConsole)
             {
-                // Render using differential updates
+                // Render using differential updates against frame buffer
                 var elapsed = wallClock.Elapsed;
-                RenderWithDiff(renderer, topology, timeline.Current, previousGeneration, BoardStartRow, generation, isPlaying, isPlaying ? currentFps : null, isPlaying ? elapsed : null);
+                var prevBuffer = frameBuffers[currentBufferIndex];
+                var currBuffer = frameBuffers[1 - currentBufferIndex];
+                RenderWithDiff(renderer, topology, timeline.Current, prevBuffer, currBuffer, BoardStartRow, generation, isPlaying, viewport, viewportHeight, isPlaying ? currentFps : null, isPlaying ? elapsed : null);
+                currentBufferIndex = 1 - currentBufferIndex; // Swap buffers
             }
             else
             {
@@ -219,6 +243,13 @@ internal sealed class GameController
                             wallClock.Stop();
                             continue; // Re-render with updated controls
                         }
+
+                        // Handle viewport navigation during autoplay - drain all pending nav keys
+                        if (viewport is not null && HandleViewportNavigation(key, viewport))
+                        {
+                            DrainViewportNavigation(viewport);
+                            continue;
+                        }
                     }
                 }
                 else
@@ -250,6 +281,13 @@ internal sealed class GameController
                         continue; // Re-render with updated controls, then start advancing
                     }
 
+                    // Handle viewport navigation - drain all pending nav keys
+                    if (viewport is not null && HandleViewportNavigation(key, viewport))
+                    {
+                        DrainViewportNavigation(viewport);
+                        continue;
+                    }
+
                     // Space or Enter advances to next generation
                     if (key.Key is not ConsoleKey.Spacebar and not ConsoleKey.Enter)
                     {
@@ -266,9 +304,6 @@ internal sealed class GameController
                     return 0;
                 }
             }
-
-            // Store current generation before advancing
-            previousGeneration = timeline.Current;
 
             // Advance to next generation
             timeline.Step();
@@ -300,6 +335,13 @@ internal sealed class GameController
                             wallClock.Stop();
                             break;
                         }
+
+                        // Handle viewport navigation during frame wait - drain all pending nav keys
+                        if (viewport is not null && HandleViewportNavigation(key, viewport))
+                        {
+                            DrainViewportNavigation(viewport);
+                            break; // Re-render immediately
+                        }
                     }
 
                     Thread.SpinWait(100);
@@ -314,65 +356,137 @@ internal sealed class GameController
         ConsoleRenderer renderer,
         ITopology<Point2D> topology,
         IGeneration<Point2D, bool> currentGeneration,
-        IGeneration<Point2D, bool>? previousGeneration,
+        List<Glyph> previousFrameBuffer,
+        List<Glyph> currentFrameBuffer,
         int startRow,
         int generationNumber,
         bool isPlaying,
+        Viewport? viewport,
+        int viewportHeight,
         double? fps = null,
         TimeSpan? elapsed = null)
     {
         // Write header (always at top, reset color first)
         _output.Write("\x1b[0m\x1b[1;1H"); // Reset color, move cursor to top-left
+
+        var headerParts = new List<string> { $"Generation: {generationNumber}" };
+
         if (isPlaying && fps.HasValue && elapsed.HasValue)
         {
             var timeStr = $"{(int)elapsed.Value.TotalMinutes:D2}:{elapsed.Value.Seconds:D2}";
-            _output.Write($"Generation: {generationNumber}  |  {fps.Value:F1} FPS  |  {timeStr}\x1b[K");
+            headerParts.Add($"{fps.Value:F1} FPS");
+            headerParts.Add(timeStr);
         }
-        else
+
+        if (viewport is not null)
         {
-            _output.Write($"Generation: {generationNumber}\x1b[K");
+            headerParts.Add($"View: ({viewport.OffsetX},{viewport.OffsetY})");
         }
+
+        _output.Write(string.Join("  |  ", headerParts));
+        _output.Write("\x1b[K"); // Clear to end of line
 
         _output.Write("\n\n"); // Blank line before board
 
-        if (previousGeneration is null)
+        var currentEnumerator = renderer.GetGlyphEnumerator(topology, currentGeneration, viewport);
+
+        if (previousFrameBuffer.Count == 0)
         {
-            // First frame: write full output
-            var currentEnumerator = renderer.GetGlyphEnumerator(topology, currentGeneration);
-            StreamingDiff.WriteFull(ref currentEnumerator, _output, startRow);
+            // First frame: write full output and capture to buffer
+            StreamingDiff.WriteFullAndCapture(ref currentEnumerator, _output, currentFrameBuffer, startRow);
         }
         else
         {
-            // Subsequent frames: use differential rendering
-            var prevEnumerator = renderer.GetGlyphEnumerator(topology, previousGeneration);
-            var currEnumerator = renderer.GetGlyphEnumerator(topology, currentGeneration);
-            StreamingDiff.Apply(ref prevEnumerator, ref currEnumerator, _output, startRow);
+            // Subsequent frames: diff against previous frame buffer
+            StreamingDiff.ApplyAndCapture(previousFrameBuffer, ref currentEnumerator, _output, currentFrameBuffer, startRow);
         }
 
         // Write controls below the board
-        WriteControls(startRow, isPlaying);
+        WriteControls(startRow, isPlaying, viewport, viewportHeight);
 
         _output.Flush();
     }
 
-    private void WriteControls(int startRow, bool isPlaying)
+    private void WriteControls(int startRow, bool isPlaying, Viewport? viewport, int viewportHeight)
     {
         // Calculate where controls should go (after board + 1 blank line)
-        // Board height = grid height + 2 (borders) + 1 (newline after bottom border)
-        var boardHeight = _options.Height + 2;
+        // Board height = viewport height (or grid height) + 2 (borders)
+        var boardHeight = viewportHeight + 2;
         var controlsRow = startRow + boardHeight + 1;
 
         _output.Write($"\x1b[0m\x1b[{controlsRow};1H"); // Reset color, position cursor
 
+        var controls = new List<string>();
+
+        if (viewport is not null)
+        {
+            controls.Add("WASD/Arrows: Pan");
+        }
+
         if (isPlaying)
         {
-            _output.Write("P/Space: Pause | Q/Esc: Quit");
+            controls.Add("P/Space: Pause");
         }
         else
         {
-            _output.Write("Space/Enter: Next | P: Play | Q/Esc: Quit");
+            controls.Add("Space/Enter: Next");
+            controls.Add("P: Play");
         }
 
+        controls.Add("Q/Esc: Quit");
+
+        _output.Write(string.Join(" | ", controls));
         _output.Write("\x1b[K"); // Clear to end of line
+    }
+
+    private static bool HandleViewportNavigation(ConsoleKeyInfo key, Viewport viewport)
+    {
+        var (deltaX, deltaY) = GetNavigationDelta(key.Key);
+
+        if (deltaX == 0 && deltaY == 0)
+        {
+            return false;
+        }
+
+        // Track position before move to detect if it actually changed
+        var oldX = viewport.OffsetX;
+        var oldY = viewport.OffsetY;
+
+        viewport.Move(deltaX, deltaY);
+
+        // Only return true if the viewport actually moved
+        return viewport.OffsetX != oldX || viewport.OffsetY != oldY;
+    }
+
+    private static void DrainViewportNavigation(Viewport viewport)
+    {
+        // Process all pending navigation keys to prevent input lag
+        while (System.Console.KeyAvailable)
+        {
+            var key = System.Console.ReadKey(true);
+            var (deltaX, deltaY) = GetNavigationDelta(key.Key);
+
+            if (deltaX == 0 && deltaY == 0)
+            {
+                // Non-navigation key - stop draining so it can be processed normally
+                // Unfortunately we can't "unread" it, so it's lost
+                // But this is better than hanging
+                break;
+            }
+
+            viewport.Move(deltaX, deltaY);
+        }
+    }
+
+    private static (int deltaX, int deltaY) GetNavigationDelta(ConsoleKey key)
+    {
+        return key switch
+        {
+            ConsoleKey.W or ConsoleKey.UpArrow => (0, -1),
+            ConsoleKey.S or ConsoleKey.DownArrow => (0, 1),
+            ConsoleKey.A or ConsoleKey.LeftArrow => (-1, 0),
+            ConsoleKey.D or ConsoleKey.RightArrow => (1, 0),
+            _ => (0, 0)
+        };
     }
 }
