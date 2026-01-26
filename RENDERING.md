@@ -10,7 +10,7 @@ Topology and generation define structure and state, but not geometry or visuals.
 - **Layout**: Immutable snapshot bound to a topology; exposes bounds, positions, and deterministic node ordering.
 - **Renderer**: Uses a layout engine to build geometry and converts generation state into concrete output (console/image), applying styling.
 
-Initial implementations target single-frame rendering; animation is documented later as a future improvement.
+The console application supports both single-frame and animated rendering with play/pause controls.
 
 ```
 Topology (structure)
@@ -192,7 +192,7 @@ This approach handles both:
 - **Generation changes**: Different cells become alive/dead
 - **Viewport scrolling**: Same generation, different visible region
 
-For sparse boards (mostly dead cells), scrolling produces few actual screen changes since dead cells remain dead at most positions.
+To minimize output when many consecutive cells change (common during scrolling), `StreamingDiff` tracks the actual cursor position and only emits positioning sequences when the cursor isn't already at the target location. Since the terminal cursor advances automatically after each character write, consecutive changed cells can be written without repositioning.
 
 ### Viewport System
 
@@ -215,7 +215,7 @@ Border characters indicate content direction:
 #### Future improvements
 
 - 3D renderers (e.g., `Point3D`-based rendering)
-- Animation and multi-frame rendering are intentionally out of scope for initial implementations.
+- Animation output (e.g., animated GIF, multi-image TIFF)
 - Console aspect ratio correction (see below)
 
 ## Console Aspect Ratio

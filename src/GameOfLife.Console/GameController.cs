@@ -245,10 +245,10 @@ internal sealed class GameController
                         }
 
                         // Handle viewport navigation during autoplay - drain all pending nav keys
+                        // Don't use continue here - let the loop proceed to advance generation and respect frame timing
                         if (viewport is not null && HandleViewportNavigation(key, viewport))
                         {
                             DrainViewportNavigation(viewport);
-                            continue;
                         }
                     }
                 }

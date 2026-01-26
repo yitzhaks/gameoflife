@@ -29,6 +29,10 @@ public static class StreamingDiff
         int col = 1;
         AnsiSequence? lastWrittenColor = null;
 
+        // Track where the cursor actually is to avoid redundant positioning
+        int cursorRow = -1;
+        int cursorCol = -1;
+
         while (current.MoveNext())
         {
             var hasPrev = previous.MoveNext();
@@ -42,8 +46,13 @@ public static class StreamingDiff
             }
             else if (!hasPrev || !currGlyph.Equals(prevGlyph))
             {
-                // Glyph changed - emit cursor position and character
-                output.Write($"\x1b[{row};{col}H");
+                // Glyph changed - only emit cursor position if not already there
+                if (cursorRow != row || cursorCol != col)
+                {
+                    output.Write($"\x1b[{row};{col}H");
+                    cursorRow = row;
+                    cursorCol = col;
+                }
 
                 // Emit color if different from last written
                 if (currGlyph.Color.HasValue && currGlyph.Color != lastWrittenColor)
@@ -53,6 +62,7 @@ public static class StreamingDiff
                 }
 
                 output.Write(currGlyph.Character);
+                cursorCol++; // Cursor advances after write
                 col++;
             }
             else
@@ -176,6 +186,10 @@ public static class StreamingDiff
         int prevIndex = 0;
         AnsiSequence? lastWrittenColor = null;
 
+        // Track where the cursor actually is to avoid redundant positioning
+        int cursorRow = -1;
+        int cursorCol = -1;
+
         while (current.MoveNext())
         {
             var currGlyph = current.Current;
@@ -192,8 +206,13 @@ public static class StreamingDiff
             }
             else if (!hasPrev || currGlyph.Color != prevGlyph.Color || currGlyph.Character != prevGlyph.Character)
             {
-                // Glyph changed - emit cursor position and character
-                output.Write($"\x1b[{row};{col}H");
+                // Glyph changed - only emit cursor position if not already there
+                if (cursorRow != row || cursorCol != col)
+                {
+                    output.Write($"\x1b[{row};{col}H");
+                    cursorRow = row;
+                    cursorCol = col;
+                }
 
                 if (currGlyph.Color.HasValue && currGlyph.Color != lastWrittenColor)
                 {
@@ -202,6 +221,7 @@ public static class StreamingDiff
                 }
 
                 output.Write(currGlyph.Character);
+                cursorCol++; // Cursor advances after write
                 col++;
             }
             else
