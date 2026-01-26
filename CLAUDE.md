@@ -43,7 +43,8 @@ Architecture may evolve during development, and that is expected. When it does, 
 ```bash
 dotnet build
 dotnet test
-dotnet test --collect:"XPlat Code Coverage"  # Generate coverage report
+dotnet test --collect:"XPlat Code Coverage" --results-directory ./coverage
+reportgenerator -reports:"coverage/**/coverage.cobertura.xml" -targetdir:"coverage/report" -reporttypes:TextSummary
 ```
 
 ## Testing Requirements
