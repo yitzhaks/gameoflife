@@ -41,7 +41,7 @@ public ref struct ColorNormalizedGlyphEnumerator
             return false;
         }
 
-        var glyph = _glyphEnumerator.Current;
+        Glyph glyph = _glyphEnumerator.Current;
 
         if (glyph.IsNewline)
         {

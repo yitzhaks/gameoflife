@@ -55,6 +55,9 @@ public ref struct TokenEnumerator
         ConsoleTheme theme,
         Viewport? viewport = null)
     {
+        ArgumentNullException.ThrowIfNull(layout);
+        ArgumentNullException.ThrowIfNull(theme);
+
         _generation = generation;
         _nodeSet = nodeSet;
         _theme = theme;
@@ -160,6 +163,9 @@ public ref struct TokenEnumerator
 
                 case RenderPhase.Done:
                     return false;
+
+                default:
+                    throw new InvalidOperationException($"Unhandled render phase: {_phase}");
             }
         }
     }
@@ -167,10 +173,10 @@ public ref struct TokenEnumerator
     private bool MoveNextTopBorder()
     {
         // Top border: color, left corner, horizontals, right corner, newline
-        var isAtTop = _viewport?.IsAtTop ?? true;
-        var isAtLeft = _viewport?.IsAtLeft ?? true;
-        var isAtRight = _viewport?.IsAtRight ?? true;
-        var borderColor = (_viewport is not null && !isAtTop) ? AnsiSequence.ForegroundDarkGray : AnsiSequence.ForegroundGray;
+        bool isAtTop = _viewport?.IsAtTop ?? true;
+        bool isAtLeft = _viewport?.IsAtLeft ?? true;
+        bool isAtRight = _viewport?.IsAtRight ?? true;
+        AnsiSequence borderColor = (_viewport is not null && !isAtTop) ? AnsiSequence.ForegroundDarkGray : AnsiSequence.ForegroundGray;
 
         if (_borderPosition == 0)
         {
@@ -268,8 +274,8 @@ public ref struct TokenEnumerator
             return false;
         }
 
-        var isAtLeft = _viewport?.IsAtLeft ?? true;
-        var borderColor = (_viewport is not null && !isAtLeft) ? AnsiSequence.ForegroundDarkGray : AnsiSequence.ForegroundGray;
+        bool isAtLeft = _viewport?.IsAtLeft ?? true;
+        AnsiSequence borderColor = (_viewport is not null && !isAtLeft) ? AnsiSequence.ForegroundDarkGray : AnsiSequence.ForegroundGray;
 
         // Left border: color, vertical bar or left arrow
         if (_borderPosition == 0)
@@ -302,7 +308,7 @@ public ref struct TokenEnumerator
 
         if (_nodeSet.Contains(point))
         {
-            var isAlive = _generation[point];
+            bool isAlive = _generation[point];
             targetColor = isAlive ? AnsiSequence.ForegroundGreen : AnsiSequence.ForegroundDarkGray;
         }
         else
@@ -329,7 +335,7 @@ public ref struct TokenEnumerator
 
         if (_nodeSet.Contains(point))
         {
-            var isAlive = _generation[point];
+            bool isAlive = _generation[point];
             character = isAlive ? _theme.AliveChar : _theme.DeadChar;
         }
         else
@@ -354,8 +360,8 @@ public ref struct TokenEnumerator
 
     private bool MoveNextRightBorder()
     {
-        var isAtRight = _viewport?.IsAtRight ?? true;
-        var borderColor = (_viewport is not null && !isAtRight) ? AnsiSequence.ForegroundDarkGray : AnsiSequence.ForegroundGray;
+        bool isAtRight = _viewport?.IsAtRight ?? true;
+        AnsiSequence borderColor = (_viewport is not null && !isAtRight) ? AnsiSequence.ForegroundDarkGray : AnsiSequence.ForegroundGray;
 
         // Right border: color, vertical bar or right arrow
         if (_borderPosition == 0)
@@ -401,10 +407,10 @@ public ref struct TokenEnumerator
     private bool MoveNextBottomBorder()
     {
         // Bottom border: color, left corner, horizontals, right corner, newline
-        var isAtBottom = _viewport?.IsAtBottom ?? true;
-        var isAtLeft = _viewport?.IsAtLeft ?? true;
-        var isAtRight = _viewport?.IsAtRight ?? true;
-        var borderColor = (_viewport is not null && !isAtBottom) ? AnsiSequence.ForegroundDarkGray : AnsiSequence.ForegroundGray;
+        bool isAtBottom = _viewport?.IsAtBottom ?? true;
+        bool isAtLeft = _viewport?.IsAtLeft ?? true;
+        bool isAtRight = _viewport?.IsAtRight ?? true;
+        AnsiSequence borderColor = (_viewport is not null && !isAtBottom) ? AnsiSequence.ForegroundDarkGray : AnsiSequence.ForegroundGray;
 
         if (_borderPosition == 0)
         {

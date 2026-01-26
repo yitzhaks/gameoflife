@@ -20,10 +20,10 @@ public class StreamingDiffTests
             new Dictionary<Point2D, bool>(),
             defaultState: false);
 
-        var glyphEnumerator = renderer.GetGlyphEnumerator(topology, generation);
+        ColorNormalizedGlyphEnumerator glyphEnumerator = renderer.GetGlyphEnumerator(topology, generation);
         StreamingDiff.WriteFull(ref glyphEnumerator, output, startRow: 1);
 
-        var result = output.ToString();
+        string result = output.ToString();
 
         // Should contain the cursor positioning and characters
         Assert.Contains("\x1b[", result); // Contains ANSI escape
@@ -44,12 +44,12 @@ public class StreamingDiffTests
             defaultState: false);
 
         // Get two identical enumerators
-        var prevEnumerator = renderer.GetGlyphEnumerator(topology, generation);
-        var currEnumerator = renderer.GetGlyphEnumerator(topology, generation);
+        ColorNormalizedGlyphEnumerator prevEnumerator = renderer.GetGlyphEnumerator(topology, generation);
+        ColorNormalizedGlyphEnumerator currEnumerator = renderer.GetGlyphEnumerator(topology, generation);
 
         StreamingDiff.Apply(ref prevEnumerator, ref currEnumerator, output, startRow: 1);
 
-        var result = output.ToString();
+        string result = output.ToString();
 
         // With identical frames, nothing should be written
         Assert.Empty(result);
@@ -75,12 +75,12 @@ public class StreamingDiffTests
             new Dictionary<Point2D, bool> { [new Point2D(1, 1)] = true },
             defaultState: false);
 
-        var prevEnumerator = renderer.GetGlyphEnumerator(topology, prevGeneration);
-        var currEnumerator = renderer.GetGlyphEnumerator(topology, currGeneration);
+        ColorNormalizedGlyphEnumerator prevEnumerator = renderer.GetGlyphEnumerator(topology, prevGeneration);
+        ColorNormalizedGlyphEnumerator currEnumerator = renderer.GetGlyphEnumerator(topology, currGeneration);
 
         StreamingDiff.Apply(ref prevEnumerator, ref currEnumerator, output, startRow: 1);
 
-        var result = output.ToString();
+        string result = output.ToString();
 
         // Should contain the alive character
         Assert.Contains("#", result);
@@ -106,22 +106,22 @@ public class StreamingDiffTests
 
         // Current: all alive
         var allAlive = new Dictionary<Point2D, bool>();
-        foreach (var node in topology.Nodes)
+        foreach (Point2D node in topology.Nodes)
         {
             allAlive[node] = true;
         }
 
         var currGeneration = new DictionaryGeneration<Point2D, bool>(allAlive, defaultState: false);
 
-        var prevEnumerator = renderer.GetGlyphEnumerator(topology, prevGeneration);
-        var currEnumerator = renderer.GetGlyphEnumerator(topology, currGeneration);
+        ColorNormalizedGlyphEnumerator prevEnumerator = renderer.GetGlyphEnumerator(topology, prevGeneration);
+        ColorNormalizedGlyphEnumerator currEnumerator = renderer.GetGlyphEnumerator(topology, currGeneration);
 
         StreamingDiff.Apply(ref prevEnumerator, ref currEnumerator, output, startRow: 1);
 
-        var result = output.ToString();
+        string result = output.ToString();
 
         // Should contain multiple alive characters
-        var aliveCount = result.Count(c => c == '#');
+        int aliveCount = result.Count(c => c == '#');
         Assert.Equal(4, aliveCount); // 2x2 = 4 cells
     }
 
@@ -145,13 +145,13 @@ public class StreamingDiffTests
             new Dictionary<Point2D, bool> { [new Point2D(0, 0)] = true },
             defaultState: false);
 
-        var prevEnumerator = renderer.GetGlyphEnumerator(topology, prevGeneration);
-        var currEnumerator = renderer.GetGlyphEnumerator(topology, currGeneration);
+        ColorNormalizedGlyphEnumerator prevEnumerator = renderer.GetGlyphEnumerator(topology, prevGeneration);
+        ColorNormalizedGlyphEnumerator currEnumerator = renderer.GetGlyphEnumerator(topology, currGeneration);
 
         // Start at row 5
         StreamingDiff.Apply(ref prevEnumerator, ref currEnumerator, output, startRow: 5);
 
-        var result = output.ToString();
+        string result = output.ToString();
 
         // Should contain positioning to row 5, column 1
         Assert.Contains("\x1b[5;1H", result);

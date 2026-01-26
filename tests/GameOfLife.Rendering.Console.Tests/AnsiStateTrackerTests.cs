@@ -24,7 +24,7 @@ public class AnsiStateTrackerTests
         };
         var generation = new DictionaryGeneration<Point2D, bool>(states, defaultState: false);
 
-        var glyphEnumerator = renderer.GetGlyphEnumerator(topology, generation);
+        ColorNormalizedGlyphEnumerator glyphEnumerator = renderer.GetGlyphEnumerator(topology, generation);
 
         var glyphs = new List<Glyph>();
         while (glyphEnumerator.MoveNext())
@@ -54,7 +54,7 @@ public class AnsiStateTrackerTests
         };
         var generation = new DictionaryGeneration<Point2D, bool>(states, defaultState: false);
 
-        var glyphEnumerator = renderer.GetGlyphEnumerator(topology, generation);
+        ColorNormalizedGlyphEnumerator glyphEnumerator = renderer.GetGlyphEnumerator(topology, generation);
 
         var glyphs = new List<Glyph>();
         while (glyphEnumerator.MoveNext())
@@ -85,7 +85,7 @@ public class AnsiStateTrackerTests
             new Dictionary<Point2D, bool>(),
             defaultState: false);
 
-        var glyphEnumerator = renderer.GetGlyphEnumerator(topology, generation);
+        ColorNormalizedGlyphEnumerator glyphEnumerator = renderer.GetGlyphEnumerator(topology, generation);
 
         var newlineGlyphs = new List<Glyph>();
         while (glyphEnumerator.MoveNext())

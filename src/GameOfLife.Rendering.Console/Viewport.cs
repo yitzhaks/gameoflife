@@ -87,12 +87,12 @@ public sealed class Viewport
     /// <param name="deltaY">The vertical movement (positive = down, negative = up).</param>
     public void Move(int deltaX, int deltaY)
     {
-        var newOffsetX = OffsetX + deltaX;
-        var newOffsetY = OffsetY + deltaY;
+        int newOffsetX = OffsetX + deltaX;
+        int newOffsetY = OffsetY + deltaY;
 
         // Clamp to valid range
-        var maxOffsetX = Math.Max(0, BoardWidth - Width);
-        var maxOffsetY = Math.Max(0, BoardHeight - Height);
+        int maxOffsetX = Math.Max(0, BoardWidth - Width);
+        int maxOffsetY = Math.Max(0, BoardHeight - Height);
 
         OffsetX = Math.Clamp(newOffsetX, 0, maxOffsetX);
         OffsetY = Math.Clamp(newOffsetY, 0, maxOffsetY);

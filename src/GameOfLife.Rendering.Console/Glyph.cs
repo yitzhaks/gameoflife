@@ -51,8 +51,5 @@ public readonly struct Glyph : IEquatable<Glyph>
     public static bool operator !=(Glyph left, Glyph right) => !left.Equals(right);
 
     /// <inheritdoc/>
-    public override string ToString()
-    {
-        return IsNewline ? "Glyph(\\n)" : $"Glyph({Color?.ToString() ?? "null"}, '{Character}')";
-    }
+    public override string ToString() => IsNewline ? "Glyph(\\n)" : $"Glyph({Color?.ToString() ?? "null"}, '{Character}')";
 }

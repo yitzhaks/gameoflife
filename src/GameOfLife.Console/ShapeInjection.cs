@@ -18,34 +18,34 @@ internal readonly record struct ShapeInjection(string PatternName, int X, int Y)
     {
         ArgumentNullException.ThrowIfNull(value);
 
-        var atIndex = value.IndexOf('@', StringComparison.Ordinal);
+        int atIndex = value.IndexOf('@', StringComparison.Ordinal);
         if (atIndex < 0)
         {
             throw new FormatException($"Invalid shape injection format '{value}'. Expected format: name@x,y");
         }
 
-        var name = value[..atIndex];
+        string name = value[..atIndex];
         if (string.IsNullOrWhiteSpace(name))
         {
             throw new FormatException($"Invalid shape injection format '{value}'. Pattern name cannot be empty.");
         }
 
-        var coordinates = value[(atIndex + 1)..];
-        var commaIndex = coordinates.IndexOf(',', StringComparison.Ordinal);
+        string coordinates = value[(atIndex + 1)..];
+        int commaIndex = coordinates.IndexOf(',', StringComparison.Ordinal);
         if (commaIndex < 0)
         {
             throw new FormatException($"Invalid shape injection format '{value}'. Expected format: name@x,y");
         }
 
-        var xPart = coordinates[..commaIndex];
-        var yPart = coordinates[(commaIndex + 1)..];
+        string xPart = coordinates[..commaIndex];
+        string yPart = coordinates[(commaIndex + 1)..];
 
-        if (!int.TryParse(xPart, out var x))
+        if (!int.TryParse(xPart, out int x))
         {
             throw new FormatException($"Invalid X coordinate '{xPart}' in shape injection '{value}'.");
         }
 
-        if (!int.TryParse(yPart, out var y))
+        if (!int.TryParse(yPart, out int y))
         {
             throw new FormatException($"Invalid Y coordinate '{yPart}' in shape injection '{value}'.");
         }

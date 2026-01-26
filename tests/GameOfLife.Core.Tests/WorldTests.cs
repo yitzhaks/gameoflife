@@ -19,10 +19,7 @@ public class WorldTests
 
         public IEnumerable<int> Nodes { get; }
 
-        public IEnumerable<int> GetNeighbors(int node)
-        {
-            return _neighbors.TryGetValue(node, out var neighbors) ? neighbors : Enumerable.Empty<int>();
-        }
+        public IEnumerable<int> GetNeighbors(int node) => _neighbors.TryGetValue(node, out List<int>? neighbors) ? neighbors : Enumerable.Empty<int>();
     }
 
     /// <summary>
@@ -40,10 +37,7 @@ public class WorldTests
 
         public bool DefaultState { get; }
 
-        public bool GetNextState(bool current, IEnumerable<bool> neighborStates)
-        {
-            return _nextStateFunc?.Invoke(current, neighborStates) ?? current;
-        }
+        public bool GetNextState(bool current, IEnumerable<bool> neighborStates) => _nextStateFunc?.Invoke(current, neighborStates) ?? current;
     }
 
     /// <summary>
@@ -60,7 +54,7 @@ public class WorldTests
             _defaultState = defaultState;
         }
 
-        public bool this[int node] => _states.TryGetValue(node, out var state) ? state : _defaultState;
+        public bool this[int node] => _states.TryGetValue(node, out bool state) ? state : _defaultState;
     }
 
     #endregion
@@ -72,7 +66,7 @@ public class WorldTests
     {
         var rules = new StubRules();
 
-        var exception = Assert.Throws<ArgumentNullException>(() =>
+        ArgumentNullException exception = Assert.Throws<ArgumentNullException>(() =>
             new World<int, bool>(null!, rules));
 
         Assert.Equal("topology", exception.ParamName);
@@ -83,7 +77,7 @@ public class WorldTests
     {
         var topology = new StubTopology(new[] { 1, 2, 3 });
 
-        var exception = Assert.Throws<ArgumentNullException>(() =>
+        ArgumentNullException exception = Assert.Throws<ArgumentNullException>(() =>
             new World<int, bool>(topology, null!));
 
         Assert.Equal("rules", exception.ParamName);
@@ -126,7 +120,7 @@ public class WorldTests
         var rules = new StubRules();
         var world = new World<int, bool>(topology, rules);
 
-        var exception = Assert.Throws<ArgumentNullException>(() =>
+        ArgumentNullException exception = Assert.Throws<ArgumentNullException>(() =>
             world.Tick(null!));
 
         Assert.Equal("current", exception.ParamName);
@@ -144,7 +138,7 @@ public class WorldTests
         var world = new World<int, bool>(topology, rules);
         var currentGeneration = new StubGeneration();
 
-        var nextGeneration = world.Tick(currentGeneration);
+        IGeneration<int, bool> nextGeneration = world.Tick(currentGeneration);
 
         Assert.NotSame(currentGeneration, nextGeneration);
     }
@@ -164,7 +158,7 @@ public class WorldTests
         var currentGeneration = new StubGeneration(
             new Dictionary<int, bool> { [1] = true });
 
-        var nextGeneration = world.Tick(currentGeneration);
+        IGeneration<int, bool> nextGeneration = world.Tick(currentGeneration);
 
         // Rule should flip the state to false
         Assert.False(nextGeneration[1]);
@@ -202,7 +196,7 @@ public class WorldTests
         var currentGeneration = new StubGeneration(
             new Dictionary<int, bool> { [2] = true, [3] = false });
 
-        var nextGeneration = world.Tick(currentGeneration);
+        IGeneration<int, bool> nextGeneration = world.Tick(currentGeneration);
 
         // Node 1 should be true because neighbor 2 is true
         Assert.True(nextGeneration[1]);
@@ -224,7 +218,7 @@ public class WorldTests
 
         var currentGeneration = new StubGeneration();
 
-        var nextGeneration = world.Tick(currentGeneration);
+        IGeneration<int, bool> nextGeneration = world.Tick(currentGeneration);
 
         // All nodes should be true
         Assert.True(nextGeneration[1]);
@@ -243,13 +237,13 @@ public class WorldTests
 
         var currentGeneration = new StubGeneration();
 
-        var nextGeneration = world.Tick(currentGeneration);
+        IGeneration<int, bool> nextGeneration = world.Tick(currentGeneration);
 
         // The returned generation should use the rules' default state
         // Query a node that wasn't explicitly set - should return the default state
         // Note: Since we only have node 1 in topology, and it's computed,
         // let's verify that the generation is a DictionaryGeneration
-        Assert.IsType<DictionaryGeneration<int, bool>>(nextGeneration);
+        _ = Assert.IsType<DictionaryGeneration<int, bool>>(nextGeneration);
     }
 
     #endregion

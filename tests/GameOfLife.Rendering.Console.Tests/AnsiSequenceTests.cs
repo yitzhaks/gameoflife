@@ -11,7 +11,7 @@ public class AnsiSequenceTests
     [InlineData(AnsiSequence.ForegroundGray, "\x1b[37m")]
     public void ToAnsiString_KnownSequence_ReturnsCorrectString(AnsiSequence sequence, string expected)
     {
-        var result = sequence.ToAnsiString();
+        string result = sequence.ToAnsiString();
 
         Assert.Equal(expected, result);
     }
@@ -21,6 +21,6 @@ public class AnsiSequenceTests
     {
         var unknownSequence = (AnsiSequence)255;
 
-        Assert.Throws<ArgumentOutOfRangeException>(() => unknownSequence.ToAnsiString());
+        _ = Assert.Throws<ArgumentOutOfRangeException>(() => unknownSequence.ToAnsiString());
     }
 }

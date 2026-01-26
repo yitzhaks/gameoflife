@@ -65,10 +65,7 @@ public readonly struct Token : IEquatable<Token>
     public override bool Equals(object? obj) => obj is Token other && Equals(other);
 
     /// <inheritdoc/>
-    public override int GetHashCode()
-    {
-        return IsSequence ? HashCode.Combine(true, Sequence) : HashCode.Combine(false, Character);
-    }
+    public override int GetHashCode() => IsSequence ? HashCode.Combine(true, Sequence) : HashCode.Combine(false, Character);
 
     /// <summary>
     /// Equality operator.
@@ -81,10 +78,7 @@ public readonly struct Token : IEquatable<Token>
     public static bool operator !=(Token left, Token right) => !left.Equals(right);
 
     /// <inheritdoc/>
-    public override string ToString()
-    {
-        return IsSequence ? $"Ansi({Sequence})" : $"Char('{Character}')";
-    }
+    public override string ToString() => IsSequence ? $"Ansi({Sequence})" : $"Char('{Character}')";
 }
 
 /// <summary>

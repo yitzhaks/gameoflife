@@ -13,7 +13,7 @@ public class GameControllerTests
         using var input = new StringReader("");
         var loader = new ShapeLoader(".");
 
-        Assert.Throws<ArgumentNullException>(() => new GameController(null!, loader, output, input));
+        _ = Assert.Throws<ArgumentNullException>(() => new GameController(null!, loader, output, input));
     }
 
     [Fact]
@@ -23,7 +23,7 @@ public class GameControllerTests
         using var input = new StringReader("");
         var options = new CommandLineOptions();
 
-        Assert.Throws<ArgumentNullException>(() => new GameController(options, null!, output, input));
+        _ = Assert.Throws<ArgumentNullException>(() => new GameController(options, null!, output, input));
     }
 
     [Fact]
@@ -33,7 +33,7 @@ public class GameControllerTests
         var options = new CommandLineOptions();
         var loader = new ShapeLoader(".");
 
-        Assert.Throws<ArgumentNullException>(() => new GameController(options, loader, null!, input));
+        _ = Assert.Throws<ArgumentNullException>(() => new GameController(options, loader, null!, input));
     }
 
     [Fact]
@@ -43,7 +43,7 @@ public class GameControllerTests
         var options = new CommandLineOptions();
         var loader = new ShapeLoader(".");
 
-        Assert.Throws<ArgumentNullException>(() => new GameController(options, loader, output, null!));
+        _ = Assert.Throws<ArgumentNullException>(() => new GameController(options, loader, output, null!));
     }
 
     [Fact]
@@ -60,7 +60,7 @@ public class GameControllerTests
         var loader = new ShapeLoader(".");
 
         var controller = new GameController(options, loader, output, input);
-        var result = await controller.RunAsync();
+        int result = await controller.RunAsync();
 
         Assert.Equal(0, result);
         Assert.Contains("Generation: 0", output.ToString());
@@ -80,7 +80,7 @@ public class GameControllerTests
         var loader = new ShapeLoader(".");
 
         var controller = new GameController(options, loader, output, input);
-        var result = await controller.RunAsync();
+        int result = await controller.RunAsync();
 
         Assert.Equal(0, result);
     }
@@ -98,7 +98,7 @@ public class GameControllerTests
         var loader = new ShapeLoader(".");
 
         var controller = new GameController(options, loader, output, input);
-        var result = await controller.RunAsync();
+        int result = await controller.RunAsync();
 
         Assert.Equal(0, result);
     }
@@ -117,9 +117,9 @@ public class GameControllerTests
         var loader = new ShapeLoader(".");
 
         var controller = new GameController(options, loader, output, input);
-        var result = await controller.RunAsync();
+        int result = await controller.RunAsync();
 
-        var outputText = output.ToString();
+        string outputText = output.ToString();
         Assert.Equal(0, result);
         Assert.Contains("Generation: 0", outputText);
         Assert.Contains("Generation: 1", outputText);
@@ -130,8 +130,8 @@ public class GameControllerTests
     [Fact]
     public async Task RunAsync_WithInjection_LoadsPattern()
     {
-        var tempDir = Path.Combine(Path.GetTempPath(), $"gol_test_{Guid.NewGuid()}");
-        Directory.CreateDirectory(tempDir);
+        string tempDir = Path.Combine(Path.GetTempPath(), $"gol_test_{Guid.NewGuid()}");
+        _ = Directory.CreateDirectory(tempDir);
         try
         {
             // Create a simple block pattern
@@ -148,11 +148,11 @@ public class GameControllerTests
             var loader = new ShapeLoader(tempDir);
 
             var controller = new GameController(options, loader, output, input);
-            var result = await controller.RunAsync();
+            int result = await controller.RunAsync();
 
             Assert.Equal(0, result);
             // The block should be rendered somewhere in the output
-            var outputText = output.ToString();
+            string outputText = output.ToString();
             Assert.Contains("Generation: 0", outputText);
         }
         finally
@@ -175,7 +175,7 @@ public class GameControllerTests
         var loader = new ShapeLoader(".");
 
         var controller = new GameController(options, loader, output, input);
-        var result = await controller.RunAsync();
+        int result = await controller.RunAsync();
 
         Assert.Equal(1, result);
         Assert.Contains("Error:", output.ToString());
@@ -199,7 +199,7 @@ public class GameControllerTests
         using var cts = new CancellationTokenSource();
         cts.CancelAfter(100);
 
-        var result = await controller.RunAsync(cts.Token);
+        int result = await controller.RunAsync(cts.Token);
 
         Assert.Equal(0, result);
     }
@@ -207,8 +207,8 @@ public class GameControllerTests
     [Fact]
     public async Task RunAsync_PatternClippedAtBounds_DoesNotThrow()
     {
-        var tempDir = Path.Combine(Path.GetTempPath(), $"gol_test_{Guid.NewGuid()}");
-        Directory.CreateDirectory(tempDir);
+        string tempDir = Path.Combine(Path.GetTempPath(), $"gol_test_{Guid.NewGuid()}");
+        _ = Directory.CreateDirectory(tempDir);
         try
         {
             // Create a pattern that extends beyond bounds
@@ -225,7 +225,7 @@ public class GameControllerTests
             var loader = new ShapeLoader(tempDir);
 
             var controller = new GameController(options, loader, output, input);
-            var result = await controller.RunAsync();
+            int result = await controller.RunAsync();
 
             Assert.Equal(0, result);
         }
@@ -238,8 +238,8 @@ public class GameControllerTests
     [Fact]
     public async Task RunAsync_PatternAtNegativeOffset_ClipsCorrectly()
     {
-        var tempDir = Path.Combine(Path.GetTempPath(), $"gol_test_{Guid.NewGuid()}");
-        Directory.CreateDirectory(tempDir);
+        string tempDir = Path.Combine(Path.GetTempPath(), $"gol_test_{Guid.NewGuid()}");
+        _ = Directory.CreateDirectory(tempDir);
         try
         {
             await File.WriteAllTextAsync(Path.Combine(tempDir, "block.txt"), "##\n##");
@@ -255,7 +255,7 @@ public class GameControllerTests
             var loader = new ShapeLoader(tempDir);
 
             var controller = new GameController(options, loader, output, input);
-            var result = await controller.RunAsync();
+            int result = await controller.RunAsync();
 
             Assert.Equal(0, result);
         }
@@ -278,7 +278,7 @@ public class GameControllerTests
         var loader = new ShapeLoader(".");
 
         var controller = new GameController(options, loader, output, input);
-        await controller.RunAsync();
+        _ = await controller.RunAsync();
 
         Assert.Contains("Space/Enter: Next | P: Play | Q/Esc: Quit", output.ToString());
     }
@@ -286,8 +286,8 @@ public class GameControllerTests
     [Fact]
     public async Task RunAsync_MultipleInjections_LoadsAllPatterns()
     {
-        var tempDir = Path.Combine(Path.GetTempPath(), $"gol_test_{Guid.NewGuid()}");
-        Directory.CreateDirectory(tempDir);
+        string tempDir = Path.Combine(Path.GetTempPath(), $"gol_test_{Guid.NewGuid()}");
+        _ = Directory.CreateDirectory(tempDir);
         try
         {
             await File.WriteAllTextAsync(Path.Combine(tempDir, "block.txt"), "##\n##");
@@ -308,7 +308,7 @@ public class GameControllerTests
             var loader = new ShapeLoader(tempDir);
 
             var controller = new GameController(options, loader, output, input);
-            var result = await controller.RunAsync();
+            int result = await controller.RunAsync();
 
             Assert.Equal(0, result);
         }

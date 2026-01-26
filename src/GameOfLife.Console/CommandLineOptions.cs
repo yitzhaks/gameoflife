@@ -23,12 +23,12 @@ internal sealed class CommandLineOptions
     /// <summary>
     /// Gets or sets the maximum number of generations to run (null = unlimited).
     /// </summary>
-    public int? MaxGenerations { get; set; } = null;
+    public int? MaxGenerations { get; set; }
 
     /// <summary>
     /// Gets or sets whether to start in autoplay mode.
     /// </summary>
-    public bool StartAutoplay { get; set; } = false;
+    public bool StartAutoplay { get; set; }
 
     /// <summary>
     /// Gets or sets the maximum frames per second during autoplay (default: 30).

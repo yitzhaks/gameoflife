@@ -126,7 +126,7 @@ public class Point2DTests
     {
         var point = new Point2D(3, 5);
 
-        Assert.IsAssignableFrom<IEquatable<Point2D>>(point);
+        _ = Assert.IsAssignableFrom<IEquatable<Point2D>>(point);
     }
 
     [Fact]

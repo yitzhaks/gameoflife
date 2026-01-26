@@ -10,9 +10,9 @@ public class ShapeLoaderTests
     [Fact]
     public void ParsePattern_GliderPattern_ReturnsCorrectPoints()
     {
-        var pattern = ".#.\n..#\n###";
+        string pattern = ".#.\n..#\n###";
 
-        var points = ShapeLoader.ParsePattern(pattern);
+        IReadOnlyList<Point2D> points = ShapeLoader.ParsePattern(pattern);
 
         Assert.Equal(5, points.Count);
         Assert.Contains(new Point2D(1, 0), points);
@@ -25,9 +25,9 @@ public class ShapeLoaderTests
     [Fact]
     public void ParsePattern_BlockPattern_ReturnsCorrectPoints()
     {
-        var pattern = "##\n##";
+        string pattern = "##\n##";
 
-        var points = ShapeLoader.ParsePattern(pattern);
+        IReadOnlyList<Point2D> points = ShapeLoader.ParsePattern(pattern);
 
         Assert.Equal(4, points.Count);
         Assert.Contains(new Point2D(0, 0), points);
@@ -39,9 +39,9 @@ public class ShapeLoaderTests
     [Fact]
     public void ParsePattern_BlinkerPattern_ReturnsCorrectPoints()
     {
-        var pattern = "###";
+        string pattern = "###";
 
-        var points = ShapeLoader.ParsePattern(pattern);
+        IReadOnlyList<Point2D> points = ShapeLoader.ParsePattern(pattern);
 
         Assert.Equal(3, points.Count);
         Assert.Contains(new Point2D(0, 0), points);
@@ -52,9 +52,9 @@ public class ShapeLoaderTests
     [Fact]
     public void ParsePattern_EmptyPattern_ReturnsEmptyList()
     {
-        var pattern = "...\n...\n...";
+        string pattern = "...\n...\n...";
 
-        var points = ShapeLoader.ParsePattern(pattern);
+        IReadOnlyList<Point2D> points = ShapeLoader.ParsePattern(pattern);
 
         Assert.Empty(points);
     }
@@ -62,20 +62,20 @@ public class ShapeLoaderTests
     [Fact]
     public void ParsePattern_SingleAliveCell_ReturnsSinglePoint()
     {
-        var pattern = "#";
+        string pattern = "#";
 
-        var points = ShapeLoader.ParsePattern(pattern);
+        IReadOnlyList<Point2D> points = ShapeLoader.ParsePattern(pattern);
 
-        Assert.Single(points);
+        _ = Assert.Single(points);
         Assert.Equal(new Point2D(0, 0), points[0]);
     }
 
     [Fact]
     public void ParsePattern_WindowsLineEndings_ParsesCorrectly()
     {
-        var pattern = ".#.\r\n..#\r\n###";
+        string pattern = ".#.\r\n..#\r\n###";
 
-        var points = ShapeLoader.ParsePattern(pattern);
+        IReadOnlyList<Point2D> points = ShapeLoader.ParsePattern(pattern);
 
         Assert.Equal(5, points.Count);
         Assert.Contains(new Point2D(1, 0), points);
@@ -84,39 +84,33 @@ public class ShapeLoaderTests
     [Fact]
     public void ParsePattern_MixedLineEndings_ParsesCorrectly()
     {
-        var pattern = ".#.\r\n..#\n###";
+        string pattern = ".#.\r\n..#\n###";
 
-        var points = ShapeLoader.ParsePattern(pattern);
+        IReadOnlyList<Point2D> points = ShapeLoader.ParsePattern(pattern);
 
         Assert.Equal(5, points.Count);
     }
 
     [Fact]
-    public void ParsePattern_NullInput_ThrowsArgumentNullException()
-    {
-        Assert.Throws<ArgumentNullException>(() => ShapeLoader.ParsePattern(null!));
-    }
+    public void ParsePattern_NullInput_ThrowsArgumentNullException() => Assert.Throws<ArgumentNullException>(() => ShapeLoader.ParsePattern(null!));
 
     [Fact]
     public void ParsePattern_EmptyString_ReturnsEmptyList()
     {
-        var points = ShapeLoader.ParsePattern(string.Empty);
+        IReadOnlyList<Point2D> points = ShapeLoader.ParsePattern(string.Empty);
 
         Assert.Empty(points);
     }
 
     [Fact]
-    public void Constructor_NullDirectory_ThrowsArgumentNullException()
-    {
-        Assert.Throws<ArgumentNullException>(() => new ShapeLoader(null!));
-    }
+    public void Constructor_NullDirectory_ThrowsArgumentNullException() => Assert.Throws<ArgumentNullException>(() => new ShapeLoader(null!));
 
     [Fact]
     public void GetAvailablePatterns_NonExistentDirectory_ReturnsEmptyEnumerable()
     {
         var loader = new ShapeLoader("nonexistent_directory_12345");
 
-        var patterns = loader.GetAvailablePatterns();
+        IEnumerable<string> patterns = loader.GetAvailablePatterns();
 
         Assert.Empty(patterns);
     }
@@ -124,8 +118,8 @@ public class ShapeLoaderTests
     [Fact]
     public void GetAvailablePatterns_DirectoryWithPatterns_ReturnsPatternNames()
     {
-        var tempDir = Path.Combine(Path.GetTempPath(), $"gol_test_{Guid.NewGuid()}");
-        Directory.CreateDirectory(tempDir);
+        string tempDir = Path.Combine(Path.GetTempPath(), $"gol_test_{Guid.NewGuid()}");
+        _ = Directory.CreateDirectory(tempDir);
         try
         {
             File.WriteAllText(Path.Combine(tempDir, "glider.txt"), ".#.\n..#\n###");
@@ -149,8 +143,8 @@ public class ShapeLoaderTests
     [Fact]
     public void GetAvailablePatterns_DirectoryWithMixedFiles_ReturnsOnlyTxtFiles()
     {
-        var tempDir = Path.Combine(Path.GetTempPath(), $"gol_test_{Guid.NewGuid()}");
-        Directory.CreateDirectory(tempDir);
+        string tempDir = Path.Combine(Path.GetTempPath(), $"gol_test_{Guid.NewGuid()}");
+        _ = Directory.CreateDirectory(tempDir);
         try
         {
             File.WriteAllText(Path.Combine(tempDir, "glider.txt"), ".#.\n..#\n###");
@@ -160,7 +154,7 @@ public class ShapeLoaderTests
             var loader = new ShapeLoader(tempDir);
             var patterns = loader.GetAvailablePatterns().ToList();
 
-            Assert.Single(patterns);
+            _ = Assert.Single(patterns);
             Assert.Equal("glider", patterns[0]);
         }
         finally
@@ -174,7 +168,7 @@ public class ShapeLoaderTests
     {
         var loader = new ShapeLoader(".");
 
-        Assert.Throws<ArgumentNullException>(() => loader.LoadPattern(null!));
+        _ = Assert.Throws<ArgumentNullException>(() => loader.LoadPattern(null!));
     }
 
     [Fact]
@@ -182,20 +176,20 @@ public class ShapeLoaderTests
     {
         var loader = new ShapeLoader(".");
 
-        Assert.Throws<FileNotFoundException>(() => loader.LoadPattern("nonexistent_pattern_12345"));
+        _ = Assert.Throws<FileNotFoundException>(() => loader.LoadPattern("nonexistent_pattern_12345"));
     }
 
     [Fact]
     public void LoadPattern_ExistingPattern_ReturnsPoints()
     {
-        var tempDir = Path.Combine(Path.GetTempPath(), $"gol_test_{Guid.NewGuid()}");
-        Directory.CreateDirectory(tempDir);
+        string tempDir = Path.Combine(Path.GetTempPath(), $"gol_test_{Guid.NewGuid()}");
+        _ = Directory.CreateDirectory(tempDir);
         try
         {
             File.WriteAllText(Path.Combine(tempDir, "glider.txt"), ".#.\n..#\n###");
 
             var loader = new ShapeLoader(tempDir);
-            var points = loader.LoadPattern("glider");
+            IReadOnlyList<Point2D> points = loader.LoadPattern("glider");
 
             Assert.Equal(5, points.Count);
             Assert.Contains(new Point2D(1, 0), points);

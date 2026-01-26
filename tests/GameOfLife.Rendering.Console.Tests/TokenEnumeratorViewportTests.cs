@@ -21,7 +21,7 @@ public class TokenEnumeratorViewportTests
     {
         var topology = new Grid2DTopology(BoardWidth, BoardHeight);
         var engine = new IdentityLayoutEngine();
-        var layout = engine.CreateLayout(topology);
+        ILayout<Point2D, Point2D, RectangularBounds> layout = engine.CreateLayout(topology);
         var nodeSet = new HashSet<Point2D>(topology.Nodes);
         var generation = new DictionaryGeneration<Point2D, bool>(new Dictionary<Point2D, bool>(), false);
         var theme = new ConsoleTheme(AliveChar: '#', DeadChar: '.', ShowBorder: true);
@@ -31,23 +31,20 @@ public class TokenEnumeratorViewportTests
 
         while (enumerator.MoveNext())
         {
-            var token = enumerator.Current;
+            Token token = enumerator.Current;
             if (token.IsSequence)
             {
                 // Skip ANSI sequences for cleaner test output
                 continue;
             }
 
-            sb.Append(token.Character);
+            _ = sb.Append(token.Character);
         }
 
         return sb.ToString();
     }
 
-    private static string[] GetLines(string output)
-    {
-        return output.Split('\n', StringSplitOptions.RemoveEmptyEntries);
-    }
+    private static string[] GetLines(string output) => output.Split('\n', StringSplitOptions.RemoveEmptyEntries);
 
     [Fact]
     public void Viewport_TopLeft_HasSolidTopAndLeftBorders()
@@ -56,8 +53,8 @@ public class TokenEnumeratorViewportTests
         var viewport = new Viewport(ViewportWidth, ViewportHeight, BoardWidth, BoardHeight);
         // Already at (0,0) - don't move
 
-        var output = RenderToString(viewport);
-        var lines = GetLines(output);
+        string output = RenderToString(viewport);
+        string[] lines = GetLines(output);
 
         // Top border: solid (at top edge) - corners follow top edge's solid character
         Assert.StartsWith("╔", lines[0]); // Top-left corner (both at top+left)
@@ -87,8 +84,8 @@ public class TokenEnumeratorViewportTests
         var viewport = new Viewport(ViewportWidth, ViewportHeight, BoardWidth, BoardHeight);
         viewport.Move(5, 0);
 
-        var output = RenderToString(viewport);
-        var lines = GetLines(output);
+        string output = RenderToString(viewport);
+        string[] lines = GetLines(output);
 
         // Top border: solid (at top edge), but left corner shows more content left
         Assert.StartsWith("═", lines[0]); // Top-left corner extends solid (at top, not at left)
@@ -118,8 +115,8 @@ public class TokenEnumeratorViewportTests
         var viewport = new Viewport(ViewportWidth, ViewportHeight, BoardWidth, BoardHeight);
         viewport.Move(100, 0); // Moves to max right (15)
 
-        var output = RenderToString(viewport);
-        var lines = GetLines(output);
+        string output = RenderToString(viewport);
+        string[] lines = GetLines(output);
 
         // Top border: solid (at top edge)
         Assert.StartsWith("═", lines[0]); // Top-left corner (at top, not at left)
@@ -149,8 +146,8 @@ public class TokenEnumeratorViewportTests
         var viewport = new Viewport(ViewportWidth, ViewportHeight, BoardWidth, BoardHeight);
         viewport.Move(0, 5);
 
-        var output = RenderToString(viewport);
-        var lines = GetLines(output);
+        string output = RenderToString(viewport);
+        string[] lines = GetLines(output);
 
         // Top border: arrows (more content above)
         Assert.StartsWith("║", lines[0]); // Top-left corner (at left, not at top)
@@ -180,8 +177,8 @@ public class TokenEnumeratorViewportTests
         var viewport = new Viewport(ViewportWidth, ViewportHeight, BoardWidth, BoardHeight);
         viewport.Move(5, 5);
 
-        var output = RenderToString(viewport);
-        var lines = GetLines(output);
+        string output = RenderToString(viewport);
+        string[] lines = GetLines(output);
 
         // Top border: all arrows (more content above)
         Assert.StartsWith("↖", lines[0]); // Diagonal corner (at neither edge)
@@ -211,8 +208,8 @@ public class TokenEnumeratorViewportTests
         var viewport = new Viewport(ViewportWidth, ViewportHeight, BoardWidth, BoardHeight);
         viewport.Move(100, 5); // Moves to max right (15)
 
-        var output = RenderToString(viewport);
-        var lines = GetLines(output);
+        string output = RenderToString(viewport);
+        string[] lines = GetLines(output);
 
         // Top border: arrows (more content above)
         Assert.StartsWith("↖", lines[0]); // Diagonal corner
@@ -242,8 +239,8 @@ public class TokenEnumeratorViewportTests
         var viewport = new Viewport(ViewportWidth, ViewportHeight, BoardWidth, BoardHeight);
         viewport.Move(0, 100); // Moves to max bottom (17)
 
-        var output = RenderToString(viewport);
-        var lines = GetLines(output);
+        string output = RenderToString(viewport);
+        string[] lines = GetLines(output);
 
         // Top border: arrows (more content above)
         Assert.StartsWith("║", lines[0]); // Top-left corner (at left, not at top)
@@ -273,8 +270,8 @@ public class TokenEnumeratorViewportTests
         var viewport = new Viewport(ViewportWidth, ViewportHeight, BoardWidth, BoardHeight);
         viewport.Move(5, 100); // Moves to max bottom (17)
 
-        var output = RenderToString(viewport);
-        var lines = GetLines(output);
+        string output = RenderToString(viewport);
+        string[] lines = GetLines(output);
 
         // Top border: arrows (more content above)
         Assert.StartsWith("↖", lines[0]); // Diagonal corner
@@ -304,8 +301,8 @@ public class TokenEnumeratorViewportTests
         var viewport = new Viewport(ViewportWidth, ViewportHeight, BoardWidth, BoardHeight);
         viewport.Move(100, 100); // Moves to max corner (15, 17)
 
-        var output = RenderToString(viewport);
-        var lines = GetLines(output);
+        string output = RenderToString(viewport);
+        string[] lines = GetLines(output);
 
         // Top border: arrows (more content above)
         Assert.StartsWith("↖", lines[0]); // Diagonal corner
@@ -334,7 +331,7 @@ public class TokenEnumeratorViewportTests
         // When viewport is null, all borders should be solid
         var topology = new Grid2DTopology(5, 3);
         var engine = new IdentityLayoutEngine();
-        var layout = engine.CreateLayout(topology);
+        ILayout<Point2D, Point2D, RectangularBounds> layout = engine.CreateLayout(topology);
         var nodeSet = new HashSet<Point2D>(topology.Nodes);
         var generation = new DictionaryGeneration<Point2D, bool>(new Dictionary<Point2D, bool>(), false);
         var theme = new ConsoleTheme(AliveChar: '#', DeadChar: '.', ShowBorder: true);
@@ -344,17 +341,17 @@ public class TokenEnumeratorViewportTests
 
         while (enumerator.MoveNext())
         {
-            var token = enumerator.Current;
+            Token token = enumerator.Current;
             if (token.IsSequence)
             {
                 continue;
             }
 
-            sb.Append(token.Character);
+            _ = sb.Append(token.Character);
         }
 
-        var output = sb.ToString();
-        var lines = GetLines(output);
+        string output = sb.ToString();
+        string[] lines = GetLines(output);
 
         // All classic solid borders
         Assert.Equal("╔═════╗", lines[0]);
@@ -370,7 +367,7 @@ public class TokenEnumeratorViewportTests
         // Create a board with a pattern, verify only viewport cells are rendered
         var topology = new Grid2DTopology(10, 10);
         var engine = new IdentityLayoutEngine();
-        var layout = engine.CreateLayout(topology);
+        ILayout<Point2D, Point2D, RectangularBounds> layout = engine.CreateLayout(topology);
         var nodeSet = new HashSet<Point2D>(topology.Nodes);
 
         // Put alive cells in a specific pattern
@@ -393,17 +390,17 @@ public class TokenEnumeratorViewportTests
 
         while (enumerator.MoveNext())
         {
-            var token = enumerator.Current;
+            Token token = enumerator.Current;
             if (token.IsSequence)
             {
                 continue;
             }
 
-            sb.Append(token.Character);
+            _ = sb.Append(token.Character);
         }
 
-        var output = sb.ToString();
-        var lines = GetLines(output);
+        string output = sb.ToString();
+        string[] lines = GetLines(output);
 
         // Should show 3x3 grid with top row all alive
         Assert.Equal(3, lines.Length);

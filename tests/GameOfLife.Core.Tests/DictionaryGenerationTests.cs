@@ -173,7 +173,7 @@ public class DictionaryGenerationTests
     [Fact]
     public void Constructor_NullDictionary_ThrowsArgumentNullException()
     {
-        Assert.Throws<ArgumentNullException>(() =>
+        _ = Assert.Throws<ArgumentNullException>(() =>
             new DictionaryGeneration<int, bool>(null!, defaultState: false));
     }
 
@@ -209,7 +209,7 @@ public class DictionaryGenerationTests
         var states = new Dictionary<int, bool>();
         var generation = new DictionaryGeneration<int, bool>(states, defaultState: false);
 
-        Assert.IsAssignableFrom<IGeneration<int, bool>>(generation);
+        _ = Assert.IsAssignableFrom<IGeneration<int, bool>>(generation);
     }
 
     #endregion

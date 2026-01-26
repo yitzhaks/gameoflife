@@ -13,7 +13,7 @@ public class IdentityLayoutEngineTests
         var engine = new IdentityLayoutEngine();
         var topology = new Grid2DTopology(5, 5);
 
-        var layout = engine.CreateLayout(topology);
+        ILayout<Point2D, Point2D, RectangularBounds> layout = engine.CreateLayout(topology);
 
         Assert.NotNull(layout);
         Assert.NotNull(layout.Positions);
@@ -25,7 +25,7 @@ public class IdentityLayoutEngineTests
     {
         var engine = new IdentityLayoutEngine();
 
-        Assert.Throws<ArgumentNullException>(() => engine.CreateLayout(null!));
+        _ = Assert.Throws<ArgumentNullException>(() => engine.CreateLayout(null!));
     }
 
     [Fact]
@@ -34,7 +34,7 @@ public class IdentityLayoutEngineTests
         var engine = new IdentityLayoutEngine();
         var topology = new Grid2DTopology(3, 3);
 
-        var layout = engine.CreateLayout(topology);
+        ILayout<Point2D, Point2D, RectangularBounds> layout = engine.CreateLayout(topology);
 
         Assert.Equal(new Point2D(0, 0), layout.Bounds.Min);
         Assert.Equal(new Point2D(2, 2), layout.Bounds.Max);
@@ -46,7 +46,7 @@ public class IdentityLayoutEngineTests
         var engine = new IdentityLayoutEngine();
         var topology = new Grid2DTopology(3, 3);
 
-        var layout = engine.CreateLayout(topology);
+        ILayout<Point2D, Point2D, RectangularBounds> layout = engine.CreateLayout(topology);
 
         var testPoint = new Point2D(1, 2);
         Assert.Equal(testPoint, layout.Positions[testPoint]);
@@ -58,9 +58,9 @@ public class IdentityLayoutEngineTests
         var engine = new IdentityLayoutEngine();
         var topology = new Grid2DTopology(3, 3);
 
-        var layout = engine.CreateLayout(topology);
+        ILayout<Point2D, Point2D, RectangularBounds> layout = engine.CreateLayout(topology);
 
-        Assert.Throws<KeyNotFoundException>(() => layout.Positions[new Point2D(10, 10)]);
+        _ = Assert.Throws<KeyNotFoundException>(() => layout.Positions[new Point2D(10, 10)]);
     }
 
     [Fact]
@@ -69,12 +69,12 @@ public class IdentityLayoutEngineTests
         var engine = new IdentityLayoutEngine();
         var topology = new Grid2DTopology(3, 3);
 
-        var layout = engine.CreateLayout(topology);
+        ILayout<Point2D, Point2D, RectangularBounds> layout = engine.CreateLayout(topology);
 
         // Sort by Y then X
         var comparer = Comparer<Point2D>.Create((a, b) =>
         {
-            var yCompare = a.Y.CompareTo(b.Y);
+            int yCompare = a.Y.CompareTo(b.Y);
             return yCompare != 0 ? yCompare : a.X.CompareTo(b.X);
         });
 
