@@ -149,6 +149,116 @@ public interface IRenderer<TIdentity, TCoordinate, TBounds, TState>
 - 3D renderers (e.g., `Point3D`-based rendering)
 - Animation and multi-frame rendering are intentionally out of scope for initial implementations.
 
+## Console Rendering Considerations
+
+### Character Aspect Ratio Problem
+
+Console characters are typically taller than they are wide, with a roughly 2:1 height-to-width ratio. When rendering Game of Life patterns where each cell maps to a single character, this causes patterns to appear vertically stretched:
+
+- A glider that should look roughly square appears elongated vertically
+- Oscillators like the blinker appear distorted
+- Spatial relationships between cells don't match the logical grid topology
+
+This is a fundamental constraint of text-based rendering that affects readability and aesthetic presentation.
+
+### Solution Approaches
+
+There are several approaches to address the aspect ratio problem, each with different trade-offs:
+
+#### 1. Horizontal Doubling
+
+**Approach**: Render each cell as two horizontal characters instead of one.
+
+**Example**:
+```
+Dead cell: "  " (two spaces)
+Alive cell: "██" or "##" (two identical characters)
+```
+
+**Pros**:
+- Simple to implement
+- Produces roughly square cells that match the logical grid topology
+- Patterns appear as intended (gliders look like gliders, etc.)
+
+**Cons**:
+- Doubles the horizontal screen space required
+- May require horizontal scrolling or smaller grid sizes
+
+**Best for**: Standard console rendering where visual accuracy is important.
+
+#### 2. Vertical Subsampling
+
+**Approach**: Render every other row of the logical grid, skipping alternate rows.
+
+**Example**: For a 10x10 logical grid, render only rows 0, 2, 4, 6, 8.
+
+**Pros**:
+- No extra horizontal space needed
+- Simple implementation
+
+**Cons**:
+- Loses information (half the grid is not visible)
+- Makes patterns harder to understand
+- Asymmetric - horizontal detail is preserved but vertical detail is lost
+
+**Best for**: Quick debugging or when screen space is severely limited.
+
+#### 3. Unicode Block Characters
+
+**Approach**: Use Unicode half-block characters (▀ ▄ █) to encode two vertical cells per character position.
+
+**Example**:
+```
+Both dead: " " (space)
+Top alive, bottom dead: "▀" (upper half block)
+Top dead, bottom alive: "▄" (lower half block)
+Both alive: "█" (full block)
+```
+
+**Pros**:
+- Doubles vertical resolution without increasing screen space
+- Efficient use of terminal real estate
+- Patterns appear approximately square with standard character aspect ratios
+
+**Cons**:
+- More complex implementation
+- Requires Unicode support
+- Two rows share one character position, complicating cursor positioning for interaction
+- May have rendering issues in terminals with poor Unicode support
+
+**Best for**: Modern terminals with good Unicode support, when maximizing visible grid area is important.
+
+#### 4. Single Character (Accept Distortion)
+
+**Approach**: Render each cell as a single character and accept the vertical stretching.
+
+**Example**:
+```
+Dead cell: " " (space)
+Alive cell: "█" or "#"
+```
+
+**Pros**:
+- Simplest implementation
+- No special handling needed
+- Works in any terminal
+
+**Cons**:
+- Patterns appear vertically stretched
+- Visual mismatch with logical topology
+
+**Best for**: Prototyping, minimal implementations, or when users understand and accept the distortion.
+
+### Recommendation
+
+For a general-purpose console renderer:
+
+1. **Default**: Use **horizontal doubling** (approach 1) for accuracy and readability.
+2. **Optional**: Support **Unicode block characters** (approach 3) as an alternative via constructor/configuration for users with modern terminals who want to maximize grid size.
+3. **Document**: Clearly document the aspect ratio handling in the renderer's documentation.
+
+The renderer should be constructed with configuration specifying which approach to use, allowing callers to choose based on their requirements.
+
 ## Design Decisions
 
 1. **Layout is geometry, rendering is visuals**: Layout produces logical coordinates. Rendering handles output units, shapes, colors.
