@@ -21,17 +21,17 @@ internal sealed class CommandLineOptions
     public List<ShapeInjection> Injections { get; set; } = [];
 
     /// <summary>
-    /// Gets or sets the delay between generations in milliseconds (auto mode).
-    /// </summary>
-    public int Delay { get; set; } = 200;
-
-    /// <summary>
-    /// Gets or sets whether to run in automatic mode.
-    /// </summary>
-    public bool Auto { get; set; } = false;
-
-    /// <summary>
     /// Gets or sets the maximum number of generations to run (null = unlimited).
     /// </summary>
     public int? MaxGenerations { get; set; } = null;
+
+    /// <summary>
+    /// Gets or sets whether to start in autoplay mode.
+    /// </summary>
+    public bool StartAutoplay { get; set; } = false;
+
+    /// <summary>
+    /// Gets or sets the maximum frames per second during autoplay (default: 30).
+    /// </summary>
+    public int MaxFps { get; set; } = 30;
 }

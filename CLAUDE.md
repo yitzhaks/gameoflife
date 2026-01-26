@@ -52,3 +52,7 @@ dotnet test --collect:"XPlat Code Coverage"  # Generate coverage report
 - **Coverage Tool**: Coverlet (via `coverlet.collector` package)
 - **Goal**: Near 100% branch coverage
 - **Naming**: `MethodName_Scenario_ExpectedBehavior`
+
+## Style Preferences
+
+- **Command-line arguments**: Always use full parameter syntax (e.g., `--start-autoplay` not `-a`, `--inject` not `-i`, `--width` not `-w`)

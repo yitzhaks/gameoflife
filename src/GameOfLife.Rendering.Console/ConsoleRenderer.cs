@@ -164,4 +164,67 @@ public sealed class ConsoleRenderer : IRenderer<Point2D, Point2D, RectangularBou
             System.Console.ForegroundColor = color;
         }
     }
+
+    /// <summary>
+    /// Gets a token enumerator for streaming rendering.
+    /// </summary>
+    /// <param name="topology">The topology defining the structure.</param>
+    /// <param name="generation">The generation state to render.</param>
+    /// <returns>A token enumerator that yields rendering tokens.</returns>
+    /// <exception cref="ArgumentNullException">Thrown if topology or generation is null.</exception>
+    public TokenEnumerator GetTokenEnumerator(ITopology<Point2D> topology, IGeneration<Point2D, bool> generation)
+    {
+        ArgumentNullException.ThrowIfNull(topology);
+        ArgumentNullException.ThrowIfNull(generation);
+
+        var layout = _layoutEngine.CreateLayout(topology);
+        var nodeSet = new HashSet<Point2D>(topology.Nodes);
+
+        return new TokenEnumerator(layout, generation, nodeSet, _theme);
+    }
+
+    /// <summary>
+    /// Gets a color-normalized glyph enumerator for streaming rendering.
+    /// </summary>
+    /// <param name="topology">The topology defining the structure.</param>
+    /// <param name="generation">The generation state to render.</param>
+    /// <returns>A color-normalized glyph enumerator.</returns>
+    /// <exception cref="ArgumentNullException">Thrown if topology or generation is null.</exception>
+    public ColorNormalizedGlyphEnumerator GetGlyphEnumerator(ITopology<Point2D> topology, IGeneration<Point2D, bool> generation)
+    {
+        var tokenEnumerator = GetTokenEnumerator(topology, generation);
+        var glyphEnumerator = GlyphReader.FromTokens(tokenEnumerator);
+        return AnsiStateTracker.FromGlyphs(glyphEnumerator);
+    }
+
+    /// <summary>
+    /// Renders the generation state to a string with ANSI color codes.
+    /// </summary>
+    /// <param name="topology">The topology defining the structure.</param>
+    /// <param name="generation">The generation state to render.</param>
+    /// <returns>A string containing the rendered output with ANSI codes.</returns>
+    /// <exception cref="ArgumentNullException">Thrown if topology or generation is null.</exception>
+    public string RenderToString(ITopology<Point2D> topology, IGeneration<Point2D, bool> generation)
+    {
+        ArgumentNullException.ThrowIfNull(topology);
+        ArgumentNullException.ThrowIfNull(generation);
+
+        var sb = new StringBuilder();
+        var tokenEnumerator = GetTokenEnumerator(topology, generation);
+
+        while (tokenEnumerator.MoveNext())
+        {
+            var token = tokenEnumerator.Current;
+            if (token.IsSequence)
+            {
+                sb.Append(token.Sequence.ToAnsiString());
+            }
+            else
+            {
+                sb.Append(token.Character);
+            }
+        }
+
+        return sb.ToString();
+    }
 }

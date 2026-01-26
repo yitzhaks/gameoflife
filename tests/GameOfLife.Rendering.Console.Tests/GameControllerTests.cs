@@ -190,8 +190,7 @@ public class GameControllerTests
         {
             Width = 5,
             Height = 5,
-            Auto = true,
-            Delay = 1000
+            MaxGenerations = 1000
         };
         var loader = new ShapeLoader(".");
 
@@ -267,43 +266,21 @@ public class GameControllerTests
     }
 
     [Fact]
-    public async Task RunAsync_AutoMode_DisplaysAutoModeControls()
-    {
-        using var output = new StringWriter();
-        using var input = new StringReader("");
-        var options = new CommandLineOptions
-        {
-            Width = 5,
-            Height = 5,
-            Auto = true,
-            MaxGenerations = 0
-        };
-        var loader = new ShapeLoader(".");
-
-        var controller = new GameController(options, loader, output, input);
-        await controller.RunAsync();
-
-        Assert.Contains("Q/Esc: Quit", output.ToString());
-        Assert.DoesNotContain("Space/Enter: Next", output.ToString());
-    }
-
-    [Fact]
-    public async Task RunAsync_ManualMode_DisplaysManualModeControls()
+    public async Task RunAsync_StepMode_DisplaysStepModeControls()
     {
         using var output = new StringWriter();
         using var input = new StringReader("q\n");
         var options = new CommandLineOptions
         {
             Width = 5,
-            Height = 5,
-            Auto = false
+            Height = 5
         };
         var loader = new ShapeLoader(".");
 
         var controller = new GameController(options, loader, output, input);
         await controller.RunAsync();
 
-        Assert.Contains("Space/Enter: Next | Q/Esc: Quit", output.ToString());
+        Assert.Contains("Space/Enter: Next | P: Play | Q/Esc: Quit", output.ToString());
     }
 
     [Fact]

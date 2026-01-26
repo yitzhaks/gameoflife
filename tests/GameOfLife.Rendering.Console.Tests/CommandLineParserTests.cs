@@ -38,9 +38,9 @@ public class CommandLineParserTests
         Assert.NotNull(capturedOptions);
         Assert.Equal(20, capturedOptions.Width);
         Assert.Equal(20, capturedOptions.Height);
-        Assert.Equal(200, capturedOptions.Delay);
-        Assert.False(capturedOptions.Auto);
         Assert.Null(capturedOptions.MaxGenerations);
+        Assert.False(capturedOptions.StartAutoplay);
+        Assert.Equal(30, capturedOptions.MaxFps);
         Assert.Empty(capturedOptions.Injections);
     }
 
@@ -93,70 +93,6 @@ public class CommandLineParserTests
     }
 
     [Fact]
-    public void CreateRootCommand_DelayOption_SetsDelay()
-    {
-        CommandLineOptions? capturedOptions = null;
-        var command = CommandLineParser.CreateRootCommand(options =>
-        {
-            capturedOptions = options;
-            return Task.FromResult(0);
-        });
-
-        command.Parse(["--delay", "500"]).Invoke();
-
-        Assert.NotNull(capturedOptions);
-        Assert.Equal(500, capturedOptions.Delay);
-    }
-
-    [Fact]
-    public void CreateRootCommand_DelayShortOption_SetsDelay()
-    {
-        CommandLineOptions? capturedOptions = null;
-        var command = CommandLineParser.CreateRootCommand(options =>
-        {
-            capturedOptions = options;
-            return Task.FromResult(0);
-        });
-
-        command.Parse(["-d", "100"]).Invoke();
-
-        Assert.NotNull(capturedOptions);
-        Assert.Equal(100, capturedOptions.Delay);
-    }
-
-    [Fact]
-    public void CreateRootCommand_AutoOption_SetsAuto()
-    {
-        CommandLineOptions? capturedOptions = null;
-        var command = CommandLineParser.CreateRootCommand(options =>
-        {
-            capturedOptions = options;
-            return Task.FromResult(0);
-        });
-
-        command.Parse(["--auto"]).Invoke();
-
-        Assert.NotNull(capturedOptions);
-        Assert.True(capturedOptions.Auto);
-    }
-
-    [Fact]
-    public void CreateRootCommand_AutoShortOption_SetsAuto()
-    {
-        CommandLineOptions? capturedOptions = null;
-        var command = CommandLineParser.CreateRootCommand(options =>
-        {
-            capturedOptions = options;
-            return Task.FromResult(0);
-        });
-
-        command.Parse(["-a"]).Invoke();
-
-        Assert.NotNull(capturedOptions);
-        Assert.True(capturedOptions.Auto);
-    }
-
-    [Fact]
     public void CreateRootCommand_GenerationsOption_SetsMaxGenerations()
     {
         CommandLineOptions? capturedOptions = null;
@@ -186,6 +122,54 @@ public class CommandLineParserTests
 
         Assert.NotNull(capturedOptions);
         Assert.Equal(50, capturedOptions.MaxGenerations);
+    }
+
+    [Fact]
+    public void CreateRootCommand_StartAutoplayOption_SetsStartAutoplay()
+    {
+        CommandLineOptions? capturedOptions = null;
+        var command = CommandLineParser.CreateRootCommand(options =>
+        {
+            capturedOptions = options;
+            return Task.FromResult(0);
+        });
+
+        command.Parse(["--start-autoplay"]).Invoke();
+
+        Assert.NotNull(capturedOptions);
+        Assert.True(capturedOptions.StartAutoplay);
+    }
+
+    [Fact]
+    public void CreateRootCommand_StartAutoplayShortOption_SetsStartAutoplay()
+    {
+        CommandLineOptions? capturedOptions = null;
+        var command = CommandLineParser.CreateRootCommand(options =>
+        {
+            capturedOptions = options;
+            return Task.FromResult(0);
+        });
+
+        command.Parse(["-a"]).Invoke();
+
+        Assert.NotNull(capturedOptions);
+        Assert.True(capturedOptions.StartAutoplay);
+    }
+
+    [Fact]
+    public void CreateRootCommand_MaxFpsOption_SetsMaxFps()
+    {
+        CommandLineOptions? capturedOptions = null;
+        var command = CommandLineParser.CreateRootCommand(options =>
+        {
+            capturedOptions = options;
+            return Task.FromResult(0);
+        });
+
+        command.Parse(["--max-fps", "60"]).Invoke();
+
+        Assert.NotNull(capturedOptions);
+        Assert.Equal(60, capturedOptions.MaxFps);
     }
 
     [Fact]
@@ -253,8 +237,6 @@ public class CommandLineParserTests
         command.Parse([
             "--width", "80",
             "--height", "60",
-            "--delay", "100",
-            "--auto",
             "--generations", "1000",
             "--inject", "glider@10,10"
         ]).Invoke();
@@ -262,8 +244,6 @@ public class CommandLineParserTests
         Assert.NotNull(capturedOptions);
         Assert.Equal(80, capturedOptions.Width);
         Assert.Equal(60, capturedOptions.Height);
-        Assert.Equal(100, capturedOptions.Delay);
-        Assert.True(capturedOptions.Auto);
         Assert.Equal(1000, capturedOptions.MaxGenerations);
         Assert.Single(capturedOptions.Injections);
     }

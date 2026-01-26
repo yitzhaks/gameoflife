@@ -13,9 +13,9 @@ public class CommandLineOptionsTests
 
         Assert.Equal(20, options.Width);
         Assert.Equal(20, options.Height);
-        Assert.Equal(200, options.Delay);
-        Assert.False(options.Auto);
         Assert.Null(options.MaxGenerations);
+        Assert.False(options.StartAutoplay);
+        Assert.Equal(30, options.MaxFps);
         Assert.Empty(options.Injections);
     }
 
@@ -36,27 +36,27 @@ public class CommandLineOptionsTests
     }
 
     [Fact]
-    public void Delay_CanBeSet()
-    {
-        var options = new CommandLineOptions { Delay = 500 };
-
-        Assert.Equal(500, options.Delay);
-    }
-
-    [Fact]
-    public void Auto_CanBeSet()
-    {
-        var options = new CommandLineOptions { Auto = true };
-
-        Assert.True(options.Auto);
-    }
-
-    [Fact]
     public void MaxGenerations_CanBeSet()
     {
         var options = new CommandLineOptions { MaxGenerations = 100 };
 
         Assert.Equal(100, options.MaxGenerations);
+    }
+
+    [Fact]
+    public void StartAutoplay_CanBeSet()
+    {
+        var options = new CommandLineOptions { StartAutoplay = true };
+
+        Assert.True(options.StartAutoplay);
+    }
+
+    [Fact]
+    public void MaxFps_CanBeSet()
+    {
+        var options = new CommandLineOptions { MaxFps = 60 };
+
+        Assert.Equal(60, options.MaxFps);
     }
 
     [Fact]

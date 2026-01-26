@@ -35,22 +35,22 @@ internal static class CommandLineParser
             AllowMultipleArgumentsPerToken = true
         };
 
-        var delayOption = new Option<int>(name: "--delay", aliases: ["-d"])
-        {
-            Description = "Delay between generations in milliseconds (auto mode).",
-            DefaultValueFactory = _ => 200
-        };
-
-        var autoOption = new Option<bool>(name: "--auto", aliases: ["-a"])
-        {
-            Description = "Run in automatic mode (advance generations automatically).",
-            DefaultValueFactory = _ => false
-        };
-
         var generationsOption = new Option<int?>(name: "--generations", aliases: ["-g"])
         {
             Description = "Maximum number of generations to run (default: unlimited).",
             DefaultValueFactory = _ => null
+        };
+
+        var startAutoplayOption = new Option<bool>(name: "--start-autoplay", aliases: ["-a"])
+        {
+            Description = "Start in autoplay mode.",
+            DefaultValueFactory = _ => false
+        };
+
+        var maxFpsOption = new Option<int>(name: "--max-fps")
+        {
+            Description = "Maximum frames per second during autoplay (default: 30).",
+            DefaultValueFactory = _ => 30
         };
 
         var rootCommand = new RootCommand("Conway's Game of Life console application")
@@ -58,9 +58,9 @@ internal static class CommandLineParser
             widthOption,
             heightOption,
             injectOption,
-            delayOption,
-            autoOption,
-            generationsOption
+            generationsOption,
+            startAutoplayOption,
+            maxFpsOption
         };
 
         rootCommand.SetAction(async (parseResult, cancellationToken) =>
@@ -68,17 +68,17 @@ internal static class CommandLineParser
             var width = parseResult.GetValue(widthOption);
             var height = parseResult.GetValue(heightOption);
             var injections = parseResult.GetValue(injectOption);
-            var delay = parseResult.GetValue(delayOption);
-            var auto = parseResult.GetValue(autoOption);
             var generations = parseResult.GetValue(generationsOption);
+            var startAutoplay = parseResult.GetValue(startAutoplayOption);
+            var maxFps = parseResult.GetValue(maxFpsOption);
 
             var options = new CommandLineOptions
             {
                 Width = width,
                 Height = height,
-                Delay = delay,
-                Auto = auto,
-                MaxGenerations = generations
+                MaxGenerations = generations,
+                StartAutoplay = startAutoplay,
+                MaxFps = maxFps
             };
 
             // Parse shape injections

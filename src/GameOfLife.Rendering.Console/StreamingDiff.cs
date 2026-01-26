@@ -1,0 +1,109 @@
+namespace GameOfLife.Rendering.Console;
+
+/// <summary>
+/// Provides streaming differential rendering between two glyph streams.
+/// </summary>
+public static class StreamingDiff
+{
+    /// <summary>
+    /// Applies differences between two glyph streams to the output.
+    /// Only writes changes where glyphs differ.
+    /// </summary>
+    /// <param name="previous">The previous frame's glyph enumerator.</param>
+    /// <param name="current">The current frame's glyph enumerator.</param>
+    /// <param name="output">The text writer to output changes to.</param>
+    /// <param name="startRow">The starting row for the board (1-indexed). Default is 1.</param>
+    /// <remarks>
+    /// Uses ANSI escape sequences for cursor positioning.
+    /// Position tracking uses 1-indexed row/column (ANSI standard).
+    /// Newlines increment row and reset column.
+    /// Supports drawing a larger board over a smaller one, but not vice versa.
+    /// </remarks>
+    public static void Apply(
+        ref ColorNormalizedGlyphEnumerator previous,
+        ref ColorNormalizedGlyphEnumerator current,
+        TextWriter output,
+        int startRow = 1)
+    {
+        int row = startRow;
+        int col = 1;
+        AnsiSequence? lastWrittenColor = null;
+
+        while (current.MoveNext())
+        {
+            var hasPrev = previous.MoveNext();
+            var prevGlyph = hasPrev ? previous.Current : default;
+            var currGlyph = current.Current;
+
+            if (currGlyph.IsNewline)
+            {
+                row++;
+                col = 1;
+            }
+            else if (!hasPrev || !currGlyph.Equals(prevGlyph))
+            {
+                // Glyph changed - emit cursor position and character
+                output.Write($"\x1b[{row};{col}H");
+
+                // Emit color if different from last written
+                if (currGlyph.Color.HasValue && currGlyph.Color != lastWrittenColor)
+                {
+                    output.Write(currGlyph.Color.Value.ToAnsiString());
+                    lastWrittenColor = currGlyph.Color;
+                }
+
+                output.Write(currGlyph.Character);
+                col++;
+            }
+            else
+            {
+                // Same glyph, just advance position
+                col++;
+            }
+        }
+    }
+
+    /// <summary>
+    /// Writes the full frame to output (no diffing, for first frame).
+    /// </summary>
+    /// <param name="current">The glyph enumerator for the frame.</param>
+    /// <param name="output">The text writer to output to.</param>
+    /// <param name="startRow">The starting row for the board (1-indexed). Default is 1.</param>
+    public static void WriteFull(
+        ref ColorNormalizedGlyphEnumerator current,
+        TextWriter output,
+        int startRow = 1)
+    {
+        int row = startRow;
+        int col = 1;
+        AnsiSequence? lastWrittenColor = null;
+
+        // Position cursor at start
+        output.Write($"\x1b[{row};{col}H");
+
+        while (current.MoveNext())
+        {
+            var glyph = current.Current;
+
+            if (glyph.IsNewline)
+            {
+                // Write actual newline (will be translated by caller if needed)
+                output.Write('\n');
+                row++;
+                col = 1;
+            }
+            else
+            {
+                // Emit color if different from last written
+                if (glyph.Color.HasValue && glyph.Color != lastWrittenColor)
+                {
+                    output.Write(glyph.Color.Value.ToAnsiString());
+                    lastWrittenColor = glyph.Color;
+                }
+
+                output.Write(glyph.Character);
+                col++;
+            }
+        }
+    }
+}
