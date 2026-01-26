@@ -1,4 +1,4 @@
-namespace GameOfLife.Core.Tests;
+﻿namespace GameOfLife.Core.Tests;
 
 public class Grid2DTopologyTests
 {

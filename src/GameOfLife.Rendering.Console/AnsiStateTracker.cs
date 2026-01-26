@@ -1,4 +1,4 @@
-namespace GameOfLife.Rendering.Console;
+﻿namespace GameOfLife.Rendering.Console;
 
 /// <summary>
 /// A zero-allocation enumerator that normalizes glyph colors based on tracked state.

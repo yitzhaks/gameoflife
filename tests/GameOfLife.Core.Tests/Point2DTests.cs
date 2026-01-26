@@ -1,4 +1,4 @@
-namespace GameOfLife.Core.Tests;
+﻿namespace GameOfLife.Core.Tests;
 
 public class Point2DTests
 {
@@ -139,8 +139,8 @@ public class Point2DTests
             (2, 2)
         };
 
-        Assert.Contains<Point2D>((1, 1), set);
-        Assert.DoesNotContain<Point2D>((3, 3), set);
+        Assert.Contains((1, 1), set);
+        Assert.DoesNotContain((3, 3), set);
         Assert.Equal(3, set.Count);
     }
 

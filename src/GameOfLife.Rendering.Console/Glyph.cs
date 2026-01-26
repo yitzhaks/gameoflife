@@ -1,4 +1,4 @@
-namespace GameOfLife.Rendering.Console;
+﻿namespace GameOfLife.Rendering.Console;
 
 /// <summary>
 /// A displayable unit consisting of a color and a character.

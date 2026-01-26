@@ -1,4 +1,4 @@
-namespace GameOfLife.Core;
+﻿namespace GameOfLife.Core;
 
 /// <summary>
 /// A finite 2D rectangular grid topology with Moore neighborhood (8 neighbors).

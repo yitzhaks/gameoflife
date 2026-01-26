@@ -1,4 +1,4 @@
-using System.Diagnostics;
+﻿using System.Diagnostics;
 
 using GameOfLife.Core;
 using GameOfLife.Rendering;

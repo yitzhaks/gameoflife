@@ -1,4 +1,4 @@
-using GameOfLife.Core;
+﻿using GameOfLife.Core;
 
 namespace GameOfLife.Console;
 

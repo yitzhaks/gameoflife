@@ -1,4 +1,4 @@
-namespace GameOfLife.Rendering;
+﻿namespace GameOfLife.Rendering;
 
 /// <summary>
 /// Defines an axis-aligned bounding region with inclusive min and max corners.

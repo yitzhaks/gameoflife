@@ -1,4 +1,4 @@
-using GameOfLife.Core;
+﻿using GameOfLife.Core;
 using GameOfLife.Rendering;
 
 using Xunit;

@@ -1,4 +1,4 @@
-namespace GameOfLife.Console;
+﻿namespace GameOfLife.Console;
 
 /// <summary>
 /// Command-line options for the Game of Life console application.

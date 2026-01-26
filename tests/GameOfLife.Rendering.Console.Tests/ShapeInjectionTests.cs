@@ -1,4 +1,4 @@
-using GameOfLife.Console;
+﻿using GameOfLife.Console;
 
 using Xunit;
 

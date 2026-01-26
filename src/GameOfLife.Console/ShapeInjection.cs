@@ -1,4 +1,4 @@
-namespace GameOfLife.Console;
+﻿namespace GameOfLife.Console;
 
 /// <summary>
 /// Represents a shape to inject at a specific position.

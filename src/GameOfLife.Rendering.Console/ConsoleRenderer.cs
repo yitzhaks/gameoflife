@@ -1,6 +1,6 @@
-using GameOfLife.Core;
+﻿using System.Text;
 
-using System.Text;
+using GameOfLife.Core;
 
 namespace GameOfLife.Rendering.Console;
 
