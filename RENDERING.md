@@ -148,6 +148,39 @@ public interface IRenderer<TIdentity, TCoordinate, TBounds, TState>
 
 - 3D renderers (e.g., `Point3D`-based rendering)
 - Animation and multi-frame rendering are intentionally out of scope for initial implementations.
+- Console aspect ratio correction (see below)
+
+## Console Aspect Ratio
+
+Console characters are typically taller than they are wide (roughly 2:1 height-to-width ratio), causing Game of Life patterns to appear vertically stretched when each cell maps to a single character.
+
+### Approaches
+
+**Double-wide cells**: Render each cell as two horizontal characters (`██` instead of `█`). Simple to implement—emit two characters per cell in `TokenEnumerator`. Could be configurable via `--cell-width` option.
+
+**Half-block vertical packing**: Use Unicode half-block characters to represent two vertically adjacent cells in one character position:
+
+| Top Cell | Bottom Cell | Character |
+|----------|-------------|-----------|
+| Alive    | Alive       | `█` Full block |
+| Alive    | Dead        | `▀` Upper half (U+2580) |
+| Dead     | Alive       | `▄` Lower half (U+2584) |
+| Dead     | Dead        | ` ` Space |
+
+This requires using both foreground and background colors—the half-block's foreground fills one half while the background shows through the other. For example, `▀` with green foreground and dark gray background represents top-alive, bottom-dead.
+
+**Implementation considerations for half-block mode:**
+- `AnsiSequence` needs background color codes
+- `TokenEnumerator` iterates Y in steps of 2, looks up both cells per position
+- Odd-height grids treat the missing bottom row as all-dead
+- Rendered height becomes `ceil(gridHeight / 2)`
+- `StreamingDiff` must track background color state for differential rendering
+
+**Trade-offs:**
+- Double-wide is simpler but doubles horizontal space
+- Half-block is more compact but requires background color support and has more complex color logic
+
+Either approach could be exposed via a command-line option (e.g., `--aspect-mode wide|half-block|none`).
 
 ## Design Decisions
 
