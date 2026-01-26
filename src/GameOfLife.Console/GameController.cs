@@ -70,7 +70,12 @@ internal sealed class GameController
                 await _output.WriteAsync(CursorHome);
             }
 
-            return await RunGameLoopAsync(isInteractiveConsole, cancellationToken);
+            // Run game loop on dedicated thread to avoid blocking threadpool with SpinWait
+            return await Task.Factory.StartNew(
+                () => RunGameLoop(isInteractiveConsole, cancellationToken),
+                cancellationToken,
+                TaskCreationOptions.LongRunning,
+                TaskScheduler.Default);
         }
         catch (FileNotFoundException ex)
         {
@@ -93,7 +98,7 @@ internal sealed class GameController
         }
     }
 
-    private async Task<int> RunGameLoopAsync(bool isInteractiveConsole, CancellationToken cancellationToken)
+    private int RunGameLoop(bool isInteractiveConsole, CancellationToken cancellationToken)
     {
         // Create topology
         var topology = new Grid2DTopology(_options.Width, _options.Height);
@@ -200,11 +205,11 @@ internal sealed class GameController
             else
             {
                 // Non-interactive mode: use traditional rendering
-                await _output.WriteLineAsync($"Generation: {generation}");
-                await _output.WriteLineAsync();
+                _output.WriteLine($"Generation: {generation}");
+                _output.WriteLine();
                 renderer.Render(topology, timeline.Current);
-                await _output.WriteLineAsync();
-                await _output.WriteLineAsync("Space/Enter: Next | P: Play | Q/Esc: Quit");
+                _output.WriteLine();
+                _output.WriteLine("Space/Enter: Next | P: Play | Q/Esc: Quit");
             }
 
             // Check max generations
@@ -212,8 +217,8 @@ internal sealed class GameController
             {
                 if (!isInteractiveConsole)
                 {
-                    await _output.WriteLineAsync();
-                    await _output.WriteLineAsync($"Reached maximum generations ({maxGen}).");
+                    _output.WriteLine();
+                    _output.WriteLine($"Reached maximum generations ({maxGen}).");
                 }
 
                 break;
@@ -262,7 +267,7 @@ internal sealed class GameController
                             return 0;
                         }
 
-                        await Task.Delay(1, cancellationToken);
+                        Thread.Sleep(1);
                     }
 
                     var key = System.Console.ReadKey(true);
@@ -298,7 +303,7 @@ internal sealed class GameController
             else
             {
                 // When input is redirected, read a line
-                var line = await _input.ReadLineAsync(cancellationToken);
+                var line = _input.ReadLine();
                 if (line is null || line.Trim().Equals("q", StringComparison.OrdinalIgnoreCase))
                 {
                     return 0;
@@ -354,7 +359,7 @@ internal sealed class GameController
 
     private void RenderWithDiff(
         ConsoleRenderer renderer,
-        ITopology<Point2D> topology,
+        Grid2DTopology topology,
         IGeneration<Point2D, bool> currentGeneration,
         List<Glyph> previousFrameBuffer,
         List<Glyph> currentFrameBuffer,

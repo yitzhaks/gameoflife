@@ -3,12 +3,11 @@ using GameOfLife.Core;
 namespace GameOfLife.Rendering;
 
 /// <summary>
-/// A layout implementation for Point2D identities where the identity is used directly as the coordinate.
+/// A layout implementation for Grid2DTopology where the identity is used directly as the coordinate.
 /// </summary>
 public sealed class IdentityLayout : ILayout<Point2D, Point2D, RectangularBounds>
 {
-    private readonly ITopology<Point2D> _topology;
-    private readonly IdentityLayoutPositions _positions;
+    private readonly Grid2DTopology _topology;
 
     /// <summary>
     /// Gets the bounds of the layout region.
@@ -18,57 +17,22 @@ public sealed class IdentityLayout : ILayout<Point2D, Point2D, RectangularBounds
     /// <summary>
     /// Gets the positions of nodes in the layout.
     /// </summary>
-    public ILayoutPositions<Point2D, Point2D> Positions => _positions;
+    public ILayoutPositions<Point2D, Point2D> Positions { get; }
 
     /// <summary>
     /// Creates a new identity layout for the specified topology.
     /// </summary>
     /// <param name="topology">The topology to create a layout for.</param>
     /// <exception cref="ArgumentNullException">Thrown if topology is null.</exception>
-    /// <exception cref="InvalidOperationException">Thrown if the topology has no nodes.</exception>
-    public IdentityLayout(ITopology<Point2D> topology)
+    public IdentityLayout(Grid2DTopology topology)
     {
         ArgumentNullException.ThrowIfNull(topology);
 
         _topology = topology;
 
-        // Compute bounds from the topology nodes
-        var nodes = topology.Nodes.ToList();
-        if (nodes.Count == 0)
-        {
-            throw new InvalidOperationException("Cannot create a layout for an empty topology.");
-        }
-
-        var minX = int.MaxValue;
-        var minY = int.MaxValue;
-        var maxX = int.MinValue;
-        var maxY = int.MinValue;
-
-        foreach (var node in nodes)
-        {
-            if (node.X < minX)
-            {
-                minX = node.X;
-            }
-
-            if (node.Y < minY)
-            {
-                minY = node.Y;
-            }
-
-            if (node.X > maxX)
-            {
-                maxX = node.X;
-            }
-
-            if (node.Y > maxY)
-            {
-                maxY = node.Y;
-            }
-        }
-
-        Bounds = new RectangularBounds(new Point2D(minX, minY), new Point2D(maxX, maxY));
-        _positions = new IdentityLayoutPositions([.. nodes]);
+        // Compute bounds directly from grid dimensions - O(1)
+        Bounds = new RectangularBounds(new Point2D(0, 0), new Point2D(topology.Width - 1, topology.Height - 1));
+        Positions = new IdentityLayoutPositions(topology);
     }
 
     /// <summary>
@@ -88,15 +52,15 @@ public sealed class IdentityLayout : ILayout<Point2D, Point2D, RectangularBounds
     /// </summary>
     private sealed class IdentityLayoutPositions : ILayoutPositions<Point2D, Point2D>
     {
-        private readonly HashSet<Point2D> _validNodes;
+        private readonly Grid2DTopology _topology;
 
         /// <summary>
         /// Creates a new identity layout positions instance.
         /// </summary>
-        /// <param name="validNodes">The set of valid nodes in the topology.</param>
-        public IdentityLayoutPositions(HashSet<Point2D> validNodes)
+        /// <param name="topology">The grid topology defining valid nodes.</param>
+        public IdentityLayoutPositions(Grid2DTopology topology)
         {
-            _validNodes = validNodes;
+            _topology = topology;
         }
 
         /// <summary>
@@ -110,7 +74,8 @@ public sealed class IdentityLayout : ILayout<Point2D, Point2D, RectangularBounds
         {
             get
             {
-                if (!_validNodes.Contains(node))
+                // O(1) bounds check using grid dimensions
+                if (node.X < 0 || node.X >= _topology.Width || node.Y < 0 || node.Y >= _topology.Height)
                 {
                     throw new KeyNotFoundException($"Node {node} is not in the layout.");
                 }

@@ -7,10 +7,10 @@ namespace GameOfLife.Rendering.Console;
 /// <summary>
 /// Renders Game of Life generations to the console.
 /// </summary>
-public sealed class ConsoleRenderer : IRenderer<Point2D, Point2D, RectangularBounds, bool>
+public sealed class ConsoleRenderer : IRenderer<Grid2DTopology, Point2D, Point2D, RectangularBounds, bool>
 {
     private readonly TextWriter _output;
-    private readonly ILayoutEngine<Point2D, Point2D, RectangularBounds> _layoutEngine;
+    private readonly ILayoutEngine<Grid2DTopology, Point2D, Point2D, RectangularBounds> _layoutEngine;
     private readonly ConsoleTheme _theme;
     private readonly bool _supportsColor;
 
@@ -23,7 +23,7 @@ public sealed class ConsoleRenderer : IRenderer<Point2D, Point2D, RectangularBou
     /// <exception cref="ArgumentNullException">Thrown if output, layoutEngine, or theme is null.</exception>
     public ConsoleRenderer(
         TextWriter output,
-        ILayoutEngine<Point2D, Point2D, RectangularBounds> layoutEngine,
+        ILayoutEngine<Grid2DTopology, Point2D, Point2D, RectangularBounds> layoutEngine,
         ConsoleTheme theme)
     {
         ArgumentNullException.ThrowIfNull(output);
@@ -43,7 +43,7 @@ public sealed class ConsoleRenderer : IRenderer<Point2D, Point2D, RectangularBou
     /// <param name="topology">The topology defining the structure.</param>
     /// <param name="generation">The generation state to render.</param>
     /// <exception cref="ArgumentNullException">Thrown if topology or generation is null.</exception>
-    public void Render(ITopology<Point2D> topology, IGeneration<Point2D, bool> generation)
+    public void Render(Grid2DTopology topology, IGeneration<Point2D, bool> generation)
     {
         ArgumentNullException.ThrowIfNull(topology);
         ArgumentNullException.ThrowIfNull(generation);
@@ -173,7 +173,7 @@ public sealed class ConsoleRenderer : IRenderer<Point2D, Point2D, RectangularBou
     /// <param name="viewport">Optional viewport for clipping large boards.</param>
     /// <returns>A token enumerator that yields rendering tokens.</returns>
     /// <exception cref="ArgumentNullException">Thrown if topology or generation is null.</exception>
-    public TokenEnumerator GetTokenEnumerator(ITopology<Point2D> topology, IGeneration<Point2D, bool> generation, Viewport? viewport = null)
+    public TokenEnumerator GetTokenEnumerator(Grid2DTopology topology, IGeneration<Point2D, bool> generation, Viewport? viewport = null)
     {
         ArgumentNullException.ThrowIfNull(topology);
         ArgumentNullException.ThrowIfNull(generation);
@@ -192,7 +192,7 @@ public sealed class ConsoleRenderer : IRenderer<Point2D, Point2D, RectangularBou
     /// <param name="viewport">Optional viewport for clipping large boards.</param>
     /// <returns>A color-normalized glyph enumerator.</returns>
     /// <exception cref="ArgumentNullException">Thrown if topology or generation is null.</exception>
-    public ColorNormalizedGlyphEnumerator GetGlyphEnumerator(ITopology<Point2D> topology, IGeneration<Point2D, bool> generation, Viewport? viewport = null)
+    public ColorNormalizedGlyphEnumerator GetGlyphEnumerator(Grid2DTopology topology, IGeneration<Point2D, bool> generation, Viewport? viewport = null)
     {
         var tokenEnumerator = GetTokenEnumerator(topology, generation, viewport);
         var glyphEnumerator = GlyphReader.FromTokens(tokenEnumerator);
@@ -206,7 +206,7 @@ public sealed class ConsoleRenderer : IRenderer<Point2D, Point2D, RectangularBou
     /// <param name="generation">The generation state to render.</param>
     /// <returns>A string containing the rendered output with ANSI codes.</returns>
     /// <exception cref="ArgumentNullException">Thrown if topology or generation is null.</exception>
-    public string RenderToString(ITopology<Point2D> topology, IGeneration<Point2D, bool> generation)
+    public string RenderToString(Grid2DTopology topology, IGeneration<Point2D, bool> generation)
     {
         ArgumentNullException.ThrowIfNull(topology);
         ArgumentNullException.ThrowIfNull(generation);
