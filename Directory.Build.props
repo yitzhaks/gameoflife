@@ -1,0 +1,28 @@
+<Project>
+  <PropertyGroup>
+    <!-- Treat all warnings as errors -->
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+
+    <!-- Enable .NET analyzers -->
+    <EnableNETAnalyzers>true</EnableNETAnalyzers>
+
+    <!-- Use the latest and most extensive analysis rules -->
+    <!-- "latest-all" enables all rules at the latest supported level -->
+    <AnalysisLevel>latest-all</AnalysisLevel>
+
+    <!-- Treat code analysis warnings as errors -->
+    <CodeAnalysisTreatWarningsAsErrors>true</CodeAnalysisTreatWarningsAsErrors>
+
+    <!-- Enforce code style on build -->
+    <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+
+    <!-- Enable nullable reference types -->
+    <Nullable>enable</Nullable>
+
+    <!-- Enable implicit usings -->
+    <ImplicitUsings>enable</ImplicitUsings>
+
+    <!-- Generate documentation file (required for IDE0005) -->
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+  </PropertyGroup>
+</Project>
