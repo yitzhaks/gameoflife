@@ -1,4 +1,6 @@
-﻿using Xunit;
+﻿using Shouldly;
+
+using Xunit;
 
 namespace GameOfLife.Rendering.Console.Tests;
 
@@ -9,49 +11,51 @@ public class FrameBufferTests
     {
         var buffer = new FrameBuffer(10);
 
-        Assert.Equal(0, buffer.Count);
+        buffer.Count.ShouldBe(0);
     }
 
     [Fact]
-    public void Constructor_WithZeroCapacity_Throws() => _ = Assert.Throws<ArgumentOutOfRangeException>(() => new FrameBuffer(0));
+    public void Constructor_WithZeroCapacity_Throws() => _ = Should.Throw<ArgumentOutOfRangeException>(() => new FrameBuffer(0));
 
     [Fact]
-    public void Constructor_WithNegativeCapacity_Throws() => _ = Assert.Throws<ArgumentOutOfRangeException>(() => new FrameBuffer(-1));
+    public void Constructor_WithNegativeCapacity_Throws() => _ = Should.Throw<ArgumentOutOfRangeException>(() => new FrameBuffer(-1));
 
-    [Fact]
-    public void Add_WithinCapacity_AddsGlyph()
+    [Theory]
+    [AutoNSubstituteData]
+    public void Add_WithinCapacity_AddsGlyph(Glyph glyph)
     {
         var buffer = new FrameBuffer(5);
-        var glyph = new Glyph(null, 'A');
 
         buffer.Add(glyph);
 
-        Assert.Equal(1, buffer.Count);
-        Assert.Equal('A', buffer[0].Character);
+        buffer.Count.ShouldBe(1);
+        buffer[0].ShouldBe(glyph);
     }
 
-    [Fact]
-    public void Add_ExceedsCapacity_ThrowsInvalidOperation()
+    [Theory]
+    [AutoNSubstituteData]
+    public void Add_ExceedsCapacity_ThrowsInvalidOperation(Glyph glyph1, Glyph glyph2, Glyph glyph3)
     {
         var buffer = new FrameBuffer(2);
-        buffer.Add(new Glyph(null, 'A'));
-        buffer.Add(new Glyph(null, 'B'));
+        buffer.Add(glyph1);
+        buffer.Add(glyph2);
 
         // Adding a third glyph should throw
-        _ = Assert.Throws<InvalidOperationException>(() => buffer.Add(new Glyph(null, 'C')));
+        _ = Should.Throw<InvalidOperationException>(() => buffer.Add(glyph3));
     }
 
-    [Fact]
-    public void Add_ExceedsCapacity_DoesNotCorruptExistingData()
+    [Theory]
+    [AutoNSubstituteData]
+    public void Add_ExceedsCapacity_DoesNotCorruptExistingData(Glyph glyph1, Glyph glyph2, Glyph glyph3)
     {
         var buffer = new FrameBuffer(2);
-        buffer.Add(new Glyph(null, 'A'));
-        buffer.Add(new Glyph(null, 'B'));
+        buffer.Add(glyph1);
+        buffer.Add(glyph2);
 
         // Attempt to add beyond capacity
         try
         {
-            buffer.Add(new Glyph(null, 'C'));
+            buffer.Add(glyph3);
         }
         catch (InvalidOperationException)
         {
@@ -59,56 +63,60 @@ public class FrameBufferTests
         }
 
         // Existing data should still be intact
-        Assert.Equal(2, buffer.Count);
-        Assert.Equal('A', buffer[0].Character);
-        Assert.Equal('B', buffer[1].Character);
+        buffer.Count.ShouldBe(2);
+        buffer[0].ShouldBe(glyph1);
+        buffer[1].ShouldBe(glyph2);
     }
 
-    [Fact]
-    public void Clear_ResetsCount()
+    [Theory]
+    [AutoNSubstituteData]
+    public void Clear_ResetsCount(Glyph glyph1, Glyph glyph2)
     {
         var buffer = new FrameBuffer(5);
-        buffer.Add(new Glyph(null, 'A'));
-        buffer.Add(new Glyph(null, 'B'));
+        buffer.Add(glyph1);
+        buffer.Add(glyph2);
 
         buffer.Clear();
 
-        Assert.Equal(0, buffer.Count);
+        buffer.Count.ShouldBe(0);
     }
 
-    [Fact]
-    public void Clear_AllowsReuse()
+    [Theory]
+    [AutoNSubstituteData]
+    public void Clear_AllowsReuse(Glyph glyph1, Glyph glyph2, Glyph glyph3, Glyph glyph4)
     {
         var buffer = new FrameBuffer(2);
-        buffer.Add(new Glyph(null, 'A'));
-        buffer.Add(new Glyph(null, 'B'));
+        buffer.Add(glyph1);
+        buffer.Add(glyph2);
 
         buffer.Clear();
 
         // Should be able to add new glyphs
-        buffer.Add(new Glyph(null, 'X'));
-        buffer.Add(new Glyph(null, 'Y'));
+        buffer.Add(glyph3);
+        buffer.Add(glyph4);
 
-        Assert.Equal(2, buffer.Count);
-        Assert.Equal('X', buffer[0].Character);
-        Assert.Equal('Y', buffer[1].Character);
+        buffer.Count.ShouldBe(2);
+        buffer[0].ShouldBe(glyph3);
+        buffer[1].ShouldBe(glyph4);
     }
 
-    [Fact]
-    public void Indexer_ValidIndex_ReturnsGlyph()
+    [Theory]
+    [AutoNSubstituteData]
+    public void Indexer_ValidIndex_ReturnsGlyph(Glyph glyph1, Glyph glyph2, Glyph glyph3)
     {
         var buffer = new FrameBuffer(3);
-        buffer.Add(new Glyph(null, 'A'));
-        buffer.Add(new Glyph(null, 'B'));
-        buffer.Add(new Glyph(null, 'C'));
+        buffer.Add(glyph1);
+        buffer.Add(glyph2);
+        buffer.Add(glyph3);
 
-        Assert.Equal('A', buffer[0].Character);
-        Assert.Equal('B', buffer[1].Character);
-        Assert.Equal('C', buffer[2].Character);
+        buffer[0].ShouldBe(glyph1);
+        buffer[1].ShouldBe(glyph2);
+        buffer[2].ShouldBe(glyph3);
     }
 
-    [Fact]
-    public void ForViewport_CalculatesCorrectCapacity()
+    [Theory]
+    [AutoNSubstituteData]
+    public void ForViewport_CalculatesCorrectCapacity(Glyph glyph)
     {
         // 10x5 viewport = 12x7 with borders = 84 chars + 7 newlines = 91
         var buffer = FrameBuffer.ForViewport(10, 5);
@@ -116,9 +124,9 @@ public class FrameBufferTests
         // Should be able to add at least 91 glyphs without throwing
         for (int i = 0; i < 91; i++)
         {
-            buffer.Add(new Glyph(null, '.'));
+            buffer.Add(glyph);
         }
 
-        Assert.Equal(91, buffer.Count);
+        buffer.Count.ShouldBe(91);
     }
 }

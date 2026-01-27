@@ -1,4 +1,6 @@
-﻿namespace GameOfLife.Core.Tests;
+﻿using Shouldly;
+
+namespace GameOfLife.Core.Tests;
 
 public class RectangularTopologyTests
 {
@@ -9,40 +11,40 @@ public class RectangularTopologyTests
     {
         var topology = new RectangularTopology((5, 10));
 
-        Assert.NotNull(topology);
-        Assert.Equal(50, topology.Nodes.Count());
+        _ = topology.ShouldNotBeNull();
+        topology.Nodes.Count().ShouldBe(50);
     }
 
     [Fact]
     public void Constructor_WidthLessThanOne_ThrowsArgumentOutOfRangeException()
     {
-        ArgumentOutOfRangeException exception = Assert.Throws<ArgumentOutOfRangeException>(() => new RectangularTopology((-1, 5)));
+        ArgumentOutOfRangeException exception = Should.Throw<ArgumentOutOfRangeException>(() => new RectangularTopology((-1, 5)));
 
-        Assert.Equal("size", exception.ParamName);
+        exception.ParamName.ShouldBe("size");
     }
 
     [Fact]
     public void Constructor_WidthEqualsZero_ThrowsArgumentOutOfRangeException()
     {
-        ArgumentOutOfRangeException exception = Assert.Throws<ArgumentOutOfRangeException>(() => new RectangularTopology((0, 5)));
+        ArgumentOutOfRangeException exception = Should.Throw<ArgumentOutOfRangeException>(() => new RectangularTopology((0, 5)));
 
-        Assert.Equal("size", exception.ParamName);
+        exception.ParamName.ShouldBe("size");
     }
 
     [Fact]
     public void Constructor_HeightLessThanOne_ThrowsArgumentOutOfRangeException()
     {
-        ArgumentOutOfRangeException exception = Assert.Throws<ArgumentOutOfRangeException>(() => new RectangularTopology((5, -1)));
+        ArgumentOutOfRangeException exception = Should.Throw<ArgumentOutOfRangeException>(() => new RectangularTopology((5, -1)));
 
-        Assert.Equal("size", exception.ParamName);
+        exception.ParamName.ShouldBe("size");
     }
 
     [Fact]
     public void Constructor_HeightEqualsZero_ThrowsArgumentOutOfRangeException()
     {
-        ArgumentOutOfRangeException exception = Assert.Throws<ArgumentOutOfRangeException>(() => new RectangularTopology((5, 0)));
+        ArgumentOutOfRangeException exception = Should.Throw<ArgumentOutOfRangeException>(() => new RectangularTopology((5, 0)));
 
-        Assert.Equal("size", exception.ParamName);
+        exception.ParamName.ShouldBe("size");
     }
 
     #endregion
@@ -54,7 +56,7 @@ public class RectangularTopologyTests
     {
         var topology = new RectangularTopology((4, 3));
 
-        Assert.Equal(12, topology.Nodes.Count());
+        topology.Nodes.Count().ShouldBe(12);
     }
 
     [Fact]
@@ -69,10 +71,10 @@ public class RectangularTopologyTests
             (0, 1), (1, 1), (2, 1)
         ];
 
-        Assert.Equal(expectedPoints.Length, nodes.Count);
+        nodes.Count.ShouldBe(expectedPoints.Length);
         foreach (Point2D expected in expectedPoints)
         {
-            Assert.Contains(expected, nodes);
+            nodes.ShouldContain(expected);
         }
     }
 
@@ -82,8 +84,8 @@ public class RectangularTopologyTests
         var topology = new RectangularTopology((1, 1));
         var nodes = topology.Nodes.ToList();
 
-        _ = Assert.Single(nodes);
-        Assert.Equal(default, nodes[0]);
+        _ = nodes.ShouldHaveSingleItem();
+        nodes[0].ShouldBe(default);
     }
 
     #endregion
@@ -96,10 +98,10 @@ public class RectangularTopologyTests
         var topology = new RectangularTopology((5, 5));
         var neighbors = topology.GetNeighbors(default).ToList();
 
-        Assert.Equal(3, neighbors.Count);
-        Assert.Contains((1, 0), neighbors);
-        Assert.Contains((0, 1), neighbors);
-        Assert.Contains((1, 1), neighbors);
+        neighbors.Count.ShouldBe(3);
+        neighbors.ShouldContain((1, 0));
+        neighbors.ShouldContain((0, 1));
+        neighbors.ShouldContain((1, 1));
     }
 
     [Fact]
@@ -108,10 +110,10 @@ public class RectangularTopologyTests
         var topology = new RectangularTopology((5, 5));
         var neighbors = topology.GetNeighbors((4, 4)).ToList();
 
-        Assert.Equal(3, neighbors.Count);
-        Assert.Contains((3, 3), neighbors);
-        Assert.Contains((4, 3), neighbors);
-        Assert.Contains((3, 4), neighbors);
+        neighbors.Count.ShouldBe(3);
+        neighbors.ShouldContain((3, 3));
+        neighbors.ShouldContain((4, 3));
+        neighbors.ShouldContain((3, 4));
     }
 
     [Fact]
@@ -121,12 +123,12 @@ public class RectangularTopologyTests
         // Testing edge cell at (2, 0) - top edge, not a corner
         var neighbors = topology.GetNeighbors((2, 0)).ToList();
 
-        Assert.Equal(5, neighbors.Count);
-        Assert.Contains((1, 0), neighbors);
-        Assert.Contains((3, 0), neighbors);
-        Assert.Contains((1, 1), neighbors);
-        Assert.Contains((2, 1), neighbors);
-        Assert.Contains((3, 1), neighbors);
+        neighbors.Count.ShouldBe(5);
+        neighbors.ShouldContain((1, 0));
+        neighbors.ShouldContain((3, 0));
+        neighbors.ShouldContain((1, 1));
+        neighbors.ShouldContain((2, 1));
+        neighbors.ShouldContain((3, 1));
     }
 
     [Fact]
@@ -135,15 +137,15 @@ public class RectangularTopologyTests
         var topology = new RectangularTopology((5, 5));
         var neighbors = topology.GetNeighbors((2, 2)).ToList();
 
-        Assert.Equal(8, neighbors.Count);
-        Assert.Contains((1, 1), neighbors);
-        Assert.Contains((2, 1), neighbors);
-        Assert.Contains((3, 1), neighbors);
-        Assert.Contains((1, 2), neighbors);
-        Assert.Contains((3, 2), neighbors);
-        Assert.Contains((1, 3), neighbors);
-        Assert.Contains((2, 3), neighbors);
-        Assert.Contains((3, 3), neighbors);
+        neighbors.Count.ShouldBe(8);
+        neighbors.ShouldContain((1, 1));
+        neighbors.ShouldContain((2, 1));
+        neighbors.ShouldContain((3, 1));
+        neighbors.ShouldContain((1, 2));
+        neighbors.ShouldContain((3, 2));
+        neighbors.ShouldContain((1, 3));
+        neighbors.ShouldContain((2, 3));
+        neighbors.ShouldContain((3, 3));
     }
 
     #endregion
@@ -155,10 +157,10 @@ public class RectangularTopologyTests
     {
         var topology = new RectangularTopology((5, 5));
 
-        ArgumentOutOfRangeException exception = Assert.Throws<ArgumentOutOfRangeException>(() =>
+        ArgumentOutOfRangeException exception = Should.Throw<ArgumentOutOfRangeException>(() =>
             topology.GetNeighbors((-1, 2)).ToList());
 
-        Assert.Equal("node", exception.ParamName);
+        exception.ParamName.ShouldBe("node");
     }
 
     [Fact]
@@ -166,10 +168,10 @@ public class RectangularTopologyTests
     {
         var topology = new RectangularTopology((5, 5));
 
-        ArgumentOutOfRangeException exception = Assert.Throws<ArgumentOutOfRangeException>(() =>
+        ArgumentOutOfRangeException exception = Should.Throw<ArgumentOutOfRangeException>(() =>
             topology.GetNeighbors((5, 2)).ToList());
 
-        Assert.Equal("node", exception.ParamName);
+        exception.ParamName.ShouldBe("node");
     }
 
     [Fact]
@@ -177,10 +179,10 @@ public class RectangularTopologyTests
     {
         var topology = new RectangularTopology((5, 5));
 
-        ArgumentOutOfRangeException exception = Assert.Throws<ArgumentOutOfRangeException>(() =>
+        ArgumentOutOfRangeException exception = Should.Throw<ArgumentOutOfRangeException>(() =>
             topology.GetNeighbors((2, -1)).ToList());
 
-        Assert.Equal("node", exception.ParamName);
+        exception.ParamName.ShouldBe("node");
     }
 
     [Fact]
@@ -188,10 +190,10 @@ public class RectangularTopologyTests
     {
         var topology = new RectangularTopology((5, 5));
 
-        ArgumentOutOfRangeException exception = Assert.Throws<ArgumentOutOfRangeException>(() =>
+        ArgumentOutOfRangeException exception = Should.Throw<ArgumentOutOfRangeException>(() =>
             topology.GetNeighbors((2, 5)).ToList());
 
-        Assert.Equal("node", exception.ParamName);
+        exception.ParamName.ShouldBe("node");
     }
 
     #endregion
@@ -210,7 +212,7 @@ public class RectangularTopologyTests
         foreach (Point2D neighbor in centerNeighbors)
         {
             var neighborOfNeighbor = topology.GetNeighbors(neighbor).ToList();
-            Assert.Contains(centerNode, neighborOfNeighbor);
+            neighborOfNeighbor.ShouldContain(centerNode);
         }
     }
 
@@ -226,7 +228,7 @@ public class RectangularTopologyTests
         foreach (Point2D neighbor in edgeNeighbors)
         {
             var neighborOfNeighbor = topology.GetNeighbors(neighbor).ToList();
-            Assert.Contains(edgeNode, neighborOfNeighbor);
+            neighborOfNeighbor.ShouldContain(edgeNode);
         }
     }
 
@@ -250,7 +252,7 @@ public class RectangularTopologyTests
             foreach (Point2D neighbor in cornerNeighbors)
             {
                 var neighborOfNeighbor = topology.GetNeighbors(neighbor).ToList();
-                Assert.Contains(corner, neighborOfNeighbor);
+                neighborOfNeighbor.ShouldContain(corner);
             }
         }
     }
@@ -264,7 +266,7 @@ public class RectangularTopologyTests
     {
         var topology = new RectangularTopology((3, 3));
 
-        _ = Assert.IsAssignableFrom<ITopology<Point2D>>(topology);
+        _ = topology.ShouldBeAssignableTo<ITopology<Point2D>>();
     }
 
     #endregion

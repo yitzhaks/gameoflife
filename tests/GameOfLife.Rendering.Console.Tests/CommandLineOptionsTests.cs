@@ -1,6 +1,8 @@
 ﻿using GameOfLife.Console;
 using GameOfLife.Core;
 
+using Shouldly;
+
 using Xunit;
 
 namespace GameOfLife.Rendering.Console.Tests;
@@ -12,12 +14,12 @@ public class CommandLineOptionsTests
     {
         var options = new CommandLineOptions();
 
-        Assert.Equal(20, options.Width);
-        Assert.Equal(20, options.Height);
-        Assert.Null(options.MaxGenerations);
-        Assert.False(options.StartAutoplay);
-        Assert.Equal(30, options.MaxFps);
-        Assert.Empty(options.Injections);
+        options.Width.ShouldBe(20);
+        options.Height.ShouldBe(20);
+        options.MaxGenerations.ShouldBeNull();
+        options.StartAutoplay.ShouldBeFalse();
+        options.MaxFps.ShouldBe(30);
+        options.Injections.ShouldBeEmpty();
     }
 
     [Fact]
@@ -25,7 +27,7 @@ public class CommandLineOptionsTests
     {
         var options = new CommandLineOptions { Width = 50 };
 
-        Assert.Equal(50, options.Width);
+        options.Width.ShouldBe(50);
     }
 
     [Fact]
@@ -33,7 +35,7 @@ public class CommandLineOptionsTests
     {
         var options = new CommandLineOptions { Height = 40 };
 
-        Assert.Equal(40, options.Height);
+        options.Height.ShouldBe(40);
     }
 
     [Fact]
@@ -41,7 +43,7 @@ public class CommandLineOptionsTests
     {
         var options = new CommandLineOptions { MaxGenerations = 100 };
 
-        Assert.Equal(100, options.MaxGenerations);
+        options.MaxGenerations.ShouldBe(100);
     }
 
     [Fact]
@@ -49,7 +51,7 @@ public class CommandLineOptionsTests
     {
         var options = new CommandLineOptions { StartAutoplay = true };
 
-        Assert.True(options.StartAutoplay);
+        options.StartAutoplay.ShouldBeTrue();
     }
 
     [Fact]
@@ -57,7 +59,7 @@ public class CommandLineOptionsTests
     {
         var options = new CommandLineOptions { MaxFps = 60 };
 
-        Assert.Equal(60, options.MaxFps);
+        options.MaxFps.ShouldBe(60);
     }
 
     [Fact]
@@ -70,8 +72,8 @@ public class CommandLineOptionsTests
         };
         var options = new CommandLineOptions { Injections = injections };
 
-        Assert.Equal(2, options.Injections.Count);
-        Assert.Equal("glider", options.Injections[0].PatternName);
-        Assert.Equal("block", options.Injections[1].PatternName);
+        options.Injections.Count.ShouldBe(2);
+        options.Injections[0].PatternName.ShouldBe("glider");
+        options.Injections[1].PatternName.ShouldBe("block");
     }
 }

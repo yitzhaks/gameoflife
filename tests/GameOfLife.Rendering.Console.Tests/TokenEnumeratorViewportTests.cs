@@ -1,6 +1,8 @@
 ﻿using GameOfLife.Core;
 using GameOfLife.Rendering;
 
+using Shouldly;
+
 using Xunit;
 
 namespace GameOfLife.Rendering.Console.Tests;
@@ -57,24 +59,24 @@ public class TokenEnumeratorViewportTests
         string[] lines = GetLines(output);
 
         // Top border: solid (at top edge) - corners follow top edge's solid character
-        Assert.StartsWith("╔", lines[0]); // Top-left corner (both at top+left)
-        Assert.Contains("═════", lines[0]); // Solid horizontal
-        Assert.EndsWith("═", lines[0]); // Top-right extends solid (at top, not at right)
+        lines[0].ShouldStartWith("╔"); // Top-left corner (both at top+left)
+        lines[0].ShouldContain("═════"); // Solid horizontal
+        lines[0].ShouldEndWith("═"); // Top-right extends solid (at top, not at right)
 
         // Left border: solid vertical bars
-        Assert.StartsWith("║", lines[1]);
-        Assert.StartsWith("║", lines[2]);
-        Assert.StartsWith("║", lines[3]);
+        lines[1].ShouldStartWith("║");
+        lines[2].ShouldStartWith("║");
+        lines[3].ShouldStartWith("║");
 
         // Right border: arrows (more content right)
-        Assert.EndsWith("→", lines[1]);
-        Assert.EndsWith("→", lines[2]);
-        Assert.EndsWith("→", lines[3]);
+        lines[1].ShouldEndWith("→");
+        lines[2].ShouldEndWith("→");
+        lines[3].ShouldEndWith("→");
 
         // Bottom border: down arrows (more content below)
-        Assert.StartsWith("║", lines[4]); // Bottom-left corner (at left edge, not bottom)
-        Assert.Contains("↓↓↓↓↓", lines[4]); // Down arrows
-        Assert.EndsWith("↘", lines[4]); // Diagonal corner (not at bottom, not at right)
+        lines[4].ShouldStartWith("║"); // Bottom-left corner (at left edge, not bottom)
+        lines[4].ShouldContain("↓↓↓↓↓"); // Down arrows
+        lines[4].ShouldEndWith("↘"); // Diagonal corner (not at bottom, not at right)
     }
 
     [Fact]
@@ -88,24 +90,24 @@ public class TokenEnumeratorViewportTests
         string[] lines = GetLines(output);
 
         // Top border: solid (at top edge), but left corner shows more content left
-        Assert.StartsWith("═", lines[0]); // Top-left corner extends solid (at top, not at left)
-        Assert.Contains("═════", lines[0]); // Solid horizontal
-        Assert.EndsWith("═", lines[0]); // Top-right corner (at top, not at right)
+        lines[0].ShouldStartWith("═"); // Top-left corner extends solid (at top, not at left)
+        lines[0].ShouldContain("═════"); // Solid horizontal
+        lines[0].ShouldEndWith("═"); // Top-right corner (at top, not at right)
 
         // Left border: arrows (more content left)
-        Assert.StartsWith("←", lines[1]);
-        Assert.StartsWith("←", lines[2]);
-        Assert.StartsWith("←", lines[3]);
+        lines[1].ShouldStartWith("←");
+        lines[2].ShouldStartWith("←");
+        lines[3].ShouldStartWith("←");
 
         // Right border: arrows (more content right)
-        Assert.EndsWith("→", lines[1]);
-        Assert.EndsWith("→", lines[2]);
-        Assert.EndsWith("→", lines[3]);
+        lines[1].ShouldEndWith("→");
+        lines[2].ShouldEndWith("→");
+        lines[3].ShouldEndWith("→");
 
         // Bottom border: arrows (more content below)
-        Assert.StartsWith("↙", lines[4]); // Diagonal corner (at neither edge)
-        Assert.Contains("↓↓↓↓↓", lines[4]); // Down arrows
-        Assert.EndsWith("↘", lines[4]); // Diagonal corner
+        lines[4].ShouldStartWith("↙"); // Diagonal corner (at neither edge)
+        lines[4].ShouldContain("↓↓↓↓↓"); // Down arrows
+        lines[4].ShouldEndWith("↘"); // Diagonal corner
     }
 
     [Fact]
@@ -119,24 +121,24 @@ public class TokenEnumeratorViewportTests
         string[] lines = GetLines(output);
 
         // Top border: solid (at top edge)
-        Assert.StartsWith("═", lines[0]); // Top-left corner (at top, not at left)
-        Assert.Contains("═════", lines[0]); // Solid horizontal
-        Assert.EndsWith("╗", lines[0]); // Top-right corner (at both edges)
+        lines[0].ShouldStartWith("═"); // Top-left corner (at top, not at left)
+        lines[0].ShouldContain("═════"); // Solid horizontal
+        lines[0].ShouldEndWith("╗"); // Top-right corner (at both edges)
 
         // Left border: arrows (more content left)
-        Assert.StartsWith("←", lines[1]);
-        Assert.StartsWith("←", lines[2]);
-        Assert.StartsWith("←", lines[3]);
+        lines[1].ShouldStartWith("←");
+        lines[2].ShouldStartWith("←");
+        lines[3].ShouldStartWith("←");
 
         // Right border: solid (at right edge)
-        Assert.EndsWith("║", lines[1]);
-        Assert.EndsWith("║", lines[2]);
-        Assert.EndsWith("║", lines[3]);
+        lines[1].ShouldEndWith("║");
+        lines[2].ShouldEndWith("║");
+        lines[3].ShouldEndWith("║");
 
         // Bottom border: arrows (more content below)
-        Assert.StartsWith("↙", lines[4]); // Diagonal corner
-        Assert.Contains("↓↓↓↓↓", lines[4]); // Down arrows
-        Assert.EndsWith("║", lines[4]); // Bottom-right corner (at right, not at bottom)
+        lines[4].ShouldStartWith("↙"); // Diagonal corner
+        lines[4].ShouldContain("↓↓↓↓↓"); // Down arrows
+        lines[4].ShouldEndWith("║"); // Bottom-right corner (at right, not at bottom)
     }
 
     [Fact]
@@ -150,24 +152,24 @@ public class TokenEnumeratorViewportTests
         string[] lines = GetLines(output);
 
         // Top border: arrows (more content above)
-        Assert.StartsWith("║", lines[0]); // Top-left corner (at left, not at top)
-        Assert.Contains("↑↑↑↑↑", lines[0]); // Up arrows
-        Assert.EndsWith("↗", lines[0]); // Diagonal corner
+        lines[0].ShouldStartWith("║"); // Top-left corner (at left, not at top)
+        lines[0].ShouldContain("↑↑↑↑↑"); // Up arrows
+        lines[0].ShouldEndWith("↗"); // Diagonal corner
 
         // Left border: solid (at left edge)
-        Assert.StartsWith("║", lines[1]);
-        Assert.StartsWith("║", lines[2]);
-        Assert.StartsWith("║", lines[3]);
+        lines[1].ShouldStartWith("║");
+        lines[2].ShouldStartWith("║");
+        lines[3].ShouldStartWith("║");
 
         // Right border: arrows (more content right)
-        Assert.EndsWith("→", lines[1]);
-        Assert.EndsWith("→", lines[2]);
-        Assert.EndsWith("→", lines[3]);
+        lines[1].ShouldEndWith("→");
+        lines[2].ShouldEndWith("→");
+        lines[3].ShouldEndWith("→");
 
         // Bottom border: arrows (more content below)
-        Assert.StartsWith("║", lines[4]); // Bottom-left corner (at left, not at bottom)
-        Assert.Contains("↓↓↓↓↓", lines[4]); // Down arrows
-        Assert.EndsWith("↘", lines[4]); // Diagonal corner
+        lines[4].ShouldStartWith("║"); // Bottom-left corner (at left, not at bottom)
+        lines[4].ShouldContain("↓↓↓↓↓"); // Down arrows
+        lines[4].ShouldEndWith("↘"); // Diagonal corner
     }
 
     [Fact]
@@ -181,24 +183,24 @@ public class TokenEnumeratorViewportTests
         string[] lines = GetLines(output);
 
         // Top border: all arrows (more content above)
-        Assert.StartsWith("↖", lines[0]); // Diagonal corner (at neither edge)
-        Assert.Contains("↑↑↑↑↑", lines[0]); // Up arrows
-        Assert.EndsWith("↗", lines[0]); // Diagonal corner
+        lines[0].ShouldStartWith("↖"); // Diagonal corner (at neither edge)
+        lines[0].ShouldContain("↑↑↑↑↑"); // Up arrows
+        lines[0].ShouldEndWith("↗"); // Diagonal corner
 
         // Left border: arrows (more content left)
-        Assert.StartsWith("←", lines[1]);
-        Assert.StartsWith("←", lines[2]);
-        Assert.StartsWith("←", lines[3]);
+        lines[1].ShouldStartWith("←");
+        lines[2].ShouldStartWith("←");
+        lines[3].ShouldStartWith("←");
 
         // Right border: arrows (more content right)
-        Assert.EndsWith("→", lines[1]);
-        Assert.EndsWith("→", lines[2]);
-        Assert.EndsWith("→", lines[3]);
+        lines[1].ShouldEndWith("→");
+        lines[2].ShouldEndWith("→");
+        lines[3].ShouldEndWith("→");
 
         // Bottom border: all arrows (more content below)
-        Assert.StartsWith("↙", lines[4]); // Diagonal corner
-        Assert.Contains("↓↓↓↓↓", lines[4]); // Down arrows
-        Assert.EndsWith("↘", lines[4]); // Diagonal corner
+        lines[4].ShouldStartWith("↙"); // Diagonal corner
+        lines[4].ShouldContain("↓↓↓↓↓"); // Down arrows
+        lines[4].ShouldEndWith("↘"); // Diagonal corner
     }
 
     [Fact]
@@ -212,24 +214,24 @@ public class TokenEnumeratorViewportTests
         string[] lines = GetLines(output);
 
         // Top border: arrows (more content above)
-        Assert.StartsWith("↖", lines[0]); // Diagonal corner
-        Assert.Contains("↑↑↑↑↑", lines[0]); // Up arrows
-        Assert.EndsWith("║", lines[0]); // Top-right corner (at right, not at top)
+        lines[0].ShouldStartWith("↖"); // Diagonal corner
+        lines[0].ShouldContain("↑↑↑↑↑"); // Up arrows
+        lines[0].ShouldEndWith("║"); // Top-right corner (at right, not at top)
 
         // Left border: arrows (more content left)
-        Assert.StartsWith("←", lines[1]);
-        Assert.StartsWith("←", lines[2]);
-        Assert.StartsWith("←", lines[3]);
+        lines[1].ShouldStartWith("←");
+        lines[2].ShouldStartWith("←");
+        lines[3].ShouldStartWith("←");
 
         // Right border: solid (at right edge)
-        Assert.EndsWith("║", lines[1]);
-        Assert.EndsWith("║", lines[2]);
-        Assert.EndsWith("║", lines[3]);
+        lines[1].ShouldEndWith("║");
+        lines[2].ShouldEndWith("║");
+        lines[3].ShouldEndWith("║");
 
         // Bottom border: arrows (more content below)
-        Assert.StartsWith("↙", lines[4]); // Diagonal corner
-        Assert.Contains("↓↓↓↓↓", lines[4]); // Down arrows
-        Assert.EndsWith("║", lines[4]); // Bottom-right corner (at right, not at bottom)
+        lines[4].ShouldStartWith("↙"); // Diagonal corner
+        lines[4].ShouldContain("↓↓↓↓↓"); // Down arrows
+        lines[4].ShouldEndWith("║"); // Bottom-right corner (at right, not at bottom)
     }
 
     [Fact]
@@ -243,24 +245,24 @@ public class TokenEnumeratorViewportTests
         string[] lines = GetLines(output);
 
         // Top border: arrows (more content above)
-        Assert.StartsWith("║", lines[0]); // Top-left corner (at left, not at top)
-        Assert.Contains("↑↑↑↑↑", lines[0]); // Up arrows
-        Assert.EndsWith("↗", lines[0]); // Diagonal corner
+        lines[0].ShouldStartWith("║"); // Top-left corner (at left, not at top)
+        lines[0].ShouldContain("↑↑↑↑↑"); // Up arrows
+        lines[0].ShouldEndWith("↗"); // Diagonal corner
 
         // Left border: solid (at left edge)
-        Assert.StartsWith("║", lines[1]);
-        Assert.StartsWith("║", lines[2]);
-        Assert.StartsWith("║", lines[3]);
+        lines[1].ShouldStartWith("║");
+        lines[2].ShouldStartWith("║");
+        lines[3].ShouldStartWith("║");
 
         // Right border: arrows (more content right)
-        Assert.EndsWith("→", lines[1]);
-        Assert.EndsWith("→", lines[2]);
-        Assert.EndsWith("→", lines[3]);
+        lines[1].ShouldEndWith("→");
+        lines[2].ShouldEndWith("→");
+        lines[3].ShouldEndWith("→");
 
         // Bottom border: solid (at bottom edge)
-        Assert.StartsWith("╚", lines[4]); // Bottom-left corner (at both edges)
-        Assert.Contains("═════", lines[4]); // Solid horizontal
-        Assert.EndsWith("═", lines[4]); // Bottom-right corner (at bottom, not at right)
+        lines[4].ShouldStartWith("╚"); // Bottom-left corner (at both edges)
+        lines[4].ShouldContain("═════"); // Solid horizontal
+        lines[4].ShouldEndWith("═"); // Bottom-right corner (at bottom, not at right)
     }
 
     [Fact]
@@ -274,24 +276,24 @@ public class TokenEnumeratorViewportTests
         string[] lines = GetLines(output);
 
         // Top border: arrows (more content above)
-        Assert.StartsWith("↖", lines[0]); // Diagonal corner
-        Assert.Contains("↑↑↑↑↑", lines[0]); // Up arrows
-        Assert.EndsWith("↗", lines[0]); // Diagonal corner
+        lines[0].ShouldStartWith("↖"); // Diagonal corner
+        lines[0].ShouldContain("↑↑↑↑↑"); // Up arrows
+        lines[0].ShouldEndWith("↗"); // Diagonal corner
 
         // Left border: arrows (more content left)
-        Assert.StartsWith("←", lines[1]);
-        Assert.StartsWith("←", lines[2]);
-        Assert.StartsWith("←", lines[3]);
+        lines[1].ShouldStartWith("←");
+        lines[2].ShouldStartWith("←");
+        lines[3].ShouldStartWith("←");
 
         // Right border: arrows (more content right)
-        Assert.EndsWith("→", lines[1]);
-        Assert.EndsWith("→", lines[2]);
-        Assert.EndsWith("→", lines[3]);
+        lines[1].ShouldEndWith("→");
+        lines[2].ShouldEndWith("→");
+        lines[3].ShouldEndWith("→");
 
         // Bottom border: solid (at bottom edge)
-        Assert.StartsWith("═", lines[4]); // Bottom-left corner (at bottom, not at left)
-        Assert.Contains("═════", lines[4]); // Solid horizontal
-        Assert.EndsWith("═", lines[4]); // Bottom-right corner (at bottom, not at right)
+        lines[4].ShouldStartWith("═"); // Bottom-left corner (at bottom, not at left)
+        lines[4].ShouldContain("═════"); // Solid horizontal
+        lines[4].ShouldEndWith("═"); // Bottom-right corner (at bottom, not at right)
     }
 
     [Fact]
@@ -305,24 +307,24 @@ public class TokenEnumeratorViewportTests
         string[] lines = GetLines(output);
 
         // Top border: arrows (more content above)
-        Assert.StartsWith("↖", lines[0]); // Diagonal corner
-        Assert.Contains("↑↑↑↑↑", lines[0]); // Up arrows
-        Assert.EndsWith("║", lines[0]); // Top-right corner (at right, not at top)
+        lines[0].ShouldStartWith("↖"); // Diagonal corner
+        lines[0].ShouldContain("↑↑↑↑↑"); // Up arrows
+        lines[0].ShouldEndWith("║"); // Top-right corner (at right, not at top)
 
         // Left border: arrows (more content left)
-        Assert.StartsWith("←", lines[1]);
-        Assert.StartsWith("←", lines[2]);
-        Assert.StartsWith("←", lines[3]);
+        lines[1].ShouldStartWith("←");
+        lines[2].ShouldStartWith("←");
+        lines[3].ShouldStartWith("←");
 
         // Right border: solid (at right edge)
-        Assert.EndsWith("║", lines[1]);
-        Assert.EndsWith("║", lines[2]);
-        Assert.EndsWith("║", lines[3]);
+        lines[1].ShouldEndWith("║");
+        lines[2].ShouldEndWith("║");
+        lines[3].ShouldEndWith("║");
 
         // Bottom border: solid (at bottom edge)
-        Assert.StartsWith("═", lines[4]); // Bottom-left corner (at bottom, not at left)
-        Assert.Contains("═════", lines[4]); // Solid horizontal
-        Assert.EndsWith("╝", lines[4]); // Bottom-right corner (at both edges)
+        lines[4].ShouldStartWith("═"); // Bottom-left corner (at bottom, not at left)
+        lines[4].ShouldContain("═════"); // Solid horizontal
+        lines[4].ShouldEndWith("╝"); // Bottom-right corner (at both edges)
     }
 
     [Fact]
@@ -354,11 +356,11 @@ public class TokenEnumeratorViewportTests
         string[] lines = GetLines(output);
 
         // All classic solid borders
-        Assert.Equal("╔═════╗", lines[0]);
-        Assert.Equal("║.....║", lines[1]);
-        Assert.Equal("║.....║", lines[2]);
-        Assert.Equal("║.....║", lines[3]);
-        Assert.Equal("╚═════╝", lines[4]);
+        lines[0].ShouldBe("╔═════╗");
+        lines[1].ShouldBe("║.....║");
+        lines[2].ShouldBe("║.....║");
+        lines[3].ShouldBe("║.....║");
+        lines[4].ShouldBe("╚═════╝");
     }
 
     [Fact]
@@ -403,9 +405,9 @@ public class TokenEnumeratorViewportTests
         string[] lines = GetLines(output);
 
         // Should show 3x3 grid with top row all alive
-        Assert.Equal(3, lines.Length);
-        Assert.Equal("###", lines[0]); // Row at y=2: cells at x=2,3,4 are alive
-        Assert.Equal("...", lines[1]); // Row at y=3: all dead
-        Assert.Equal("...", lines[2]); // Row at y=4: all dead
+        lines.Length.ShouldBe(3);
+        lines[0].ShouldBe("###"); // Row at y=2: cells at x=2,3,4 are alive
+        lines[1].ShouldBe("..."); // Row at y=3: all dead
+        lines[2].ShouldBe("..."); // Row at y=4: all dead
     }
 }

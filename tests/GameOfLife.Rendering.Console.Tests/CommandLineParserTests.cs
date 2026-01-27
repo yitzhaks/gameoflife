@@ -2,6 +2,8 @@
 
 using GameOfLife.Console;
 
+using Shouldly;
+
 using Xunit;
 
 namespace GameOfLife.Rendering.Console.Tests;
@@ -9,15 +11,15 @@ namespace GameOfLife.Rendering.Console.Tests;
 public class CommandLineParserTests
 {
     [Fact]
-    public void CreateRootCommand_NullHandler_ThrowsArgumentNullException() => Assert.Throws<ArgumentNullException>(() => CommandLineParser.CreateRootCommand(null!));
+    public void CreateRootCommand_NullHandler_ThrowsArgumentNullException() => Should.Throw<ArgumentNullException>(() => CommandLineParser.CreateRootCommand(null!));
 
     [Fact]
     public void CreateRootCommand_ReturnsRootCommand()
     {
         RootCommand command = CommandLineParser.CreateRootCommand(_ => Task.FromResult(0));
 
-        Assert.NotNull(command);
-        Assert.Equal("Conway's Game of Life console application", command.Description);
+        _ = command.ShouldNotBeNull();
+        command.Description.ShouldBe("Conway's Game of Life console application");
     }
 
     [Fact]
@@ -32,13 +34,13 @@ public class CommandLineParserTests
 
         _ = command.Parse([]).Invoke();
 
-        Assert.NotNull(capturedOptions);
-        Assert.Equal(20, capturedOptions.Width);
-        Assert.Equal(20, capturedOptions.Height);
-        Assert.Null(capturedOptions.MaxGenerations);
-        Assert.False(capturedOptions.StartAutoplay);
-        Assert.Equal(30, capturedOptions.MaxFps);
-        Assert.Empty(capturedOptions.Injections);
+        _ = capturedOptions.ShouldNotBeNull();
+        capturedOptions.Width.ShouldBe(20);
+        capturedOptions.Height.ShouldBe(20);
+        capturedOptions.MaxGenerations.ShouldBeNull();
+        capturedOptions.StartAutoplay.ShouldBeFalse();
+        capturedOptions.MaxFps.ShouldBe(30);
+        capturedOptions.Injections.ShouldBeEmpty();
     }
 
     [Fact]
@@ -53,8 +55,8 @@ public class CommandLineParserTests
 
         _ = command.Parse(["--width", "50"]).Invoke();
 
-        Assert.NotNull(capturedOptions);
-        Assert.Equal(50, capturedOptions.Width);
+        _ = capturedOptions.ShouldNotBeNull();
+        capturedOptions.Width.ShouldBe(50);
     }
 
     [Fact]
@@ -69,8 +71,8 @@ public class CommandLineParserTests
 
         _ = command.Parse(["-w", "30"]).Invoke();
 
-        Assert.NotNull(capturedOptions);
-        Assert.Equal(30, capturedOptions.Width);
+        _ = capturedOptions.ShouldNotBeNull();
+        capturedOptions.Width.ShouldBe(30);
     }
 
     [Fact]
@@ -85,8 +87,8 @@ public class CommandLineParserTests
 
         _ = command.Parse(["--height", "40"]).Invoke();
 
-        Assert.NotNull(capturedOptions);
-        Assert.Equal(40, capturedOptions.Height);
+        _ = capturedOptions.ShouldNotBeNull();
+        capturedOptions.Height.ShouldBe(40);
     }
 
     [Fact]
@@ -101,8 +103,8 @@ public class CommandLineParserTests
 
         _ = command.Parse(["--generations", "100"]).Invoke();
 
-        Assert.NotNull(capturedOptions);
-        Assert.Equal(100, capturedOptions.MaxGenerations);
+        _ = capturedOptions.ShouldNotBeNull();
+        capturedOptions.MaxGenerations.ShouldBe(100);
     }
 
     [Fact]
@@ -117,8 +119,8 @@ public class CommandLineParserTests
 
         _ = command.Parse(["-g", "50"]).Invoke();
 
-        Assert.NotNull(capturedOptions);
-        Assert.Equal(50, capturedOptions.MaxGenerations);
+        _ = capturedOptions.ShouldNotBeNull();
+        capturedOptions.MaxGenerations.ShouldBe(50);
     }
 
     [Fact]
@@ -133,8 +135,8 @@ public class CommandLineParserTests
 
         _ = command.Parse(["--start-autoplay"]).Invoke();
 
-        Assert.NotNull(capturedOptions);
-        Assert.True(capturedOptions.StartAutoplay);
+        _ = capturedOptions.ShouldNotBeNull();
+        capturedOptions.StartAutoplay.ShouldBeTrue();
     }
 
     [Fact]
@@ -149,8 +151,8 @@ public class CommandLineParserTests
 
         _ = command.Parse(["-a"]).Invoke();
 
-        Assert.NotNull(capturedOptions);
-        Assert.True(capturedOptions.StartAutoplay);
+        _ = capturedOptions.ShouldNotBeNull();
+        capturedOptions.StartAutoplay.ShouldBeTrue();
     }
 
     [Fact]
@@ -165,8 +167,8 @@ public class CommandLineParserTests
 
         _ = command.Parse(["--max-fps", "60"]).Invoke();
 
-        Assert.NotNull(capturedOptions);
-        Assert.Equal(60, capturedOptions.MaxFps);
+        _ = capturedOptions.ShouldNotBeNull();
+        capturedOptions.MaxFps.ShouldBe(60);
     }
 
     [Fact]
@@ -181,11 +183,11 @@ public class CommandLineParserTests
 
         _ = command.Parse(["--inject", "glider@5,10"]).Invoke();
 
-        Assert.NotNull(capturedOptions);
-        _ = Assert.Single(capturedOptions.Injections);
-        Assert.Equal("glider", capturedOptions.Injections[0].PatternName);
-        Assert.Equal(5, capturedOptions.Injections[0].Position.X);
-        Assert.Equal(10, capturedOptions.Injections[0].Position.Y);
+        _ = capturedOptions.ShouldNotBeNull();
+        _ = capturedOptions.Injections.ShouldHaveSingleItem();
+        capturedOptions.Injections[0].PatternName.ShouldBe("glider");
+        capturedOptions.Injections[0].Position.X.ShouldBe(5);
+        capturedOptions.Injections[0].Position.Y.ShouldBe(10);
     }
 
     [Fact]
@@ -200,9 +202,9 @@ public class CommandLineParserTests
 
         _ = command.Parse(["-i", "block@0,0"]).Invoke();
 
-        Assert.NotNull(capturedOptions);
-        _ = Assert.Single(capturedOptions.Injections);
-        Assert.Equal("block", capturedOptions.Injections[0].PatternName);
+        _ = capturedOptions.ShouldNotBeNull();
+        _ = capturedOptions.Injections.ShouldHaveSingleItem();
+        capturedOptions.Injections[0].PatternName.ShouldBe("block");
     }
 
     [Fact]
@@ -217,8 +219,8 @@ public class CommandLineParserTests
 
         _ = command.Parse(["-i", "glider@5,10", "-i", "block@0,0", "-i", "blinker@15,15"]).Invoke();
 
-        Assert.NotNull(capturedOptions);
-        Assert.Equal(3, capturedOptions.Injections.Count);
+        _ = capturedOptions.ShouldNotBeNull();
+        capturedOptions.Injections.Count.ShouldBe(3);
     }
 
     [Fact]
@@ -238,11 +240,11 @@ public class CommandLineParserTests
             "--inject", "glider@10,10"
         ]).Invoke();
 
-        Assert.NotNull(capturedOptions);
-        Assert.Equal(80, capturedOptions.Width);
-        Assert.Equal(60, capturedOptions.Height);
-        Assert.Equal(1000, capturedOptions.MaxGenerations);
-        _ = Assert.Single(capturedOptions.Injections);
+        _ = capturedOptions.ShouldNotBeNull();
+        capturedOptions.Width.ShouldBe(80);
+        capturedOptions.Height.ShouldBe(60);
+        capturedOptions.MaxGenerations.ShouldBe(1000);
+        _ = capturedOptions.Injections.ShouldHaveSingleItem();
     }
 
     [Fact]
@@ -252,7 +254,7 @@ public class CommandLineParserTests
 
         _ = command.Parse([]).Invoke();
 
-        Assert.Equal(42, Environment.ExitCode);
+        Environment.ExitCode.ShouldBe(42);
 
         // Reset for other tests
         Environment.ExitCode = 0;

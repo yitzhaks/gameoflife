@@ -67,7 +67,7 @@ public ref struct ColorNormalizedGlyphEnumerator
     /// </summary>
     public readonly ColorNormalizedGlyphEnumerator GetEnumerator() => this;
 
-    private static void ValidateSequence(AnsiSequence sequence)
+    internal static void ValidateSequence(AnsiSequence sequence)
     {
         // Validate that we know how to handle this sequence
         // This throws for any sequence not in our known set

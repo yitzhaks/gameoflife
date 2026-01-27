@@ -11,4 +11,8 @@
     <ProjectReference Include="..\GameOfLife.Rendering\GameOfLife.Rendering.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <InternalsVisibleTo Include="GameOfLife.Rendering.Console.Tests" />
+  </ItemGroup>
+
 </Project>

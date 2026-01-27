@@ -1,148 +1,97 @@
-﻿namespace GameOfLife.Core.Tests;
+﻿using AutoFixture.Xunit2;
+
+using NSubstitute;
+
+using Shouldly;
+
+namespace GameOfLife.Core.Tests;
 
 public class WorldTests
 {
-    #region Test Doubles
-
-    /// <summary>
-    /// A simple stub topology for testing World.
-    /// </summary>
-    private class StubTopology : ITopology<int>
-    {
-        private readonly Dictionary<int, List<int>> _neighbors;
-
-        public StubTopology(IEnumerable<int> nodes, Dictionary<int, List<int>>? neighbors = null)
-        {
-            Nodes = nodes;
-            _neighbors = neighbors ?? [];
-        }
-
-        public IEnumerable<int> Nodes { get; }
-
-        public IEnumerable<int> GetNeighbors(int node) => _neighbors.TryGetValue(node, out List<int>? neighbors) ? neighbors : Enumerable.Empty<int>();
-    }
-
-    /// <summary>
-    /// A simple stub rules implementation for testing World.
-    /// </summary>
-    private class StubRules : IRules<bool>
-    {
-        private readonly Func<bool, IEnumerable<bool>, bool>? _nextStateFunc;
-
-        public StubRules(bool defaultState = false, Func<bool, IEnumerable<bool>, bool>? nextStateFunc = null)
-        {
-            DefaultState = defaultState;
-            _nextStateFunc = nextStateFunc;
-        }
-
-        public bool DefaultState { get; }
-
-        public bool GetNextState(bool current, IEnumerable<bool> neighborStates) => _nextStateFunc?.Invoke(current, neighborStates) ?? current;
-    }
-
-    /// <summary>
-    /// A simple stub generation for testing.
-    /// </summary>
-    private class StubGeneration : IGeneration<int, bool>
-    {
-        private readonly Dictionary<int, bool> _states;
-        private readonly bool _defaultState;
-
-        public StubGeneration(Dictionary<int, bool>? states = null, bool defaultState = false)
-        {
-            _states = states ?? [];
-            _defaultState = defaultState;
-        }
-
-        public bool this[int node] => _states.TryGetValue(node, out bool state) ? state : _defaultState;
-
-        public void Dispose() { }
-    }
-
-    #endregion
-
     #region Constructor Null Argument Tests
 
-    [Fact]
-    public void Constructor_NullTopology_ThrowsArgumentNullException()
+    [Theory]
+    [AutoNSubstituteData]
+    public void Constructor_NullTopology_ThrowsArgumentNullException(IRules<bool> rules)
     {
-        var rules = new StubRules();
-
-        ArgumentNullException exception = Assert.Throws<ArgumentNullException>(() =>
+        ArgumentNullException exception = Should.Throw<ArgumentNullException>(() =>
             new World<int, bool>(null!, rules));
 
-        Assert.Equal("topology", exception.ParamName);
+        exception.ParamName.ShouldBe("topology");
     }
 
-    [Fact]
-    public void Constructor_NullRules_ThrowsArgumentNullException()
+    [Theory]
+    [AutoNSubstituteData]
+    public void Constructor_NullRules_ThrowsArgumentNullException(ITopology<int> topology)
     {
-        var topology = new StubTopology(new[] { 1, 2, 3 });
+        _ = topology.Nodes.Returns(new[] { 1, 2, 3 });
 
-        ArgumentNullException exception = Assert.Throws<ArgumentNullException>(() =>
+        ArgumentNullException exception = Should.Throw<ArgumentNullException>(() =>
             new World<int, bool>(topology, null!));
 
-        Assert.Equal("rules", exception.ParamName);
+        exception.ParamName.ShouldBe("rules");
     }
 
     #endregion
 
     #region Constructor Property Tests
 
-    [Fact]
-    public void Constructor_ValidArguments_SetsTopologyProperty()
+    [Theory]
+    [AutoNSubstituteData]
+    public void Constructor_ValidArguments_SetsTopologyProperty(ITopology<int> topology, IRules<bool> rules)
     {
-        var topology = new StubTopology(new[] { 1, 2, 3 });
-        var rules = new StubRules();
+        _ = topology.Nodes.Returns(new[] { 1, 2, 3 });
 
         var world = new World<int, bool>(topology, rules);
 
-        Assert.Same(topology, world.Topology);
+        world.Topology.ShouldBeSameAs(topology);
     }
 
-    [Fact]
-    public void Constructor_ValidArguments_SetsRulesProperty()
+    [Theory]
+    [AutoNSubstituteData]
+    public void Constructor_ValidArguments_SetsRulesProperty(ITopology<int> topology, IRules<bool> rules)
     {
-        var topology = new StubTopology(new[] { 1, 2, 3 });
-        var rules = new StubRules();
+        _ = topology.Nodes.Returns(new[] { 1, 2, 3 });
 
         var world = new World<int, bool>(topology, rules);
 
-        Assert.Same(rules, world.Rules);
+        world.Rules.ShouldBeSameAs(rules);
     }
 
     #endregion
 
     #region Tick Null Argument Tests
 
-    [Fact]
-    public void Tick_NullGeneration_ThrowsArgumentNullException()
+    [Theory]
+    [AutoNSubstituteData]
+    public void Tick_NullGeneration_ThrowsArgumentNullException(ITopology<int> topology, IRules<bool> rules)
     {
-        var topology = new StubTopology(new[] { 1, 2, 3 });
-        var rules = new StubRules();
+        _ = topology.Nodes.Returns(new[] { 1, 2, 3 });
         var world = new World<int, bool>(topology, rules);
 
-        ArgumentNullException exception = Assert.Throws<ArgumentNullException>(() =>
+        ArgumentNullException exception = Should.Throw<ArgumentNullException>(() =>
             world.Tick(null!));
 
-        Assert.Equal("currentGeneration", exception.ParamName);
+        exception.ParamName.ShouldBe("currentGeneration");
     }
 
     #endregion
 
     #region Tick Functionality Tests
 
-    [Fact]
-    public void Tick_ValidGeneration_ReturnsNewInstance()
+    [Theory]
+    [AutoNSubstituteData]
+    public void Tick_ValidGeneration_ReturnsNewInstance(
+        ITopology<int> topology,
+        IRules<bool> rules,
+        IGeneration<int, bool> currentGeneration)
     {
-        var topology = new StubTopology(new[] { 1, 2, 3 });
-        var rules = new StubRules();
+        _ = topology.Nodes.Returns(new[] { 1, 2, 3 });
         var world = new World<int, bool>(topology, rules);
-        using var currentGeneration = new StubGeneration();
 
         IGeneration<int, bool> nextGeneration = world.Tick(currentGeneration);
 
-        Assert.NotSame(currentGeneration, nextGeneration);
+        nextGeneration.ShouldNotBeSameAs(currentGeneration);
     }
 
     [Fact]
@@ -150,20 +99,25 @@ public class WorldTests
     {
         // Setup: A single node with no neighbors
         // Rules: Always return the opposite of current state
-        var topology = new StubTopology(new[] { 1 });
-        var rules = new StubRules(
-            defaultState: false,
-            nextStateFunc: (current, _) => !current);
+        ITopology<int> topology = Substitute.For<ITopology<int>>();
+        _ = topology.Nodes.Returns(new[] { 1 });
+        _ = topology.GetNeighbors(1).Returns([]);
+
+        IRules<bool> rules = Substitute.For<IRules<bool>>();
+        _ = rules.DefaultState.Returns(false);
+        _ = rules.GetNextState(Arg.Any<bool>(), Arg.Any<IEnumerable<bool>>())
+            .Returns(callInfo => !callInfo.Arg<bool>());
+
         var world = new World<int, bool>(topology, rules);
 
         // Node 1 starts as alive (true)
-        using var currentGeneration = new StubGeneration(
-            new Dictionary<int, bool> { [1] = true });
+        IGeneration<int, bool> currentGeneration = Substitute.For<IGeneration<int, bool>>();
+        _ = currentGeneration[1].Returns(true);
 
         IGeneration<int, bool> nextGeneration = world.Tick(currentGeneration);
 
         // Rule should flip the state to false
-        Assert.False(nextGeneration[1]);
+        nextGeneration[1].ShouldBeFalse();
     }
 
     [Fact]
@@ -171,40 +125,42 @@ public class WorldTests
     {
         // Setup: Node 1 has neighbors 2 and 3
         // Rules: Return true if any neighbor is true
-        var neighbors = new Dictionary<int, List<int>>
-        {
-            [1] = [2, 3],
-            [2] = [],
-            [3] = []
-        };
-        var topology = new StubTopology(new[] { 1, 2, 3 }, neighbors);
+        ITopology<int> topology = Substitute.For<ITopology<int>>();
+        _ = topology.Nodes.Returns(new[] { 1, 2, 3 });
+        _ = topology.GetNeighbors(1).Returns(new[] { 2, 3 });
+        _ = topology.GetNeighbors(2).Returns([]);
+        _ = topology.GetNeighbors(3).Returns([]);
 
         var capturedNeighborStates = new List<bool>();
-        var rules = new StubRules(
-            defaultState: false,
-            nextStateFunc: (current, neighborStates) =>
+        IRules<bool> rules = Substitute.For<IRules<bool>>();
+        _ = rules.DefaultState.Returns(false);
+        _ = rules.GetNextState(Arg.Any<bool>(), Arg.Any<IEnumerable<bool>>())
+            .Returns(callInfo =>
             {
-                var neighborList = neighborStates.ToList();
-                if (neighborList.Count > 0)
+                var neighborStates = callInfo.Arg<IEnumerable<bool>>().ToList();
+                if (neighborStates.Count > 0)
                 {
-                    capturedNeighborStates.AddRange(neighborList);
+                    capturedNeighborStates.AddRange(neighborStates);
                 }
 
-                return neighborList.Any(n => n);
+                return neighborStates.Any(n => n);
             });
+
         var world = new World<int, bool>(topology, rules);
 
         // Node 2 is alive, Node 3 is dead
-        using var currentGeneration = new StubGeneration(
-            new Dictionary<int, bool> { [2] = true, [3] = false });
+        IGeneration<int, bool> currentGeneration = Substitute.For<IGeneration<int, bool>>();
+        _ = currentGeneration[1].Returns(false);
+        _ = currentGeneration[2].Returns(true);
+        _ = currentGeneration[3].Returns(false);
 
         IGeneration<int, bool> nextGeneration = world.Tick(currentGeneration);
 
         // Node 1 should be true because neighbor 2 is true
-        Assert.True(nextGeneration[1]);
+        nextGeneration[1].ShouldBeTrue();
         // Verify the neighbor states were passed correctly (true, false)
-        Assert.Contains(true, capturedNeighborStates);
-        Assert.Contains(false, capturedNeighborStates);
+        capturedNeighborStates.ShouldContain(true);
+        capturedNeighborStates.ShouldContain(false);
     }
 
     [Fact]
@@ -212,20 +168,23 @@ public class WorldTests
     {
         // Setup: Three nodes with no neighbors
         // Rules: Always return true
-        var topology = new StubTopology(new[] { 1, 2, 3 });
-        var rules = new StubRules(
-            defaultState: false,
-            nextStateFunc: (_, _) => true);
-        var world = new World<int, bool>(topology, rules);
+        ITopology<int> topology = Substitute.For<ITopology<int>>();
+        _ = topology.Nodes.Returns(new[] { 1, 2, 3 });
+        _ = topology.GetNeighbors(Arg.Any<int>()).Returns([]);
 
-        using var currentGeneration = new StubGeneration();
+        IRules<bool> rules = Substitute.For<IRules<bool>>();
+        _ = rules.DefaultState.Returns(false);
+        _ = rules.GetNextState(Arg.Any<bool>(), Arg.Any<IEnumerable<bool>>()).Returns(true);
+
+        var world = new World<int, bool>(topology, rules);
+        IGeneration<int, bool> currentGeneration = Substitute.For<IGeneration<int, bool>>();
 
         IGeneration<int, bool> nextGeneration = world.Tick(currentGeneration);
 
         // All nodes should be true
-        Assert.True(nextGeneration[1]);
-        Assert.True(nextGeneration[2]);
-        Assert.True(nextGeneration[3]);
+        nextGeneration[1].ShouldBeTrue();
+        nextGeneration[2].ShouldBeTrue();
+        nextGeneration[3].ShouldBeTrue();
     }
 
     [Fact]
@@ -233,11 +192,16 @@ public class WorldTests
     {
         // Setup: Topology with nodes
         // Rules with specific default state
-        var topology = new StubTopology(new[] { 1 });
-        var rules = new StubRules(defaultState: true);
-        var world = new World<int, bool>(topology, rules);
+        ITopology<int> topology = Substitute.For<ITopology<int>>();
+        _ = topology.Nodes.Returns(new[] { 1 });
+        _ = topology.GetNeighbors(1).Returns([]);
 
-        using var currentGeneration = new StubGeneration();
+        IRules<bool> rules = Substitute.For<IRules<bool>>();
+        _ = rules.DefaultState.Returns(true);
+        _ = rules.GetNextState(Arg.Any<bool>(), Arg.Any<IEnumerable<bool>>()).Returns(true);
+
+        var world = new World<int, bool>(topology, rules);
+        IGeneration<int, bool> currentGeneration = Substitute.For<IGeneration<int, bool>>();
 
         IGeneration<int, bool> nextGeneration = world.Tick(currentGeneration);
 
@@ -245,7 +209,7 @@ public class WorldTests
         // Query a node that wasn't explicitly set - should return the default state
         // Note: Since we only have node 1 in topology, and it's computed,
         // let's verify that the generation is a DictionaryGeneration
-        _ = Assert.IsType<DictionaryGeneration<int, bool>>(nextGeneration);
+        _ = nextGeneration.ShouldBeOfType<DictionaryGeneration<int, bool>>();
     }
 
     #endregion

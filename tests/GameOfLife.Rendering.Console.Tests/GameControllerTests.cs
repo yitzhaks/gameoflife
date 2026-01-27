@@ -1,6 +1,8 @@
 ﻿using GameOfLife.Console;
 using GameOfLife.Core;
 
+using Shouldly;
+
 using Xunit;
 
 namespace GameOfLife.Rendering.Console.Tests;
@@ -14,7 +16,7 @@ public class GameControllerTests
         using var input = new StringReader("");
         var loader = new ShapeLoader(".");
 
-        _ = Assert.Throws<ArgumentNullException>(() => new GameController(null!, loader, output, input));
+        _ = Should.Throw<ArgumentNullException>(() => new GameController(null!, loader, output, input));
     }
 
     [Fact]
@@ -24,7 +26,7 @@ public class GameControllerTests
         using var input = new StringReader("");
         var options = new CommandLineOptions();
 
-        _ = Assert.Throws<ArgumentNullException>(() => new GameController(options, null!, output, input));
+        _ = Should.Throw<ArgumentNullException>(() => new GameController(options, null!, output, input));
     }
 
     [Fact]
@@ -34,7 +36,7 @@ public class GameControllerTests
         var options = new CommandLineOptions();
         var loader = new ShapeLoader(".");
 
-        _ = Assert.Throws<ArgumentNullException>(() => new GameController(options, loader, null!, input));
+        _ = Should.Throw<ArgumentNullException>(() => new GameController(options, loader, null!, input));
     }
 
     [Fact]
@@ -44,7 +46,7 @@ public class GameControllerTests
         var options = new CommandLineOptions();
         var loader = new ShapeLoader(".");
 
-        _ = Assert.Throws<ArgumentNullException>(() => new GameController(options, loader, output, null!));
+        _ = Should.Throw<ArgumentNullException>(() => new GameController(options, loader, output, null!));
     }
 
     [Fact]
@@ -63,9 +65,9 @@ public class GameControllerTests
         var controller = new GameController(options, loader, output, input);
         int result = await controller.RunAsync();
 
-        Assert.Equal(0, result);
-        Assert.Contains("Generation: 0", output.ToString());
-        Assert.Contains("Reached maximum generations (0)", output.ToString());
+        result.ShouldBe(0);
+        output.ToString().ShouldContain("Generation: 0");
+        output.ToString().ShouldContain("Reached maximum generations (0)");
     }
 
     [Fact]
@@ -83,7 +85,7 @@ public class GameControllerTests
         var controller = new GameController(options, loader, output, input);
         int result = await controller.RunAsync();
 
-        Assert.Equal(0, result);
+        result.ShouldBe(0);
     }
 
     [Fact]
@@ -101,7 +103,7 @@ public class GameControllerTests
         var controller = new GameController(options, loader, output, input);
         int result = await controller.RunAsync();
 
-        Assert.Equal(0, result);
+        result.ShouldBe(0);
     }
 
     [Fact]
@@ -121,11 +123,11 @@ public class GameControllerTests
         int result = await controller.RunAsync();
 
         string outputText = output.ToString();
-        Assert.Equal(0, result);
-        Assert.Contains("Generation: 0", outputText);
-        Assert.Contains("Generation: 1", outputText);
-        Assert.Contains("Generation: 2", outputText);
-        Assert.Contains("Generation: 3", outputText);
+        result.ShouldBe(0);
+        outputText.ShouldContain("Generation: 0");
+        outputText.ShouldContain("Generation: 1");
+        outputText.ShouldContain("Generation: 2");
+        outputText.ShouldContain("Generation: 3");
     }
 
     [Fact]
@@ -151,10 +153,10 @@ public class GameControllerTests
             var controller = new GameController(options, loader, output, input);
             int result = await controller.RunAsync();
 
-            Assert.Equal(0, result);
+            result.ShouldBe(0);
             // The block should be rendered somewhere in the output
             string outputText = output.ToString();
-            Assert.Contains("Generation: 0", outputText);
+            outputText.ShouldContain("Generation: 0");
         }
         finally
         {
@@ -178,8 +180,8 @@ public class GameControllerTests
         var controller = new GameController(options, loader, output, input);
         int result = await controller.RunAsync();
 
-        Assert.Equal(1, result);
-        Assert.Contains("Error:", output.ToString());
+        result.ShouldBe(1);
+        output.ToString().ShouldContain("Error:");
     }
 
     [Fact]
@@ -202,7 +204,7 @@ public class GameControllerTests
 
         int result = await controller.RunAsync(cts.Token);
 
-        Assert.Equal(0, result);
+        result.ShouldBe(0);
     }
 
     [Fact]
@@ -228,7 +230,7 @@ public class GameControllerTests
             var controller = new GameController(options, loader, output, input);
             int result = await controller.RunAsync();
 
-            Assert.Equal(0, result);
+            result.ShouldBe(0);
         }
         finally
         {
@@ -258,7 +260,7 @@ public class GameControllerTests
             var controller = new GameController(options, loader, output, input);
             int result = await controller.RunAsync();
 
-            Assert.Equal(0, result);
+            result.ShouldBe(0);
         }
         finally
         {
@@ -281,7 +283,7 @@ public class GameControllerTests
         var controller = new GameController(options, loader, output, input);
         _ = await controller.RunAsync();
 
-        Assert.Contains("Space/Enter: Next | P: Play | Q/Esc: Quit", output.ToString());
+        output.ToString().ShouldContain("Space/Enter: Next | P: Play | Q/Esc: Quit");
     }
 
     [Fact]
@@ -311,7 +313,7 @@ public class GameControllerTests
             var controller = new GameController(options, loader, output, input);
             int result = await controller.RunAsync();
 
-            Assert.Equal(0, result);
+            result.ShouldBe(0);
         }
         finally
         {

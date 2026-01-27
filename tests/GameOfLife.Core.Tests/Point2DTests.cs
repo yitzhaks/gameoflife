@@ -1,4 +1,6 @@
-﻿namespace GameOfLife.Core.Tests;
+﻿using Shouldly;
+
+namespace GameOfLife.Core.Tests;
 
 public class Point2DTests
 {
@@ -8,9 +10,9 @@ public class Point2DTests
         Point2D point1 = (3, 5);
         Point2D point2 = (3, 5);
 
-        Assert.Equal(point1, point2);
-        Assert.True(point1 == point2);
-        Assert.True(point1.Equals(point2));
+        point1.ShouldBe(point2);
+        (point1 == point2).ShouldBeTrue();
+        point1.Equals(point2).ShouldBeTrue();
     }
 
     [Fact]
@@ -19,9 +21,9 @@ public class Point2DTests
         Point2D point1 = (3, 5);
         Point2D point2 = (4, 5);
 
-        Assert.NotEqual(point1, point2);
-        Assert.True(point1 != point2);
-        Assert.False(point1.Equals(point2));
+        point1.ShouldNotBe(point2);
+        (point1 != point2).ShouldBeTrue();
+        point1.Equals(point2).ShouldBeFalse();
     }
 
     [Fact]
@@ -30,9 +32,9 @@ public class Point2DTests
         Point2D point1 = (3, 5);
         Point2D point2 = (3, 6);
 
-        Assert.NotEqual(point1, point2);
-        Assert.True(point1 != point2);
-        Assert.False(point1.Equals(point2));
+        point1.ShouldNotBe(point2);
+        (point1 != point2).ShouldBeTrue();
+        point1.Equals(point2).ShouldBeFalse();
     }
 
     [Fact]
@@ -41,9 +43,9 @@ public class Point2DTests
         Point2D point1 = (3, 5);
         Point2D point2 = (7, 9);
 
-        Assert.NotEqual(point1, point2);
-        Assert.True(point1 != point2);
-        Assert.False(point1.Equals(point2));
+        point1.ShouldNotBe(point2);
+        (point1 != point2).ShouldBeTrue();
+        point1.Equals(point2).ShouldBeFalse();
     }
 
     [Fact]
@@ -52,7 +54,7 @@ public class Point2DTests
         Point2D point1 = (3, 5);
         Point2D point2 = (3, 5);
 
-        Assert.Equal(point1.GetHashCode(), point2.GetHashCode());
+        point1.GetHashCode().ShouldBe(point2.GetHashCode());
     }
 
     [Fact]
@@ -63,7 +65,7 @@ public class Point2DTests
 
         // Hash codes are not guaranteed to be different, but for typical implementations
         // swapping coordinates should produce different hashes
-        Assert.NotEqual(point1.GetHashCode(), point2.GetHashCode());
+        point1.GetHashCode().ShouldNotBe(point2.GetHashCode());
     }
 
     [Fact]
@@ -71,8 +73,8 @@ public class Point2DTests
     {
         var defaultPoint = default(Point2D);
 
-        Assert.Equal(0, defaultPoint.X);
-        Assert.Equal(0, defaultPoint.Y);
+        defaultPoint.X.ShouldBe(0);
+        defaultPoint.Y.ShouldBe(0);
     }
 
     [Fact]
@@ -81,7 +83,7 @@ public class Point2DTests
         var defaultPoint = default(Point2D);
         Point2D zeroPoint = default;
 
-        Assert.Equal(defaultPoint, zeroPoint);
+        defaultPoint.ShouldBe(zeroPoint);
     }
 
     [Fact]
@@ -89,8 +91,8 @@ public class Point2DTests
     {
         Point2D point = (-5, -10);
 
-        Assert.Equal(-5, point.X);
-        Assert.Equal(-10, point.Y);
+        point.X.ShouldBe(-5);
+        point.Y.ShouldBe(-10);
     }
 
     [Fact]
@@ -100,8 +102,8 @@ public class Point2DTests
         object point2 = (Point2D)(3, 5);
         object point3 = (Point2D)(4, 5);
 
-        Assert.True(point1.Equals(point2));
-        Assert.False(point1.Equals(point3));
+        point1.Equals(point2).ShouldBeTrue();
+        point1.Equals(point3).ShouldBeFalse();
     }
 
     [Fact]
@@ -109,7 +111,7 @@ public class Point2DTests
     {
         Point2D point = (3, 5);
 
-        Assert.False(point.Equals(null));
+        point.Equals(null).ShouldBeFalse();
     }
 
     [Fact]
@@ -117,8 +119,8 @@ public class Point2DTests
     {
         Point2D point = (3, 5);
 
-        Assert.False(point.Equals("not a point"));
-        Assert.False(point.Equals(42));
+        point.Equals("not a point").ShouldBeFalse();
+        point.Equals(42).ShouldBeFalse();
     }
 
     [Fact]
@@ -126,7 +128,7 @@ public class Point2DTests
     {
         Point2D point = (3, 5);
 
-        _ = Assert.IsAssignableFrom<IEquatable<Point2D>>(point);
+        _ = point.ShouldBeAssignableTo<IEquatable<Point2D>>();
     }
 
     [Fact]
@@ -139,9 +141,9 @@ public class Point2DTests
             (2, 2)
         };
 
-        Assert.Contains((1, 1), set);
-        Assert.DoesNotContain((3, 3), set);
-        Assert.Equal(3, set.Count);
+        set.ShouldContain((1, 1));
+        set.ShouldNotContain((3, 3));
+        set.Count.ShouldBe(3);
     }
 
     [Fact]
@@ -153,8 +155,8 @@ public class Point2DTests
             [(1, 0)] = "right"
         };
 
-        Assert.Equal("origin", dict[default]);
-        Assert.Equal("right", dict[(1, 0)]);
+        dict[default].ShouldBe("origin");
+        dict[(1, 0)].ShouldBe("right");
     }
 
     [Fact]
@@ -162,8 +164,8 @@ public class Point2DTests
     {
         Point2D point = (5, 10);
 
-        Assert.Equal(5, point.X);
-        Assert.Equal(10, point.Y);
+        point.X.ShouldBe(5);
+        point.Y.ShouldBe(10);
     }
 
     [Fact]
@@ -171,10 +173,10 @@ public class Point2DTests
     {
         Point2D[] points = [default, (1, 2), (3, 4)];
 
-        Assert.Equal(3, points.Length);
-        Assert.Equal(default, points[0]);
-        Assert.Equal((1, 2), points[1]);
-        Assert.Equal((3, 4), points[2]);
+        points.Length.ShouldBe(3);
+        points[0].ShouldBe(default);
+        points[1].ShouldBe((1, 2));
+        points[2].ShouldBe((3, 4));
     }
 
     [Fact]
@@ -185,8 +187,8 @@ public class Point2DTests
 
         Point2D result = a + b;
 
-        Assert.Equal(5, result.X);
-        Assert.Equal(12, result.Y);
+        result.X.ShouldBe(5);
+        result.Y.ShouldBe(12);
     }
 
     [Fact]
@@ -197,8 +199,8 @@ public class Point2DTests
 
         Point2D result = a + b;
 
-        Assert.Equal(-1, result.X);
-        Assert.Equal(-2, result.Y);
+        result.X.ShouldBe(-1);
+        result.Y.ShouldBe(-2);
     }
 
     [Fact]
@@ -209,8 +211,8 @@ public class Point2DTests
 
         Point2D result = a - b;
 
-        Assert.Equal(3, result.X);
-        Assert.Equal(7, result.Y);
+        result.X.ShouldBe(3);
+        result.Y.ShouldBe(7);
     }
 
     [Fact]
@@ -221,7 +223,7 @@ public class Point2DTests
 
         Point2D result = a - b;
 
-        Assert.Equal(-3, result.X);
-        Assert.Equal(-7, result.Y);
+        result.X.ShouldBe(-3);
+        result.Y.ShouldBe(-7);
     }
 }

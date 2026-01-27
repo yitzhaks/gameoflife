@@ -1,28 +1,14 @@
-﻿namespace GameOfLife.Core.Tests;
+﻿using AutoFixture.Xunit2;
+
+using NSubstitute;
+
+using Shouldly;
+
+namespace GameOfLife.Core.Tests;
 
 public class TimelineTests
 {
     #region Test Helpers
-
-    /// <summary>
-    /// A simple topology for testing that contains a fixed set of nodes with configurable neighbors.
-    /// </summary>
-    private class TestTopology : ITopology<int>
-    {
-        private readonly Dictionary<int, List<int>> _neighbors;
-
-        public TestTopology(int nodeCount)
-        {
-            Nodes = Enumerable.Range(0, nodeCount).ToList();
-            _neighbors = Nodes.ToDictionary(n => n, _ => new List<int>());
-        }
-
-        public IEnumerable<int> Nodes { get; }
-
-        public void AddNeighbor(int from, int to) => _neighbors[from].Add(to);
-
-        public IEnumerable<int> GetNeighbors(int node) => _neighbors[node];
-    }
 
     /// <summary>
     /// Simple rules for testing: increments the count each tick.
@@ -46,11 +32,13 @@ public class TimelineTests
 
     #endregion
 
-    [Fact]
-    public void Constructor_InitialState_IsAccessibleViaCurrent()
+    [Theory]
+    [AutoNSubstituteData]
+    public void Constructor_InitialState_IsAccessibleViaCurrent(ITopology<int> topology)
     {
         // Arrange
-        var topology = new TestTopology(3);
+        _ = topology.Nodes.Returns(new[] { 0, 1, 2 });
+        _ = topology.GetNeighbors(Arg.Any<int>()).Returns([]);
         var rules = new CountingRules();
         var world = new World<int, int>(topology, rules);
         var initialStates = new Dictionary<int, int> { [0] = 10, [1] = 20, [2] = 30 };
@@ -60,17 +48,18 @@ public class TimelineTests
         using var timeline = Timeline.Create(world, initial);
 
         // Assert
-        Assert.Same(initial, timeline.Current);
-        Assert.Equal(10, timeline.Current[0]);
-        Assert.Equal(20, timeline.Current[1]);
-        Assert.Equal(30, timeline.Current[2]);
+        timeline.Current.ShouldBeSameAs(initial);
+        timeline.Current[0].ShouldBe(10);
+        timeline.Current[1].ShouldBe(20);
+        timeline.Current[2].ShouldBe(30);
     }
 
-    [Fact]
-    public void Constructor_World_IsAccessible()
+    [Theory]
+    [AutoNSubstituteData]
+    public void Constructor_World_IsAccessible(ITopology<int> topology)
     {
         // Arrange
-        var topology = new TestTopology(1);
+        _ = topology.Nodes.Returns([]);
         var rules = new CountingRules();
         var world = new World<int, int>(topology, rules);
         using var initial = new DictionaryGeneration<int, int>(new Dictionary<int, int>(), 0);
@@ -79,7 +68,7 @@ public class TimelineTests
         using var timeline = Timeline.Create(world, initial);
 
         // Assert
-        Assert.Same(world, timeline.World);
+        timeline.World.ShouldBeSameAs(world);
     }
 
     [Fact]
@@ -89,28 +78,31 @@ public class TimelineTests
         using var initial = new DictionaryGeneration<int, int>(new Dictionary<int, int>(), 0);
 
         // Act & Assert
-        ArgumentNullException ex = Assert.Throws<ArgumentNullException>(() => new Timeline<int, int, IGeneration<int, int>>(null!, initial));
-        Assert.Equal("world", ex.ParamName);
+        ArgumentNullException ex = Should.Throw<ArgumentNullException>(() => new Timeline<int, int, IGeneration<int, int>>(null!, initial));
+        ex.ParamName.ShouldBe("world");
     }
 
-    [Fact]
-    public void Constructor_NullInitial_ThrowsArgumentNullException()
+    [Theory]
+    [AutoNSubstituteData]
+    public void Constructor_NullInitial_ThrowsArgumentNullException(ITopology<int> topology)
     {
         // Arrange
-        var topology = new TestTopology(1);
+        _ = topology.Nodes.Returns([]);
         var rules = new CountingRules();
         var world = new World<int, int>(topology, rules);
 
         // Act & Assert
-        ArgumentNullException ex = Assert.Throws<ArgumentNullException>(() => new Timeline<int, int, IGeneration<int, int>>(world, null!));
-        Assert.Equal("value", ex.ParamName);
+        ArgumentNullException ex = Should.Throw<ArgumentNullException>(() => new Timeline<int, int, IGeneration<int, int>>(world, null!));
+        ex.ParamName.ShouldBe("value");
     }
 
-    [Fact]
-    public void Step_AdvancesOneGeneration()
+    [Theory]
+    [AutoNSubstituteData]
+    public void Step_AdvancesOneGeneration(ITopology<int> topology)
     {
         // Arrange
-        var topology = new TestTopology(2);
+        _ = topology.Nodes.Returns(new[] { 0, 1 });
+        _ = topology.GetNeighbors(Arg.Any<int>()).Returns([]);
         var rules = new CountingRules();
         var world = new World<int, int>(topology, rules);
         var initialStates = new Dictionary<int, int> { [0] = 0, [1] = 5 };
@@ -121,16 +113,18 @@ public class TimelineTests
         timeline.Step();
 
         // Assert
-        Assert.NotSame(initial, timeline.Current);
-        Assert.Equal(1, timeline.Current[0]); // 0 + 1
-        Assert.Equal(6, timeline.Current[1]); // 5 + 1
+        timeline.Current.ShouldNotBeSameAs(initial);
+        timeline.Current[0].ShouldBe(1); // 0 + 1
+        timeline.Current[1].ShouldBe(6); // 5 + 1
     }
 
-    [Fact]
-    public void Step_CalledTwice_AdvancesTwoGenerations()
+    [Theory]
+    [AutoNSubstituteData]
+    public void Step_CalledTwice_AdvancesTwoGenerations(ITopology<int> topology)
     {
         // Arrange
-        var topology = new TestTopology(1);
+        _ = topology.Nodes.Returns(new[] { 0 });
+        _ = topology.GetNeighbors(Arg.Any<int>()).Returns([]);
         var rules = new CountingRules();
         var world = new World<int, int>(topology, rules);
         var initialStates = new Dictionary<int, int> { [0] = 0 };
@@ -142,14 +136,16 @@ public class TimelineTests
         timeline.Step();
 
         // Assert
-        Assert.Equal(2, timeline.Current[0]);
+        timeline.Current[0].ShouldBe(2);
     }
 
-    [Fact]
-    public void StepWithCount_AdvancesNGenerations()
+    [Theory]
+    [AutoNSubstituteData]
+    public void StepWithCount_AdvancesNGenerations(ITopology<int> topology)
     {
         // Arrange
-        var topology = new TestTopology(1);
+        _ = topology.Nodes.Returns(new[] { 0 });
+        _ = topology.GetNeighbors(Arg.Any<int>()).Returns([]);
         var rules = new CountingRules();
         var world = new World<int, int>(topology, rules);
         var initialStates = new Dictionary<int, int> { [0] = 0 };
@@ -160,14 +156,16 @@ public class TimelineTests
         timeline.Step(5);
 
         // Assert
-        Assert.Equal(5, timeline.Current[0]);
+        timeline.Current[0].ShouldBe(5);
     }
 
-    [Fact]
-    public void StepWithCount_ZeroCount_IsNoOp()
+    [Theory]
+    [AutoNSubstituteData]
+    public void StepWithCount_ZeroCount_IsNoOp(ITopology<int> topology)
     {
         // Arrange
-        var topology = new TestTopology(1);
+        _ = topology.Nodes.Returns(new[] { 0 });
+        _ = topology.GetNeighbors(Arg.Any<int>()).Returns([]);
         var rules = new CountingRules();
         var world = new World<int, int>(topology, rules);
         var initialStates = new Dictionary<int, int> { [0] = 42 };
@@ -178,15 +176,17 @@ public class TimelineTests
         timeline.Step(0);
 
         // Assert
-        Assert.Same(initial, timeline.Current);
-        Assert.Equal(42, timeline.Current[0]);
+        timeline.Current.ShouldBeSameAs(initial);
+        timeline.Current[0].ShouldBe(42);
     }
 
-    [Fact]
-    public void StepWithCount_NegativeCount_IsNoOp()
+    [Theory]
+    [AutoNSubstituteData]
+    public void StepWithCount_NegativeCount_IsNoOp(ITopology<int> topology)
     {
         // Arrange
-        var topology = new TestTopology(1);
+        _ = topology.Nodes.Returns(new[] { 0 });
+        _ = topology.GetNeighbors(Arg.Any<int>()).Returns([]);
         var rules = new CountingRules();
         var world = new World<int, int>(topology, rules);
         var initialStates = new Dictionary<int, int> { [0] = 42 };
@@ -197,17 +197,19 @@ public class TimelineTests
         timeline.Step(-5);
 
         // Assert
-        Assert.Same(initial, timeline.Current);
-        Assert.Equal(42, timeline.Current[0]);
+        timeline.Current.ShouldBeSameAs(initial);
+        timeline.Current[0].ShouldBe(42);
     }
 
-    [Fact]
-    public void Step_WithNeighborInteraction_AppliesRulesCorrectly()
+    [Theory]
+    [AutoNSubstituteData]
+    public void Step_WithNeighborInteraction_AppliesRulesCorrectly(ITopology<int> topology)
     {
         // Arrange: Node 0 has neighbors 1 and 2, so after tick its state should be 1 + 2 = 3
-        var topology = new TestTopology(3);
-        topology.AddNeighbor(0, 1);
-        topology.AddNeighbor(0, 2);
+        _ = topology.Nodes.Returns(new[] { 0, 1, 2 });
+        _ = topology.GetNeighbors(0).Returns(new[] { 1, 2 });
+        _ = topology.GetNeighbors(1).Returns([]);
+        _ = topology.GetNeighbors(2).Returns([]);
         var rules = new SumNeighborsRules();
         var world = new World<int, int>(topology, rules);
         var initialStates = new Dictionary<int, int> { [0] = 0, [1] = 1, [2] = 2 };
@@ -218,16 +220,18 @@ public class TimelineTests
         timeline.Step();
 
         // Assert
-        Assert.Equal(3, timeline.Current[0]); // sum of neighbors: 1 + 2 = 3
-        Assert.Equal(0, timeline.Current[1]); // no neighbors
-        Assert.Equal(0, timeline.Current[2]); // no neighbors
+        timeline.Current[0].ShouldBe(3); // sum of neighbors: 1 + 2 = 3
+        timeline.Current[1].ShouldBe(0); // no neighbors
+        timeline.Current[2].ShouldBe(0); // no neighbors
     }
 
-    [Fact]
-    public void StepWithCount_LargeCount_WorksCorrectly()
+    [Theory]
+    [AutoNSubstituteData]
+    public void StepWithCount_LargeCount_WorksCorrectly(ITopology<int> topology)
     {
         // Arrange
-        var topology = new TestTopology(1);
+        _ = topology.Nodes.Returns(new[] { 0 });
+        _ = topology.GetNeighbors(Arg.Any<int>()).Returns([]);
         var rules = new CountingRules();
         var world = new World<int, int>(topology, rules);
         var initialStates = new Dictionary<int, int> { [0] = 0 };
@@ -238,14 +242,16 @@ public class TimelineTests
         timeline.Step(100);
 
         // Assert
-        Assert.Equal(100, timeline.Current[0]);
+        timeline.Current[0].ShouldBe(100);
     }
 
-    [Fact]
-    public void Step_CurrentPropertyUpdates_AfterEachStep()
+    [Theory]
+    [AutoNSubstituteData]
+    public void Step_CurrentPropertyUpdates_AfterEachStep(ITopology<int> topology)
     {
         // Arrange
-        var topology = new TestTopology(1);
+        _ = topology.Nodes.Returns(new[] { 0 });
+        _ = topology.GetNeighbors(Arg.Any<int>()).Returns([]);
         var rules = new CountingRules();
         var world = new World<int, int>(topology, rules);
         var initialStates = new Dictionary<int, int> { [0] = 0 };
@@ -262,10 +268,10 @@ public class TimelineTests
         }
 
         // Assert
-        Assert.Equal(4, generations.Count);
-        Assert.Equal(0, generations[0][0]);
-        Assert.Equal(1, generations[1][0]);
-        Assert.Equal(2, generations[2][0]);
-        Assert.Equal(3, generations[3][0]);
+        generations.Count.ShouldBe(4);
+        generations[0][0].ShouldBe(0);
+        generations[1][0].ShouldBe(1);
+        generations[2][0].ShouldBe(2);
+        generations[3][0].ShouldBe(3);
     }
 }

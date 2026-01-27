@@ -1,4 +1,6 @@
-﻿using Xunit;
+﻿using Shouldly;
+
+using Xunit;
 
 namespace GameOfLife.Rendering.Console.Tests;
 
@@ -9,9 +11,9 @@ public class TokenTests
     {
         var token = Token.Char('A');
 
-        Assert.True(token.IsCharacter);
-        Assert.False(token.IsSequence);
-        Assert.Equal('A', token.Character);
+        token.IsCharacter.ShouldBeTrue();
+        token.IsSequence.ShouldBeFalse();
+        token.Character.ShouldBe('A');
     }
 
     [Fact]
@@ -19,9 +21,9 @@ public class TokenTests
     {
         var token = Token.Ansi(AnsiSequence.ForegroundGreen);
 
-        Assert.True(token.IsSequence);
-        Assert.False(token.IsCharacter);
-        Assert.Equal(AnsiSequence.ForegroundGreen, token.Sequence);
+        token.IsSequence.ShouldBeTrue();
+        token.IsCharacter.ShouldBeFalse();
+        token.Sequence.ShouldBe(AnsiSequence.ForegroundGreen);
     }
 
     [Fact]
@@ -30,8 +32,8 @@ public class TokenTests
         var token1 = Token.Char('X');
         var token2 = Token.Char('X');
 
-        Assert.Equal(token1, token2);
-        Assert.True(token1 == token2);
+        token1.ShouldBe(token2);
+        (token1 == token2).ShouldBeTrue();
     }
 
     [Fact]
@@ -40,8 +42,8 @@ public class TokenTests
         var token1 = Token.Char('X');
         var token2 = Token.Char('Y');
 
-        Assert.NotEqual(token1, token2);
-        Assert.True(token1 != token2);
+        token1.ShouldNotBe(token2);
+        (token1 != token2).ShouldBeTrue();
     }
 
     [Fact]
@@ -50,7 +52,7 @@ public class TokenTests
         var token1 = Token.Ansi(AnsiSequence.ForegroundGreen);
         var token2 = Token.Ansi(AnsiSequence.ForegroundGreen);
 
-        Assert.Equal(token1, token2);
+        token1.ShouldBe(token2);
     }
 
     [Fact]
@@ -59,7 +61,7 @@ public class TokenTests
         var token1 = Token.Ansi(AnsiSequence.ForegroundGreen);
         var token2 = Token.Ansi(AnsiSequence.ForegroundGray);
 
-        Assert.NotEqual(token1, token2);
+        token1.ShouldNotBe(token2);
     }
 
     [Fact]
@@ -68,7 +70,7 @@ public class TokenTests
         var charToken = Token.Char('A');
         var seqToken = Token.Ansi(AnsiSequence.Reset);
 
-        Assert.NotEqual(charToken, seqToken);
+        charToken.ShouldNotBe(seqToken);
     }
 
     [Fact]
@@ -76,8 +78,8 @@ public class TokenTests
     {
         var token = Token.Char('Z');
 
-        Assert.Contains("Char", token.ToString());
-        Assert.Contains("Z", token.ToString());
+        token.ToString().ShouldContain("Char");
+        token.ToString().ShouldContain("Z");
     }
 
     [Fact]
@@ -85,8 +87,8 @@ public class TokenTests
     {
         var token = Token.Ansi(AnsiSequence.ForegroundGreen);
 
-        Assert.Contains("Ansi", token.ToString());
-        Assert.Contains("ForegroundGreen", token.ToString());
+        token.ToString().ShouldContain("Ansi");
+        token.ToString().ShouldContain("ForegroundGreen");
     }
 }
 
@@ -95,43 +97,43 @@ public class WellKnownTokensTests
     [Fact]
     public void Newline_IsNewlineCharacter()
     {
-        Assert.True(WellKnownTokens.Newline.IsCharacter);
-        Assert.Equal('\n', WellKnownTokens.Newline.Character);
+        WellKnownTokens.Newline.IsCharacter.ShouldBeTrue();
+        WellKnownTokens.Newline.Character.ShouldBe('\n');
     }
 
     [Fact]
     public void Space_IsSpaceCharacter()
     {
-        Assert.True(WellKnownTokens.Space.IsCharacter);
-        Assert.Equal(' ', WellKnownTokens.Space.Character);
+        WellKnownTokens.Space.IsCharacter.ShouldBeTrue();
+        WellKnownTokens.Space.Character.ShouldBe(' ');
     }
 
     [Fact]
     public void Green_IsGreenSequence()
     {
-        Assert.True(WellKnownTokens.Green.IsSequence);
-        Assert.Equal(AnsiSequence.ForegroundGreen, WellKnownTokens.Green.Sequence);
+        WellKnownTokens.Green.IsSequence.ShouldBeTrue();
+        WellKnownTokens.Green.Sequence.ShouldBe(AnsiSequence.ForegroundGreen);
     }
 
     [Fact]
     public void Reset_IsResetSequence()
     {
-        Assert.True(WellKnownTokens.Reset.IsSequence);
-        Assert.Equal(AnsiSequence.Reset, WellKnownTokens.Reset.Sequence);
+        WellKnownTokens.Reset.IsSequence.ShouldBeTrue();
+        WellKnownTokens.Reset.Sequence.ShouldBe(AnsiSequence.Reset);
     }
 
     [Fact]
     public void DarkGray_IsDarkGraySequence()
     {
-        Assert.True(WellKnownTokens.DarkGray.IsSequence);
-        Assert.Equal(AnsiSequence.ForegroundDarkGray, WellKnownTokens.DarkGray.Sequence);
+        WellKnownTokens.DarkGray.IsSequence.ShouldBeTrue();
+        WellKnownTokens.DarkGray.Sequence.ShouldBe(AnsiSequence.ForegroundDarkGray);
     }
 
     [Fact]
     public void Gray_IsGraySequence()
     {
-        Assert.True(WellKnownTokens.Gray.IsSequence);
-        Assert.Equal(AnsiSequence.ForegroundGray, WellKnownTokens.Gray.Sequence);
+        WellKnownTokens.Gray.IsSequence.ShouldBeTrue();
+        WellKnownTokens.Gray.Sequence.ShouldBe(AnsiSequence.ForegroundGray);
     }
 }
 
@@ -143,7 +145,7 @@ public class TokenGetHashCodeTests
         var token1 = Token.Char('X');
         var token2 = Token.Char('X');
 
-        Assert.Equal(token1.GetHashCode(), token2.GetHashCode());
+        token1.GetHashCode().ShouldBe(token2.GetHashCode());
     }
 
     [Fact]
@@ -152,7 +154,7 @@ public class TokenGetHashCodeTests
         var token1 = Token.Ansi(AnsiSequence.ForegroundGreen);
         var token2 = Token.Ansi(AnsiSequence.ForegroundGreen);
 
-        Assert.Equal(token1.GetHashCode(), token2.GetHashCode());
+        token1.GetHashCode().ShouldBe(token2.GetHashCode());
     }
 
     [Fact]
@@ -160,7 +162,7 @@ public class TokenGetHashCodeTests
     {
         var token = Token.Char('X');
 
-        Assert.False(token.Equals(null));
+        token.Equals(null).ShouldBeFalse();
     }
 
     [Fact]
@@ -168,8 +170,8 @@ public class TokenGetHashCodeTests
     {
         var token = Token.Char('X');
 
-        Assert.False(token.Equals("not a token"));
-        Assert.False(token.Equals(42));
+        token.Equals("not a token").ShouldBeFalse();
+        token.Equals(42).ShouldBeFalse();
     }
 
     [Fact]
@@ -178,7 +180,7 @@ public class TokenGetHashCodeTests
         var token1 = Token.Char('X');
         var token2 = Token.Char('Y');
 
-        Assert.NotEqual(token1.GetHashCode(), token2.GetHashCode());
+        token1.GetHashCode().ShouldNotBe(token2.GetHashCode());
     }
 
     [Fact]
@@ -187,7 +189,7 @@ public class TokenGetHashCodeTests
         var charToken = Token.Char('X');
         var seqToken = Token.Ansi(AnsiSequence.ForegroundGreen);
 
-        Assert.NotEqual(charToken.GetHashCode(), seqToken.GetHashCode());
+        charToken.GetHashCode().ShouldNotBe(seqToken.GetHashCode());
     }
 
     [Fact]
@@ -196,7 +198,7 @@ public class TokenGetHashCodeTests
         var token1 = Token.Char('X');
         var token2 = Token.Char('Y');
 
-        Assert.True(token1 != token2);
+        (token1 != token2).ShouldBeTrue();
     }
 
     [Fact]
@@ -205,7 +207,7 @@ public class TokenGetHashCodeTests
         var token1 = Token.Ansi(AnsiSequence.ForegroundGreen);
         var token2 = Token.Ansi(AnsiSequence.ForegroundGray);
 
-        Assert.True(token1 != token2);
+        (token1 != token2).ShouldBeTrue();
     }
 
     [Fact]
@@ -214,7 +216,7 @@ public class TokenGetHashCodeTests
         var token = Token.Char('X');
 
         // Accessing Sequence on a char token should return default (0)
-        Assert.Equal(AnsiSequence.Reset, token.Sequence); // Reset is 0, the default
+        token.Sequence.ShouldBe(AnsiSequence.Reset); // Reset is 0, the default
     }
 
     [Fact]
@@ -223,6 +225,6 @@ public class TokenGetHashCodeTests
         var token = Token.Ansi(AnsiSequence.ForegroundGreen);
 
         // Accessing Character on a sequence token should return default ('\0')
-        Assert.Equal('\0', token.Character);
+        token.Character.ShouldBe('\0');
     }
 }

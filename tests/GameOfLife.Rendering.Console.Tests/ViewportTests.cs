@@ -1,4 +1,6 @@
-﻿using Xunit;
+﻿using Shouldly;
+
+using Xunit;
 
 namespace GameOfLife.Rendering.Console.Tests;
 
@@ -9,12 +11,12 @@ public class ViewportTests
     {
         var viewport = new Viewport(10, 8, 100, 50);
 
-        Assert.Equal(0, viewport.OffsetX);
-        Assert.Equal(0, viewport.OffsetY);
-        Assert.Equal(10, viewport.Width);
-        Assert.Equal(8, viewport.Height);
-        Assert.Equal(100, viewport.BoardWidth);
-        Assert.Equal(50, viewport.BoardHeight);
+        viewport.OffsetX.ShouldBe(0);
+        viewport.OffsetY.ShouldBe(0);
+        viewport.Width.ShouldBe(10);
+        viewport.Height.ShouldBe(8);
+        viewport.BoardWidth.ShouldBe(100);
+        viewport.BoardHeight.ShouldBe(50);
     }
 
     [Theory]
@@ -29,7 +31,7 @@ public class ViewportTests
     public void Constructor_InvalidDimensions_ThrowsArgumentOutOfRangeException(
         int viewportWidth, int viewportHeight, int boardWidth, int boardHeight)
     {
-        _ = Assert.Throws<ArgumentOutOfRangeException>(() =>
+        _ = Should.Throw<ArgumentOutOfRangeException>(() =>
             new Viewport(viewportWidth, viewportHeight, boardWidth, boardHeight));
     }
 
@@ -37,7 +39,7 @@ public class ViewportTests
     public void IsAtTop_AtTopEdge_ReturnsTrue()
     {
         var viewport = new Viewport(10, 10, 100, 100);
-        Assert.True(viewport.IsAtTop);
+        viewport.IsAtTop.ShouldBeTrue();
     }
 
     [Fact]
@@ -45,7 +47,7 @@ public class ViewportTests
     {
         var viewport = new Viewport(10, 10, 100, 100);
         viewport.Move(0, 1);
-        Assert.False(viewport.IsAtTop);
+        viewport.IsAtTop.ShouldBeFalse();
     }
 
     [Fact]
@@ -53,21 +55,21 @@ public class ViewportTests
     {
         var viewport = new Viewport(10, 10, 100, 100);
         viewport.Move(0, 90); // Move to bottom edge
-        Assert.True(viewport.IsAtBottom);
+        viewport.IsAtBottom.ShouldBeTrue();
     }
 
     [Fact]
     public void IsAtBottom_NotAtBottomEdge_ReturnsFalse()
     {
         var viewport = new Viewport(10, 10, 100, 100);
-        Assert.False(viewport.IsAtBottom);
+        viewport.IsAtBottom.ShouldBeFalse();
     }
 
     [Fact]
     public void IsAtLeft_AtLeftEdge_ReturnsTrue()
     {
         var viewport = new Viewport(10, 10, 100, 100);
-        Assert.True(viewport.IsAtLeft);
+        viewport.IsAtLeft.ShouldBeTrue();
     }
 
     [Fact]
@@ -75,7 +77,7 @@ public class ViewportTests
     {
         var viewport = new Viewport(10, 10, 100, 100);
         viewport.Move(1, 0);
-        Assert.False(viewport.IsAtLeft);
+        viewport.IsAtLeft.ShouldBeFalse();
     }
 
     [Fact]
@@ -83,14 +85,14 @@ public class ViewportTests
     {
         var viewport = new Viewport(10, 10, 100, 100);
         viewport.Move(90, 0); // Move to right edge
-        Assert.True(viewport.IsAtRight);
+        viewport.IsAtRight.ShouldBeTrue();
     }
 
     [Fact]
     public void IsAtRight_NotAtRightEdge_ReturnsFalse()
     {
         var viewport = new Viewport(10, 10, 100, 100);
-        Assert.False(viewport.IsAtRight);
+        viewport.IsAtRight.ShouldBeFalse();
     }
 
     [Fact]
@@ -99,8 +101,8 @@ public class ViewportTests
         var viewport = new Viewport(10, 10, 100, 100);
         viewport.Move(5, 3);
 
-        Assert.Equal(5, viewport.OffsetX);
-        Assert.Equal(3, viewport.OffsetY);
+        viewport.OffsetX.ShouldBe(5);
+        viewport.OffsetY.ShouldBe(3);
     }
 
     [Fact]
@@ -110,8 +112,8 @@ public class ViewportTests
         viewport.Move(50, 50);
         viewport.Move(-10, -5);
 
-        Assert.Equal(40, viewport.OffsetX);
-        Assert.Equal(45, viewport.OffsetY);
+        viewport.OffsetX.ShouldBe(40);
+        viewport.OffsetY.ShouldBe(45);
     }
 
     [Fact]
@@ -120,7 +122,7 @@ public class ViewportTests
         var viewport = new Viewport(10, 10, 100, 100);
         viewport.Move(-100, 0);
 
-        Assert.Equal(0, viewport.OffsetX);
+        viewport.OffsetX.ShouldBe(0);
     }
 
     [Fact]
@@ -129,7 +131,7 @@ public class ViewportTests
         var viewport = new Viewport(10, 10, 100, 100);
         viewport.Move(0, -100);
 
-        Assert.Equal(0, viewport.OffsetY);
+        viewport.OffsetY.ShouldBe(0);
     }
 
     [Fact]
@@ -138,7 +140,7 @@ public class ViewportTests
         var viewport = new Viewport(10, 10, 100, 100);
         viewport.Move(1000, 0);
 
-        Assert.Equal(90, viewport.OffsetX); // 100 - 10 = 90
+        viewport.OffsetX.ShouldBe(90); // 100 - 10 = 90
     }
 
     [Fact]
@@ -147,7 +149,7 @@ public class ViewportTests
         var viewport = new Viewport(10, 10, 100, 100);
         viewport.Move(0, 1000);
 
-        Assert.Equal(90, viewport.OffsetY); // 100 - 10 = 90
+        viewport.OffsetY.ShouldBe(90); // 100 - 10 = 90
     }
 
     [Fact]
@@ -156,8 +158,8 @@ public class ViewportTests
         var viewport = new Viewport(100, 100, 50, 50);
         viewport.Move(10, 10);
 
-        Assert.Equal(0, viewport.OffsetX);
-        Assert.Equal(0, viewport.OffsetY);
+        viewport.OffsetX.ShouldBe(0);
+        viewport.OffsetY.ShouldBe(0);
     }
 
     [Fact]
@@ -166,7 +168,7 @@ public class ViewportTests
         var viewport = new Viewport(10, 10, 100, 100);
         viewport.Move(20, 30);
 
-        Assert.True(viewport.Contains(25, 35)); // Inside viewport
+        viewport.Contains(25, 35).ShouldBeTrue(); // Inside viewport
     }
 
     [Fact]
@@ -175,10 +177,10 @@ public class ViewportTests
         var viewport = new Viewport(10, 10, 100, 100);
         viewport.Move(20, 30);
 
-        Assert.False(viewport.Contains(15, 35)); // Left of viewport
-        Assert.False(viewport.Contains(35, 35)); // Right of viewport
-        Assert.False(viewport.Contains(25, 25)); // Above viewport
-        Assert.False(viewport.Contains(25, 45)); // Below viewport
+        viewport.Contains(15, 35).ShouldBeFalse(); // Left of viewport
+        viewport.Contains(35, 35).ShouldBeFalse(); // Right of viewport
+        viewport.Contains(25, 25).ShouldBeFalse(); // Above viewport
+        viewport.Contains(25, 45).ShouldBeFalse(); // Below viewport
     }
 
     [Fact]
@@ -188,13 +190,13 @@ public class ViewportTests
         viewport.Move(20, 30);
 
         // Left edge (inclusive)
-        Assert.True(viewport.Contains(20, 35));
+        viewport.Contains(20, 35).ShouldBeTrue();
         // Right edge (exclusive: 20 + 10 = 30)
-        Assert.False(viewport.Contains(30, 35));
+        viewport.Contains(30, 35).ShouldBeFalse();
         // Top edge (inclusive)
-        Assert.True(viewport.Contains(25, 30));
+        viewport.Contains(25, 30).ShouldBeTrue();
         // Bottom edge (exclusive: 30 + 10 = 40)
-        Assert.False(viewport.Contains(25, 40));
+        viewport.Contains(25, 40).ShouldBeFalse();
     }
 
     [Fact]
@@ -202,10 +204,10 @@ public class ViewportTests
     {
         var viewport = new Viewport(50, 50, 50, 50);
 
-        Assert.True(viewport.IsAtTop);
-        Assert.True(viewport.IsAtBottom);
-        Assert.True(viewport.IsAtLeft);
-        Assert.True(viewport.IsAtRight);
+        viewport.IsAtTop.ShouldBeTrue();
+        viewport.IsAtBottom.ShouldBeTrue();
+        viewport.IsAtLeft.ShouldBeTrue();
+        viewport.IsAtRight.ShouldBeTrue();
     }
 
     [Fact]
@@ -214,9 +216,9 @@ public class ViewportTests
         var viewport = new Viewport(10, 10, 100, 100);
         viewport.Move(45, 45);
 
-        Assert.False(viewport.IsAtTop);
-        Assert.False(viewport.IsAtBottom);
-        Assert.False(viewport.IsAtLeft);
-        Assert.False(viewport.IsAtRight);
+        viewport.IsAtTop.ShouldBeFalse();
+        viewport.IsAtBottom.ShouldBeFalse();
+        viewport.IsAtLeft.ShouldBeFalse();
+        viewport.IsAtRight.ShouldBeFalse();
     }
 }

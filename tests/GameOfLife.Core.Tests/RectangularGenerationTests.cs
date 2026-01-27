@@ -1,4 +1,6 @@
-﻿using Xunit;
+﻿using Shouldly;
+
+using Xunit;
 
 namespace GameOfLife.Core.Tests;
 
@@ -10,8 +12,8 @@ public class RectangularGenerationTests
         using IGeneration<Point2D, bool> gen = TestHelpers.CreateEmptyGeneration((10, 10));
 
         // Verify we can access cells at the corners
-        Assert.False(gen[default]);
-        Assert.False(gen[(9, 9)]);
+        gen[default].ShouldBeFalse();
+        gen[(9, 9)].ShouldBeFalse();
     }
 
     [Theory]
@@ -19,7 +21,7 @@ public class RectangularGenerationTests
     [InlineData(10, 0)]
     [InlineData(-1, 10)]
     [InlineData(10, -1)]
-    public void Builder_WithInvalidDimensions_ThrowsArgumentOutOfRange(int width, int height) => Assert.Throws<ArgumentOutOfRangeException>(() => new RectangularGenerationBuilder((width, height)));
+    public void Builder_WithInvalidDimensions_ThrowsArgumentOutOfRange(int width, int height) => _ = Should.Throw<ArgumentOutOfRangeException>(() => new RectangularGenerationBuilder((width, height)));
 
     [Fact]
     public void CreateGeneration_WithStates_CopiesStates()
@@ -32,8 +34,8 @@ public class RectangularGenerationTests
 
         using IGeneration<Point2D, bool> gen = TestHelpers.CreateGeneration((10, 10), states);
 
-        Assert.True(gen[default]);
-        Assert.True(gen[(5, 5)]);
+        gen[default].ShouldBeTrue();
+        gen[(5, 5)].ShouldBeTrue();
     }
 
     [Fact]
@@ -47,7 +49,7 @@ public class RectangularGenerationTests
 
         using IGeneration<Point2D, bool> gen = TestHelpers.CreateGeneration((10, 10), states);
 
-        Assert.True(gen[default]);
+        gen[default].ShouldBeTrue();
         // The out-of-bounds point should have been ignored during creation
     }
 
@@ -56,10 +58,10 @@ public class RectangularGenerationTests
     {
         using IGeneration<Point2D, bool> gen = TestHelpers.CreateEmptyGeneration((10, 10));
 
-        _ = Assert.Throws<ArgumentOutOfRangeException>(() => gen[(-1, 0)]);
-        _ = Assert.Throws<ArgumentOutOfRangeException>(() => gen[(0, -1)]);
-        _ = Assert.Throws<ArgumentOutOfRangeException>(() => gen[(10, 0)]);
-        _ = Assert.Throws<ArgumentOutOfRangeException>(() => gen[(0, 10)]);
+        _ = Should.Throw<ArgumentOutOfRangeException>(() => gen[(-1, 0)]);
+        _ = Should.Throw<ArgumentOutOfRangeException>(() => gen[(0, -1)]);
+        _ = Should.Throw<ArgumentOutOfRangeException>(() => gen[(10, 0)]);
+        _ = Should.Throw<ArgumentOutOfRangeException>(() => gen[(0, 10)]);
     }
 
     [Fact]
@@ -71,8 +73,8 @@ public class RectangularGenerationTests
         };
         using IGeneration<Point2D, bool> gen = TestHelpers.CreateGeneration((10, 10), states);
 
-        Assert.True(gen[(3, 4)]);
-        Assert.False(gen[(4, 3)]);
+        gen[(3, 4)].ShouldBeTrue();
+        gen[(4, 3)].ShouldBeFalse();
     }
 
     [Fact]
@@ -85,7 +87,7 @@ public class RectangularGenerationTests
         {
             for (int x = 0; x < 10; x++)
             {
-                Assert.False(gen[(x, y)]);
+                gen[(x, y)].ShouldBeFalse();
             }
         }
     }

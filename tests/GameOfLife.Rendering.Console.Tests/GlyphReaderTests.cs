@@ -1,6 +1,8 @@
 ﻿using GameOfLife.Core;
 using GameOfLife.Rendering;
 
+using Shouldly;
+
 using Xunit;
 
 namespace GameOfLife.Rendering.Console.Tests;
@@ -30,7 +32,7 @@ public class GlyphReaderTests
         }
 
         // Should have at least the dead cell character
-        Assert.NotEmpty(glyphs);
+        glyphs.ShouldNotBeEmpty();
     }
 
     [Fact]
@@ -55,7 +57,7 @@ public class GlyphReaderTests
         }
 
         // Should have at least one glyph with ForegroundGreen (alive color)
-        Assert.Contains(glyphs, g => g.Color == AnsiSequence.ForegroundGreen);
+        glyphs.ShouldContain(g => g.Color == AnsiSequence.ForegroundGreen);
     }
 
     [Fact]
@@ -84,7 +86,7 @@ public class GlyphReaderTests
         }
 
         // 2x2 grid should have 2 newlines (one after each row)
-        Assert.Equal(2, newlineCount);
+        newlineCount.ShouldBe(2);
     }
 
     [Fact]
@@ -112,8 +114,8 @@ public class GlyphReaderTests
         }
 
         // We expect both dead (DarkGray) and alive (Green) colors in the output
-        Assert.Contains(glyphs, g => g.Color == AnsiSequence.ForegroundDarkGray);
-        Assert.Contains(glyphs, g => g.Color == AnsiSequence.ForegroundGreen);
+        glyphs.ShouldContain(g => g.Color == AnsiSequence.ForegroundDarkGray);
+        glyphs.ShouldContain(g => g.Color == AnsiSequence.ForegroundGreen);
     }
 
     [Fact]
@@ -145,8 +147,8 @@ public class GlyphReaderTests
 
         // All character glyphs should have Green color
         var characterGlyphs = glyphs.Where(g => !g.IsNewline).ToList();
-        Assert.Equal(3, characterGlyphs.Count);
-        Assert.All(characterGlyphs, g => Assert.Equal(AnsiSequence.ForegroundGreen, g.Color));
+        characterGlyphs.Count.ShouldBe(3);
+        characterGlyphs.ShouldAllBe(g => g.Color == AnsiSequence.ForegroundGreen);
     }
 
     [Fact]
@@ -176,13 +178,13 @@ public class GlyphReaderTests
         }
 
         var characterGlyphs = glyphs.Where(g => !g.IsNewline).ToList();
-        Assert.Equal(4, characterGlyphs.Count);
+        characterGlyphs.Count.ShouldBe(4);
 
         // Pattern: alive, dead, alive, dead
-        Assert.Equal(AnsiSequence.ForegroundGreen, characterGlyphs[0].Color);
-        Assert.Equal(AnsiSequence.ForegroundDarkGray, characterGlyphs[1].Color);
-        Assert.Equal(AnsiSequence.ForegroundGreen, characterGlyphs[2].Color);
-        Assert.Equal(AnsiSequence.ForegroundDarkGray, characterGlyphs[3].Color);
+        characterGlyphs[0].Color.ShouldBe(AnsiSequence.ForegroundGreen);
+        characterGlyphs[1].Color.ShouldBe(AnsiSequence.ForegroundDarkGray);
+        characterGlyphs[2].Color.ShouldBe(AnsiSequence.ForegroundGreen);
+        characterGlyphs[3].Color.ShouldBe(AnsiSequence.ForegroundDarkGray);
     }
 
     [Fact]
@@ -216,7 +218,7 @@ public class GlyphReaderTests
         }
 
         // 2x3 = 6 characters, 3 newlines (one after each row)
-        Assert.Equal(6, characterCount);
-        Assert.Equal(3, newlineCount);
+        characterCount.ShouldBe(6);
+        newlineCount.ShouldBe(3);
     }
 }
