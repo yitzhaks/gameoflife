@@ -1,4 +1,4 @@
-using System.CommandLine;
+﻿using System.CommandLine;
 
 namespace GameOfLife.Console;
 
@@ -65,12 +65,12 @@ internal static class CommandLineParser
 
         rootCommand.SetAction(async (parseResult, cancellationToken) =>
         {
-            var width = parseResult.GetValue(widthOption);
-            var height = parseResult.GetValue(heightOption);
-            var injections = parseResult.GetValue(injectOption);
-            var generations = parseResult.GetValue(generationsOption);
-            var startAutoplay = parseResult.GetValue(startAutoplayOption);
-            var maxFps = parseResult.GetValue(maxFpsOption);
+            int width = parseResult.GetValue(widthOption);
+            int height = parseResult.GetValue(heightOption);
+            string[]? injections = parseResult.GetValue(injectOption);
+            int? generations = parseResult.GetValue(generationsOption);
+            bool startAutoplay = parseResult.GetValue(startAutoplayOption);
+            int maxFps = parseResult.GetValue(maxFpsOption);
 
             var options = new CommandLineOptions
             {
@@ -84,7 +84,7 @@ internal static class CommandLineParser
             // Parse shape injections
             if (injections is not null)
             {
-                foreach (var injection in injections)
+                foreach (string? injection in injections)
                 {
                     options.Injections.Add(ShapeInjection.Parse(injection));
                 }

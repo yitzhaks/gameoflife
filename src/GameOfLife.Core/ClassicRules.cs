@@ -1,4 +1,4 @@
-namespace GameOfLife.Core;
+﻿namespace GameOfLife.Core;
 
 /// <summary>
 /// Classic Conway's Game of Life rules (B3/S23).
@@ -18,7 +18,7 @@ public class ClassicRules : IRules<bool>
     /// </summary>
     public bool GetNextState(bool current, IEnumerable<bool> neighborStates)
     {
-        var aliveNeighbors = neighborStates.Count(s => s);
+        int aliveNeighbors = neighborStates.Count(s => s);
 
         if (current)
         {

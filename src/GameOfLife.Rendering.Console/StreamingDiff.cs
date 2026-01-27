@@ -1,4 +1,4 @@
-namespace GameOfLife.Rendering.Console;
+﻿namespace GameOfLife.Rendering.Console;
 
 /// <summary>
 /// Provides streaming differential rendering between two glyph streams.
@@ -25,6 +25,8 @@ public static class StreamingDiff
         TextWriter output,
         int startRow = 1)
     {
+        ArgumentNullException.ThrowIfNull(output);
+
         int row = startRow;
         int col = 1;
         AnsiSequence? lastWrittenColor = null;
@@ -35,9 +37,9 @@ public static class StreamingDiff
 
         while (current.MoveNext())
         {
-            var hasPrev = previous.MoveNext();
-            var prevGlyph = hasPrev ? previous.Current : default;
-            var currGlyph = current.Current;
+            bool hasPrev = previous.MoveNext();
+            Glyph prevGlyph = hasPrev ? previous.Current : default;
+            Glyph currGlyph = current.Current;
 
             if (currGlyph.IsNewline)
             {
@@ -84,6 +86,8 @@ public static class StreamingDiff
         TextWriter output,
         int startRow = 1)
     {
+        ArgumentNullException.ThrowIfNull(output);
+
         int row = startRow;
         int col = 1;
         AnsiSequence? lastWrittenColor = null;
@@ -93,7 +97,7 @@ public static class StreamingDiff
 
         while (current.MoveNext())
         {
-            var glyph = current.Current;
+            Glyph glyph = current.Current;
 
             if (glyph.IsNewline)
             {
@@ -127,9 +131,12 @@ public static class StreamingDiff
     public static void WriteFullAndCapture(
         ref ColorNormalizedGlyphEnumerator current,
         TextWriter output,
-        List<Glyph> frameBuffer,
+        IList<Glyph> frameBuffer,
         int startRow = 1)
     {
+        ArgumentNullException.ThrowIfNull(output);
+        ArgumentNullException.ThrowIfNull(frameBuffer);
+
         frameBuffer.Clear();
 
         int row = startRow;
@@ -141,7 +148,7 @@ public static class StreamingDiff
 
         while (current.MoveNext())
         {
-            var glyph = current.Current;
+            Glyph glyph = current.Current;
             frameBuffer.Add(new Glyph(glyph.Color, glyph.Character));
 
             if (glyph.IsNewline)
@@ -176,9 +183,13 @@ public static class StreamingDiff
         IReadOnlyList<Glyph> previousFrame,
         ref ColorNormalizedGlyphEnumerator current,
         TextWriter output,
-        List<Glyph> frameBuffer,
+        IList<Glyph> frameBuffer,
         int startRow = 1)
     {
+        ArgumentNullException.ThrowIfNull(previousFrame);
+        ArgumentNullException.ThrowIfNull(output);
+        ArgumentNullException.ThrowIfNull(frameBuffer);
+
         frameBuffer.Clear();
 
         int row = startRow;
@@ -192,11 +203,11 @@ public static class StreamingDiff
 
         while (current.MoveNext())
         {
-            var currGlyph = current.Current;
+            Glyph currGlyph = current.Current;
             frameBuffer.Add(new Glyph(currGlyph.Color, currGlyph.Character));
 
-            var hasPrev = prevIndex < previousFrame.Count;
-            var prevGlyph = hasPrev ? previousFrame[prevIndex] : default;
+            bool hasPrev = prevIndex < previousFrame.Count;
+            Glyph prevGlyph = hasPrev ? previousFrame[prevIndex] : default;
             prevIndex++;
 
             if (currGlyph.IsNewline)

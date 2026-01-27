@@ -1,8 +1,10 @@
+﻿using System.CommandLine;
+
 using GameOfLife.Console;
 
-var patternsDirectory = Path.Combine(AppContext.BaseDirectory, "patterns");
+string patternsDirectory = Path.Combine(AppContext.BaseDirectory, "patterns");
 
-var rootCommand = CommandLineParser.CreateRootCommand(async options =>
+RootCommand rootCommand = CommandLineParser.CreateRootCommand(async options =>
 {
     var shapeLoader = new ShapeLoader(patternsDirectory);
     var controller = new GameController(options, shapeLoader, Console.Out, Console.In);

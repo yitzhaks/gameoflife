@@ -1,4 +1,4 @@
-namespace GameOfLife.Core;
+﻿namespace GameOfLife.Core;
 
 /// <summary>
 /// Represents the state of all nodes at a single point in time.

@@ -1,4 +1,4 @@
-using GameOfLife.Core;
+﻿using GameOfLife.Core;
 using GameOfLife.Rendering;
 
 using Xunit;
@@ -20,8 +20,8 @@ public class GlyphReaderTests
             new Dictionary<Point2D, bool>(),
             defaultState: false);
 
-        var tokenEnumerator = renderer.GetTokenEnumerator(topology, generation);
-        var glyphEnumerator = GlyphReader.FromTokens(tokenEnumerator);
+        TokenEnumerator tokenEnumerator = renderer.GetTokenEnumerator(topology, generation);
+        GlyphEnumerator glyphEnumerator = GlyphReader.FromTokens(tokenEnumerator);
 
         var glyphs = new List<Glyph>();
         while (glyphEnumerator.MoveNext())
@@ -45,8 +45,8 @@ public class GlyphReaderTests
         var states = new Dictionary<Point2D, bool> { [new Point2D(0, 0)] = true };
         var generation = new DictionaryGeneration<Point2D, bool>(states, defaultState: false);
 
-        var tokenEnumerator = renderer.GetTokenEnumerator(topology, generation);
-        var glyphEnumerator = GlyphReader.FromTokens(tokenEnumerator);
+        TokenEnumerator tokenEnumerator = renderer.GetTokenEnumerator(topology, generation);
+        GlyphEnumerator glyphEnumerator = GlyphReader.FromTokens(tokenEnumerator);
 
         var glyphs = new List<Glyph>();
         while (glyphEnumerator.MoveNext())
@@ -71,10 +71,10 @@ public class GlyphReaderTests
             new Dictionary<Point2D, bool>(),
             defaultState: false);
 
-        var tokenEnumerator = renderer.GetTokenEnumerator(topology, generation);
-        var glyphEnumerator = GlyphReader.FromTokens(tokenEnumerator);
+        TokenEnumerator tokenEnumerator = renderer.GetTokenEnumerator(topology, generation);
+        GlyphEnumerator glyphEnumerator = GlyphReader.FromTokens(tokenEnumerator);
 
-        var newlineCount = 0;
+        int newlineCount = 0;
         while (glyphEnumerator.MoveNext())
         {
             if (glyphEnumerator.Current.IsNewline)
@@ -102,8 +102,8 @@ public class GlyphReaderTests
         var states = new Dictionary<Point2D, bool> { [new Point2D(1, 0)] = true };
         var generation = new DictionaryGeneration<Point2D, bool>(states, defaultState: false);
 
-        var tokenEnumerator = renderer.GetTokenEnumerator(topology, generation);
-        var glyphEnumerator = GlyphReader.FromTokens(tokenEnumerator);
+        TokenEnumerator tokenEnumerator = renderer.GetTokenEnumerator(topology, generation);
+        GlyphEnumerator glyphEnumerator = GlyphReader.FromTokens(tokenEnumerator);
 
         var glyphs = new List<Glyph>();
         while (glyphEnumerator.MoveNext())
@@ -134,8 +134,8 @@ public class GlyphReaderTests
         };
         var generation = new DictionaryGeneration<Point2D, bool>(states, defaultState: false);
 
-        var tokenEnumerator = renderer.GetTokenEnumerator(topology, generation);
-        var glyphEnumerator = GlyphReader.FromTokens(tokenEnumerator);
+        TokenEnumerator tokenEnumerator = renderer.GetTokenEnumerator(topology, generation);
+        GlyphEnumerator glyphEnumerator = GlyphReader.FromTokens(tokenEnumerator);
 
         var glyphs = new List<Glyph>();
         while (glyphEnumerator.MoveNext())
@@ -166,8 +166,8 @@ public class GlyphReaderTests
         };
         var generation = new DictionaryGeneration<Point2D, bool>(states, defaultState: false);
 
-        var tokenEnumerator = renderer.GetTokenEnumerator(topology, generation);
-        var glyphEnumerator = GlyphReader.FromTokens(tokenEnumerator);
+        TokenEnumerator tokenEnumerator = renderer.GetTokenEnumerator(topology, generation);
+        GlyphEnumerator glyphEnumerator = GlyphReader.FromTokens(tokenEnumerator);
 
         var glyphs = new List<Glyph>();
         while (glyphEnumerator.MoveNext())
@@ -198,11 +198,11 @@ public class GlyphReaderTests
             new Dictionary<Point2D, bool>(),
             defaultState: false);
 
-        var tokenEnumerator = renderer.GetTokenEnumerator(topology, generation);
-        var glyphEnumerator = GlyphReader.FromTokens(tokenEnumerator);
+        TokenEnumerator tokenEnumerator = renderer.GetTokenEnumerator(topology, generation);
+        GlyphEnumerator glyphEnumerator = GlyphReader.FromTokens(tokenEnumerator);
 
-        var newlineCount = 0;
-        var characterCount = 0;
+        int newlineCount = 0;
+        int characterCount = 0;
         while (glyphEnumerator.MoveNext())
         {
             if (glyphEnumerator.Current.IsNewline)

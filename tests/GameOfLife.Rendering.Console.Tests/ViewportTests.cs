@@ -1,4 +1,4 @@
-using Xunit;
+﻿using Xunit;
 
 namespace GameOfLife.Rendering.Console.Tests;
 
@@ -29,7 +29,7 @@ public class ViewportTests
     public void Constructor_InvalidDimensions_ThrowsArgumentOutOfRangeException(
         int viewportWidth, int viewportHeight, int boardWidth, int boardHeight)
     {
-        Assert.Throws<ArgumentOutOfRangeException>(() =>
+        _ = Assert.Throws<ArgumentOutOfRangeException>(() =>
             new Viewport(viewportWidth, viewportHeight, boardWidth, boardHeight));
     }
 

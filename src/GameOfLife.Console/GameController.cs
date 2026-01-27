@@ -1,4 +1,4 @@
-using System.Diagnostics;
+﻿using System.Diagnostics;
 
 using GameOfLife.Core;
 using GameOfLife.Rendering;
@@ -56,7 +56,7 @@ internal sealed class GameController
     /// <returns>The exit code (0 = success).</returns>
     public async Task<int> RunAsync(CancellationToken cancellationToken = default)
     {
-        var isInteractiveConsole = ReferenceEquals(_output, System.Console.Out) &&
+        bool isInteractiveConsole = ReferenceEquals(_output, System.Console.Out) &&
                                    !System.Console.IsOutputRedirected;
 
         try
@@ -105,13 +105,13 @@ internal sealed class GameController
 
         // Create initial generation with injected shapes
         var initialStates = new Dictionary<Point2D, bool>();
-        foreach (var injection in _options.Injections)
+        foreach (ShapeInjection injection in _options.Injections)
         {
-            var pattern = _shapeLoader.LoadPattern(injection.PatternName);
-            foreach (var point in pattern)
+            IReadOnlyList<Point2D> pattern = _shapeLoader.LoadPattern(injection.PatternName);
+            foreach (Point2D point in pattern)
             {
-                var targetX = injection.X + point.X;
-                var targetY = injection.Y + point.Y;
+                int targetX = injection.X + point.X;
+                int targetY = injection.Y + point.Y;
 
                 // Clip points outside bounds
                 if (targetX >= 0 && targetX < _options.Width &&
@@ -130,22 +130,22 @@ internal sealed class GameController
 
         // Create renderer
         var layoutEngine = new IdentityLayoutEngine();
-        var theme = ConsoleTheme.Default;
+        ConsoleTheme theme = ConsoleTheme.Default;
         var renderer = new ConsoleRenderer(_output, layoutEngine, theme);
 
         // Create viewport if board is larger than console
         Viewport? viewport = null;
-        var viewportHeight = _options.Height;
+        int viewportHeight = _options.Height;
 
         if (isInteractiveConsole)
         {
             // Account for borders (2 chars each side) and header/controls (4 rows reserved)
-            var availableWidth = System.Console.WindowWidth - 2;
-            var availableHeight = System.Console.WindowHeight - 6; // Header(2) + Controls(2) + margins
+            int availableWidth = System.Console.WindowWidth - 2;
+            int availableHeight = System.Console.WindowHeight - 6; // Header(2) + Controls(2) + margins
 
             if (_options.Width > availableWidth || _options.Height > availableHeight)
             {
-                var viewportWidth = Math.Min(_options.Width, availableWidth);
+                int viewportWidth = Math.Min(_options.Width, availableWidth);
                 viewportHeight = Math.Min(_options.Height, availableHeight);
                 viewport = new Viewport(viewportWidth, viewportHeight, _options.Width, _options.Height);
             }
@@ -163,14 +163,14 @@ internal sealed class GameController
 
         // FPS tracking for play mode
         var fpsStopwatch = Stopwatch.StartNew();
-        var frameCount = 0;
-        var currentFps = 0.0;
+        int frameCount = 0;
+        double currentFps = 0.0;
 
         // Wall clock for elapsed time display
         var wallClock = Stopwatch.StartNew();
 
         // Play/pause state (starts based on command-line option)
-        var isPlaying = _options.StartAutoplay;
+        bool isPlaying = _options.StartAutoplay;
 
         // Frame timing for FPS cap
         var frameStopwatch = new Stopwatch();
@@ -184,7 +184,7 @@ internal sealed class GameController
             if (isPlaying && isInteractiveConsole)
             {
                 frameCount++;
-                var elapsed = fpsStopwatch.Elapsed.TotalSeconds;
+                double elapsed = fpsStopwatch.Elapsed.TotalSeconds;
                 if (elapsed >= 0.5) // Update FPS every 0.5 seconds
                 {
                     currentFps = frameCount / elapsed;
@@ -196,9 +196,9 @@ internal sealed class GameController
             if (isInteractiveConsole)
             {
                 // Render using differential updates against frame buffer
-                var elapsed = wallClock.Elapsed;
-                var prevBuffer = frameBuffers[currentBufferIndex];
-                var currBuffer = frameBuffers[1 - currentBufferIndex];
+                TimeSpan elapsed = wallClock.Elapsed;
+                List<Glyph> prevBuffer = frameBuffers[currentBufferIndex];
+                List<Glyph> currBuffer = frameBuffers[1 - currentBufferIndex];
                 RenderWithDiff(renderer, topology, timeline.Current, prevBuffer, currBuffer, BoardStartRow, generation, isPlaying, viewport, viewportHeight, isPlaying ? currentFps : null, isPlaying ? elapsed : null);
                 currentBufferIndex = 1 - currentBufferIndex; // Swap buffers
             }
@@ -225,7 +225,7 @@ internal sealed class GameController
             }
 
             // Handle input
-            var isInteractiveInput = ReferenceEquals(_input, System.Console.In) &&
+            bool isInteractiveInput = ReferenceEquals(_input, System.Console.In) &&
                                      !System.Console.IsInputRedirected;
 
             if (isInteractiveInput)
@@ -235,7 +235,7 @@ internal sealed class GameController
                     // Playing mode: check for keys without blocking
                     if (System.Console.KeyAvailable)
                     {
-                        var key = System.Console.ReadKey(true);
+                        ConsoleKeyInfo key = System.Console.ReadKey(true);
                         if (key.Key is ConsoleKey.Q or ConsoleKey.Escape)
                         {
                             return 0;
@@ -270,7 +270,7 @@ internal sealed class GameController
                         Thread.Sleep(1);
                     }
 
-                    var key = System.Console.ReadKey(true);
+                    ConsoleKeyInfo key = System.Console.ReadKey(true);
                     if (key.Key is ConsoleKey.Q or ConsoleKey.Escape)
                     {
                         return 0;
@@ -303,7 +303,7 @@ internal sealed class GameController
             else
             {
                 // When input is redirected, read a line
-                var line = _input.ReadLine();
+                string? line = _input.ReadLine();
                 if (line is null || line.Trim().Equals("q", StringComparison.OrdinalIgnoreCase))
                 {
                     return 0;
@@ -317,7 +317,7 @@ internal sealed class GameController
             // Frame rate cap - spin-wait for remaining time after all work is done
             if (isPlaying && isInteractiveInput)
             {
-                var minFrameTimeMs = 1000 / _options.MaxFps;
+                int minFrameTimeMs = 1000 / _options.MaxFps;
                 while (frameStopwatch.ElapsedMilliseconds < minFrameTimeMs)
                 {
                     if (cancellationToken.IsCancellationRequested)
@@ -327,7 +327,7 @@ internal sealed class GameController
 
                     if (System.Console.KeyAvailable)
                     {
-                        var key = System.Console.ReadKey(true);
+                        ConsoleKeyInfo key = System.Console.ReadKey(true);
                         if (key.Key is ConsoleKey.Q or ConsoleKey.Escape)
                         {
                             return 0;
@@ -378,7 +378,7 @@ internal sealed class GameController
 
         if (isPlaying && fps.HasValue && elapsed.HasValue)
         {
-            var timeStr = $"{(int)elapsed.Value.TotalMinutes:D2}:{elapsed.Value.Seconds:D2}";
+            string timeStr = $"{(int)elapsed.Value.TotalMinutes:D2}:{elapsed.Value.Seconds:D2}";
             headerParts.Add($"{fps.Value:F1} FPS");
             headerParts.Add(timeStr);
         }
@@ -393,7 +393,7 @@ internal sealed class GameController
 
         _output.Write("\n\n"); // Blank line before board
 
-        var currentEnumerator = renderer.GetGlyphEnumerator(topology, currentGeneration, viewport);
+        ColorNormalizedGlyphEnumerator currentEnumerator = renderer.GetGlyphEnumerator(topology, currentGeneration, viewport);
 
         if (previousFrameBuffer.Count == 0)
         {
@@ -416,8 +416,8 @@ internal sealed class GameController
     {
         // Calculate where controls should go (after board + 1 blank line)
         // Board height = viewport height (or grid height) + 2 (borders)
-        var boardHeight = viewportHeight + 2;
-        var controlsRow = startRow + boardHeight + 1;
+        int boardHeight = viewportHeight + 2;
+        int controlsRow = startRow + boardHeight + 1;
 
         _output.Write($"\x1b[0m\x1b[{controlsRow};1H"); // Reset color, position cursor
 
@@ -446,7 +446,7 @@ internal sealed class GameController
 
     private static bool HandleViewportNavigation(ConsoleKeyInfo key, Viewport viewport)
     {
-        var (deltaX, deltaY) = GetNavigationDelta(key.Key);
+        (int deltaX, int deltaY) = GetNavigationDelta(key.Key);
 
         if (deltaX == 0 && deltaY == 0)
         {
@@ -454,8 +454,8 @@ internal sealed class GameController
         }
 
         // Track position before move to detect if it actually changed
-        var oldX = viewport.OffsetX;
-        var oldY = viewport.OffsetY;
+        int oldX = viewport.OffsetX;
+        int oldY = viewport.OffsetY;
 
         viewport.Move(deltaX, deltaY);
 
@@ -468,8 +468,8 @@ internal sealed class GameController
         // Process all pending navigation keys to prevent input lag
         while (System.Console.KeyAvailable)
         {
-            var key = System.Console.ReadKey(true);
-            var (deltaX, deltaY) = GetNavigationDelta(key.Key);
+            ConsoleKeyInfo key = System.Console.ReadKey(true);
+            (int deltaX, int deltaY) = GetNavigationDelta(key.Key);
 
             if (deltaX == 0 && deltaY == 0)
             {
@@ -485,6 +485,7 @@ internal sealed class GameController
 
     private static (int deltaX, int deltaY) GetNavigationDelta(ConsoleKey key)
     {
+#pragma warning disable IDE0072 // Populate switch - intentionally using default for unhandled keys
         return key switch
         {
             ConsoleKey.W or ConsoleKey.UpArrow => (0, -1),
@@ -493,5 +494,6 @@ internal sealed class GameController
             ConsoleKey.D or ConsoleKey.RightArrow => (1, 0),
             _ => (0, 0)
         };
+#pragma warning restore IDE0072
     }
 }

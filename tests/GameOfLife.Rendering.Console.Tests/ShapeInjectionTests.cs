@@ -1,4 +1,4 @@
-using GameOfLife.Console;
+﻿using GameOfLife.Console;
 
 using Xunit;
 
@@ -47,38 +47,20 @@ public class ShapeInjectionTests
     }
 
     [Fact]
-    public void Parse_MissingAtSign_ThrowsFormatException()
-    {
-        Assert.Throws<FormatException>(() => ShapeInjection.Parse("glider5,10"));
-    }
+    public void Parse_MissingAtSign_ThrowsFormatException() => Assert.Throws<FormatException>(() => ShapeInjection.Parse("glider5,10"));
 
     [Fact]
-    public void Parse_MissingComma_ThrowsFormatException()
-    {
-        Assert.Throws<FormatException>(() => ShapeInjection.Parse("glider@510"));
-    }
+    public void Parse_MissingComma_ThrowsFormatException() => Assert.Throws<FormatException>(() => ShapeInjection.Parse("glider@510"));
 
     [Fact]
-    public void Parse_InvalidXCoordinate_ThrowsFormatException()
-    {
-        Assert.Throws<FormatException>(() => ShapeInjection.Parse("glider@abc,10"));
-    }
+    public void Parse_InvalidXCoordinate_ThrowsFormatException() => Assert.Throws<FormatException>(() => ShapeInjection.Parse("glider@abc,10"));
 
     [Fact]
-    public void Parse_InvalidYCoordinate_ThrowsFormatException()
-    {
-        Assert.Throws<FormatException>(() => ShapeInjection.Parse("glider@10,xyz"));
-    }
+    public void Parse_InvalidYCoordinate_ThrowsFormatException() => Assert.Throws<FormatException>(() => ShapeInjection.Parse("glider@10,xyz"));
 
     [Fact]
-    public void Parse_EmptyPatternName_ThrowsFormatException()
-    {
-        Assert.Throws<FormatException>(() => ShapeInjection.Parse("@5,10"));
-    }
+    public void Parse_EmptyPatternName_ThrowsFormatException() => Assert.Throws<FormatException>(() => ShapeInjection.Parse("@5,10"));
 
     [Fact]
-    public void Parse_NullInput_ThrowsArgumentNullException()
-    {
-        Assert.Throws<ArgumentNullException>(() => ShapeInjection.Parse(null!));
-    }
+    public void Parse_NullInput_ThrowsArgumentNullException() => Assert.Throws<ArgumentNullException>(() => ShapeInjection.Parse(null!));
 }

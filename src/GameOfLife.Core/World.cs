@@ -1,4 +1,4 @@
-namespace GameOfLife.Core;
+﻿namespace GameOfLife.Core;
 
 /// <summary>
 /// The "engine" that combines topology with rules to compute ticks.
@@ -38,13 +38,13 @@ public class World<TIdentity, TState> where TIdentity : notnull, IEquatable<TIde
     {
         ArgumentNullException.ThrowIfNull(current);
 
-        var nextStates = new Dictionary<TIdentity, TState>();
+        Dictionary<TIdentity, TState> nextStates = [];
 
-        foreach (var node in Topology.Nodes)
+        foreach (TIdentity node in Topology.Nodes)
         {
-            var currentState = current[node];
-            var neighborStates = Topology.GetNeighbors(node).Select(neighbor => current[neighbor]);
-            var nextState = Rules.GetNextState(currentState, neighborStates);
+            TState currentState = current[node];
+            IEnumerable<TState> neighborStates = Topology.GetNeighbors(node).Select(neighbor => current[neighbor]);
+            TState nextState = Rules.GetNextState(currentState, neighborStates);
             nextStates[node] = nextState;
         }
 

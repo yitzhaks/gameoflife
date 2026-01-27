@@ -1,4 +1,4 @@
-using Xunit;
+﻿using Xunit;
 
 namespace GameOfLife.Rendering.Console.Tests;
 
@@ -81,7 +81,7 @@ public class GlyphTests
     {
         var glyph = new Glyph(AnsiSequence.ForegroundGreen, 'X');
 
-        var result = glyph.ToString();
+        string result = glyph.ToString();
 
         Assert.Contains("Glyph", result);
         Assert.Contains("ForegroundGreen", result);
@@ -93,7 +93,7 @@ public class GlyphTests
     {
         var glyph = new Glyph(null, '\n');
 
-        var result = glyph.ToString();
+        string result = glyph.ToString();
 
         Assert.Contains("\\n", result);
     }
@@ -157,7 +157,7 @@ public class GlyphTests
     {
         var glyph = new Glyph(null, 'X');
 
-        var result = glyph.ToString();
+        string result = glyph.ToString();
 
         Assert.Contains("null", result);
         Assert.Contains("X", result);

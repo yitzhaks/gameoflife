@@ -1,4 +1,4 @@
-namespace GameOfLife.Core;
+﻿namespace GameOfLife.Core;
 
 /// <summary>
 /// A dictionary-backed generation that stores state sparsely.
@@ -31,5 +31,5 @@ public class DictionaryGeneration<TIdentity, TState> : IGeneration<TIdentity, TS
     /// <summary>
     /// Gets the state of a node. Returns the default state if the node is not explicitly stored.
     /// </summary>
-    public TState this[TIdentity node] => _states.TryGetValue(node, out var state) ? state : _defaultState;
+    public TState this[TIdentity node] => _states.TryGetValue(node, out TState? state) ? state : _defaultState;
 }

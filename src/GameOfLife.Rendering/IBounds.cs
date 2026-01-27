@@ -1,4 +1,4 @@
-namespace GameOfLife.Rendering;
+﻿namespace GameOfLife.Rendering;
 
 /// <summary>
 /// Defines a region in coordinate space that can test containment.

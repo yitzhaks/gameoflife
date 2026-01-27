@@ -1,4 +1,4 @@
-namespace GameOfLife.Core.Tests;
+﻿namespace GameOfLife.Core.Tests;
 
 public class TimelineTests
 {
@@ -19,10 +19,7 @@ public class TimelineTests
 
         public IEnumerable<int> Nodes { get; }
 
-        public void AddNeighbor(int from, int to)
-        {
-            _neighbors[from].Add(to);
-        }
+        public void AddNeighbor(int from, int to) => _neighbors[from].Add(to);
 
         public IEnumerable<int> GetNeighbors(int node) => _neighbors[node];
     }
@@ -34,10 +31,7 @@ public class TimelineTests
     {
         public int DefaultState => 0;
 
-        public int GetNextState(int current, IEnumerable<int> neighborStates)
-        {
-            return current + 1;
-        }
+        public int GetNextState(int current, IEnumerable<int> neighborStates) => current + 1;
     }
 
     /// <summary>
@@ -47,10 +41,7 @@ public class TimelineTests
     {
         public int DefaultState => 0;
 
-        public int GetNextState(int current, IEnumerable<int> neighborStates)
-        {
-            return neighborStates.Sum();
-        }
+        public int GetNextState(int current, IEnumerable<int> neighborStates) => neighborStates.Sum();
     }
 
     #endregion
@@ -98,7 +89,7 @@ public class TimelineTests
         var initial = new DictionaryGeneration<int, int>(new Dictionary<int, int>(), 0);
 
         // Act & Assert
-        var ex = Assert.Throws<ArgumentNullException>(() => new Timeline<int, int>(null!, initial));
+        ArgumentNullException ex = Assert.Throws<ArgumentNullException>(() => new Timeline<int, int>(null!, initial));
         Assert.Equal("world", ex.ParamName);
     }
 
@@ -111,7 +102,7 @@ public class TimelineTests
         var world = new World<int, int>(topology, rules);
 
         // Act & Assert
-        var ex = Assert.Throws<ArgumentNullException>(() => new Timeline<int, int>(world, null!));
+        ArgumentNullException ex = Assert.Throws<ArgumentNullException>(() => new Timeline<int, int>(world, null!));
         Assert.Equal("initial", ex.ParamName);
     }
 

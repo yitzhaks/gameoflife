@@ -1,6 +1,6 @@
-using GameOfLife.Core;
+﻿using System.Text;
 
-using System.Text;
+using GameOfLife.Core;
 
 namespace GameOfLife.Rendering.Console;
 
@@ -48,8 +48,8 @@ public sealed class ConsoleRenderer : IRenderer<Grid2DTopology, Point2D, Point2D
         ArgumentNullException.ThrowIfNull(topology);
         ArgumentNullException.ThrowIfNull(generation);
 
-        var layout = _layoutEngine.CreateLayout(topology);
-        var bounds = layout.Bounds;
+        ILayout<Point2D, Point2D, RectangularBounds> layout = _layoutEngine.CreateLayout(topology);
+        RectangularBounds bounds = layout.Bounds;
 
         // Build a set of valid nodes for quick lookup
         var nodeSet = new HashSet<Point2D>(topology.Nodes);
@@ -63,7 +63,7 @@ public sealed class ConsoleRenderer : IRenderer<Grid2DTopology, Point2D, Point2D
 
         try
         {
-            var width = bounds.Max.X - bounds.Min.X + 1;
+            int width = bounds.Max.X - bounds.Min.X + 1;
 
             // Draw top border
             if (_theme.ShowBorder)
@@ -89,7 +89,7 @@ public sealed class ConsoleRenderer : IRenderer<Grid2DTopology, Point2D, Point2D
                         var point = new Point2D(x, y);
                         if (nodeSet.Contains(point))
                         {
-                            var isAlive = generation[point];
+                            bool isAlive = generation[point];
                             System.Console.ForegroundColor = isAlive ? _theme.AliveColor : _theme.DeadColor;
                             _output.Write(isAlive ? _theme.AliveChar : _theme.DeadChar);
                         }
@@ -109,13 +109,13 @@ public sealed class ConsoleRenderer : IRenderer<Grid2DTopology, Point2D, Point2D
                         var point = new Point2D(x, y);
                         if (nodeSet.Contains(point))
                         {
-                            var isAlive = generation[point];
-                            rowBuilder.Append(isAlive ? _theme.AliveChar : _theme.DeadChar);
+                            bool isAlive = generation[point];
+                            _ = rowBuilder.Append(isAlive ? _theme.AliveChar : _theme.DeadChar);
                         }
                         else
                         {
                             // For points not in the topology, write a space
-                            rowBuilder.Append(' ');
+                            _ = rowBuilder.Append(' ');
                         }
                     }
 
@@ -178,7 +178,7 @@ public sealed class ConsoleRenderer : IRenderer<Grid2DTopology, Point2D, Point2D
         ArgumentNullException.ThrowIfNull(topology);
         ArgumentNullException.ThrowIfNull(generation);
 
-        var layout = _layoutEngine.CreateLayout(topology);
+        ILayout<Point2D, Point2D, RectangularBounds> layout = _layoutEngine.CreateLayout(topology);
         var nodeSet = new HashSet<Point2D>(topology.Nodes);
 
         return new TokenEnumerator(layout, generation, nodeSet, _theme, viewport);
@@ -194,8 +194,8 @@ public sealed class ConsoleRenderer : IRenderer<Grid2DTopology, Point2D, Point2D
     /// <exception cref="ArgumentNullException">Thrown if topology or generation is null.</exception>
     public ColorNormalizedGlyphEnumerator GetGlyphEnumerator(Grid2DTopology topology, IGeneration<Point2D, bool> generation, Viewport? viewport = null)
     {
-        var tokenEnumerator = GetTokenEnumerator(topology, generation, viewport);
-        var glyphEnumerator = GlyphReader.FromTokens(tokenEnumerator);
+        TokenEnumerator tokenEnumerator = GetTokenEnumerator(topology, generation, viewport);
+        GlyphEnumerator glyphEnumerator = GlyphReader.FromTokens(tokenEnumerator);
         return AnsiStateTracker.FromGlyphs(glyphEnumerator);
     }
 
@@ -212,18 +212,18 @@ public sealed class ConsoleRenderer : IRenderer<Grid2DTopology, Point2D, Point2D
         ArgumentNullException.ThrowIfNull(generation);
 
         var sb = new StringBuilder();
-        var tokenEnumerator = GetTokenEnumerator(topology, generation);
+        TokenEnumerator tokenEnumerator = GetTokenEnumerator(topology, generation);
 
         while (tokenEnumerator.MoveNext())
         {
-            var token = tokenEnumerator.Current;
+            Token token = tokenEnumerator.Current;
             if (token.IsSequence)
             {
-                sb.Append(token.Sequence.ToAnsiString());
+                _ = sb.Append(token.Sequence.ToAnsiString());
             }
             else
             {
-                sb.Append(token.Character);
+                _ = sb.Append(token.Character);
             }
         }
 

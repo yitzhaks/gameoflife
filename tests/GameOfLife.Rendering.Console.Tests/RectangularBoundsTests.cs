@@ -1,4 +1,4 @@
-using GameOfLife.Core;
+﻿using GameOfLife.Core;
 using GameOfLife.Rendering;
 
 using Xunit;
@@ -36,7 +36,7 @@ public class RectangularBoundsTests
         var min = new Point2D(10, 0);
         var max = new Point2D(5, 10);
 
-        var exception = Assert.Throws<ArgumentException>(() => new RectangularBounds(min, max));
+        ArgumentException exception = Assert.Throws<ArgumentException>(() => new RectangularBounds(min, max));
         Assert.Contains("Min", exception.Message);
     }
 
@@ -46,7 +46,7 @@ public class RectangularBoundsTests
         var min = new Point2D(0, 10);
         var max = new Point2D(10, 5);
 
-        var exception = Assert.Throws<ArgumentException>(() => new RectangularBounds(min, max));
+        ArgumentException exception = Assert.Throws<ArgumentException>(() => new RectangularBounds(min, max));
         Assert.Contains("Min", exception.Message);
     }
 

@@ -1,4 +1,4 @@
-namespace GameOfLife.Core;
+﻿namespace GameOfLife.Core;
 
 /// <summary>
 /// Holds a World and current state, enabling stepping through generations.
@@ -32,10 +32,7 @@ public class Timeline<TIdentity, TState> where TIdentity : notnull, IEquatable<T
     /// <summary>
     /// Advances the timeline by one generation.
     /// </summary>
-    public void Step()
-    {
-        Current = World.Tick(Current);
-    }
+    public void Step() => Current = World.Tick(Current);
 
     /// <summary>
     /// Advances the timeline by the specified number of generations.

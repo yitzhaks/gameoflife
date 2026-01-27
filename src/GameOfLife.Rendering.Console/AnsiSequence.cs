@@ -1,4 +1,4 @@
-namespace GameOfLife.Rendering.Console;
+﻿namespace GameOfLife.Rendering.Console;
 
 /// <summary>
 /// Known ANSI color sequences used for console rendering.

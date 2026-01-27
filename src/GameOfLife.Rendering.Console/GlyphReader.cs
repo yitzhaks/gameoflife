@@ -1,4 +1,4 @@
-namespace GameOfLife.Rendering.Console;
+﻿namespace GameOfLife.Rendering.Console;
 
 /// <summary>
 /// A zero-allocation enumerator that groups tokens into glyphs.
@@ -36,25 +36,18 @@ public ref struct GlyphEnumerator
     {
         while (_tokenEnumerator.MoveNext())
         {
-            var token = _tokenEnumerator.Current;
+            Token token = _tokenEnumerator.Current;
 
             if (token.IsSequence)
             {
                 // Accumulate color sequences
-                var seq = token.Sequence;
-                if (seq == AnsiSequence.Reset)
-                {
-                    _pendingColor = null;
-                }
-                else
-                {
-                    _pendingColor = seq;
-                }
+                AnsiSequence seq = token.Sequence;
+                _pendingColor = seq == AnsiSequence.Reset ? null : seq;
             }
             else
             {
                 // Found a character - yield a glyph
-                var character = token.Character;
+                char character = token.Character;
 
                 if (character == '\n')
                 {

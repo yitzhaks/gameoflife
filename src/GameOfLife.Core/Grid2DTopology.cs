@@ -1,4 +1,4 @@
-namespace GameOfLife.Core;
+﻿namespace GameOfLife.Core;
 
 /// <summary>
 /// A finite 2D rectangular grid topology with Moore neighborhood (8 neighbors).
@@ -76,8 +76,8 @@ public class Grid2DTopology : ITopology<Point2D>
                     continue;
                 }
 
-                var nx = node.X + dx;
-                var ny = node.Y + dy;
+                int nx = node.X + dx;
+                int ny = node.Y + dy;
 
                 if (nx >= 0 && nx < Width && ny >= 0 && ny < Height)
                 {

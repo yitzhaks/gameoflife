@@ -1,4 +1,4 @@
-using GameOfLife.Core;
+﻿using GameOfLife.Core;
 
 namespace GameOfLife.Console;
 
@@ -50,13 +50,13 @@ internal sealed class ShapeLoader
     {
         ArgumentNullException.ThrowIfNull(name);
 
-        var filePath = Path.Combine(_patternsDirectory, $"{name}.txt");
+        string filePath = Path.Combine(_patternsDirectory, $"{name}.txt");
         if (!File.Exists(filePath))
         {
             throw new FileNotFoundException($"Pattern file not found: {filePath}", filePath);
         }
 
-        var patternText = File.ReadAllText(filePath);
+        string patternText = File.ReadAllText(filePath);
         return ParsePattern(patternText);
     }
 
@@ -72,11 +72,11 @@ internal sealed class ShapeLoader
         ArgumentNullException.ThrowIfNull(patternText);
 
         var positions = new List<Point2D>();
-        var lines = patternText.Split('\n');
+        string[] lines = patternText.Split('\n');
 
         for (int y = 0; y < lines.Length; y++)
         {
-            var line = lines[y].TrimEnd('\r');
+            string line = lines[y].TrimEnd('\r');
             for (int x = 0; x < line.Length; x++)
             {
                 if (line[x] == '#')

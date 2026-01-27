@@ -1,4 +1,4 @@
-using Xunit;
+﻿using Xunit;
 
 namespace GameOfLife.Rendering.Console.Tests;
 
@@ -7,8 +7,8 @@ public class ConsoleThemeTests
     [Fact]
     public void Default_ReturnsConsistentInstance()
     {
-        var instance1 = ConsoleTheme.Default;
-        var instance2 = ConsoleTheme.Default;
+        ConsoleTheme instance1 = ConsoleTheme.Default;
+        ConsoleTheme instance2 = ConsoleTheme.Default;
 
         Assert.Same(instance1, instance2);
     }
@@ -16,7 +16,7 @@ public class ConsoleThemeTests
     [Fact]
     public void Default_HasExpectedAliveChar()
     {
-        var theme = ConsoleTheme.Default;
+        ConsoleTheme theme = ConsoleTheme.Default;
 
         Assert.Equal('█', theme.AliveChar);
     }
@@ -24,7 +24,7 @@ public class ConsoleThemeTests
     [Fact]
     public void Default_HasExpectedDeadChar()
     {
-        var theme = ConsoleTheme.Default;
+        ConsoleTheme theme = ConsoleTheme.Default;
 
         Assert.Equal('·', theme.DeadChar);
     }
@@ -32,7 +32,7 @@ public class ConsoleThemeTests
     [Fact]
     public void Default_HasExpectedColors()
     {
-        var theme = ConsoleTheme.Default;
+        ConsoleTheme theme = ConsoleTheme.Default;
 
         Assert.Equal(ConsoleColor.Green, theme.AliveColor);
         Assert.Equal(ConsoleColor.DarkGray, theme.DeadColor);
@@ -43,7 +43,7 @@ public class ConsoleThemeTests
     [Fact]
     public void Default_ShowBorderIsTrue()
     {
-        var theme = ConsoleTheme.Default;
+        ConsoleTheme theme = ConsoleTheme.Default;
 
         Assert.True(theme.ShowBorder);
     }
@@ -103,7 +103,7 @@ public class ConsoleThemeTests
     {
         var theme = new ConsoleTheme(AliveChar: 'O', DeadChar: '-', ShowBorder: false);
 
-        var result = theme.ToString();
+        string result = theme.ToString();
 
         Assert.Contains("O", result);
         Assert.Contains("-", result);
@@ -113,7 +113,7 @@ public class ConsoleThemeTests
     public void With_ModifiesSpecificProperty()
     {
         var original = new ConsoleTheme(AliveChar: '#', DeadChar: '.', ShowBorder: true);
-        var modified = original with { AliveChar = 'O' };
+        ConsoleTheme modified = original with { AliveChar = 'O' };
 
         Assert.Equal('O', modified.AliveChar);
         Assert.Equal('.', modified.DeadChar);

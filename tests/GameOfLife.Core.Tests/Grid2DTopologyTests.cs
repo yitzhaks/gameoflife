@@ -1,4 +1,4 @@
-namespace GameOfLife.Core.Tests;
+﻿namespace GameOfLife.Core.Tests;
 
 public class Grid2DTopologyTests
 {
@@ -16,7 +16,7 @@ public class Grid2DTopologyTests
     [Fact]
     public void Constructor_WidthLessThanOne_ThrowsArgumentOutOfRangeException()
     {
-        var exception = Assert.Throws<ArgumentOutOfRangeException>(() => new Grid2DTopology(-1, 5));
+        ArgumentOutOfRangeException exception = Assert.Throws<ArgumentOutOfRangeException>(() => new Grid2DTopology(-1, 5));
 
         Assert.Equal("width", exception.ParamName);
     }
@@ -24,7 +24,7 @@ public class Grid2DTopologyTests
     [Fact]
     public void Constructor_WidthEqualsZero_ThrowsArgumentOutOfRangeException()
     {
-        var exception = Assert.Throws<ArgumentOutOfRangeException>(() => new Grid2DTopology(0, 5));
+        ArgumentOutOfRangeException exception = Assert.Throws<ArgumentOutOfRangeException>(() => new Grid2DTopology(0, 5));
 
         Assert.Equal("width", exception.ParamName);
     }
@@ -32,7 +32,7 @@ public class Grid2DTopologyTests
     [Fact]
     public void Constructor_HeightLessThanOne_ThrowsArgumentOutOfRangeException()
     {
-        var exception = Assert.Throws<ArgumentOutOfRangeException>(() => new Grid2DTopology(5, -1));
+        ArgumentOutOfRangeException exception = Assert.Throws<ArgumentOutOfRangeException>(() => new Grid2DTopology(5, -1));
 
         Assert.Equal("height", exception.ParamName);
     }
@@ -40,7 +40,7 @@ public class Grid2DTopologyTests
     [Fact]
     public void Constructor_HeightEqualsZero_ThrowsArgumentOutOfRangeException()
     {
-        var exception = Assert.Throws<ArgumentOutOfRangeException>(() => new Grid2DTopology(5, 0));
+        ArgumentOutOfRangeException exception = Assert.Throws<ArgumentOutOfRangeException>(() => new Grid2DTopology(5, 0));
 
         Assert.Equal("height", exception.ParamName);
     }
@@ -63,14 +63,14 @@ public class Grid2DTopologyTests
         var topology = new Grid2DTopology(3, 2);
         var nodes = topology.Nodes.ToList();
 
-        var expectedPoints = new[]
-        {
+        Point2D[] expectedPoints =
+        [
             new Point2D(0, 0), new Point2D(1, 0), new Point2D(2, 0),
             new Point2D(0, 1), new Point2D(1, 1), new Point2D(2, 1)
-        };
+        ];
 
         Assert.Equal(expectedPoints.Length, nodes.Count);
-        foreach (var expected in expectedPoints)
+        foreach (Point2D expected in expectedPoints)
         {
             Assert.Contains(expected, nodes);
         }
@@ -82,7 +82,7 @@ public class Grid2DTopologyTests
         var topology = new Grid2DTopology(1, 1);
         var nodes = topology.Nodes.ToList();
 
-        Assert.Single(nodes);
+        _ = Assert.Single(nodes);
         Assert.Equal(new Point2D(0, 0), nodes[0]);
     }
 
@@ -155,7 +155,7 @@ public class Grid2DTopologyTests
     {
         var topology = new Grid2DTopology(5, 5);
 
-        var exception = Assert.Throws<ArgumentOutOfRangeException>(() =>
+        ArgumentOutOfRangeException exception = Assert.Throws<ArgumentOutOfRangeException>(() =>
             topology.GetNeighbors(new Point2D(-1, 2)).ToList());
 
         Assert.Equal("node", exception.ParamName);
@@ -166,7 +166,7 @@ public class Grid2DTopologyTests
     {
         var topology = new Grid2DTopology(5, 5);
 
-        var exception = Assert.Throws<ArgumentOutOfRangeException>(() =>
+        ArgumentOutOfRangeException exception = Assert.Throws<ArgumentOutOfRangeException>(() =>
             topology.GetNeighbors(new Point2D(5, 2)).ToList());
 
         Assert.Equal("node", exception.ParamName);
@@ -177,7 +177,7 @@ public class Grid2DTopologyTests
     {
         var topology = new Grid2DTopology(5, 5);
 
-        var exception = Assert.Throws<ArgumentOutOfRangeException>(() =>
+        ArgumentOutOfRangeException exception = Assert.Throws<ArgumentOutOfRangeException>(() =>
             topology.GetNeighbors(new Point2D(2, -1)).ToList());
 
         Assert.Equal("node", exception.ParamName);
@@ -188,7 +188,7 @@ public class Grid2DTopologyTests
     {
         var topology = new Grid2DTopology(5, 5);
 
-        var exception = Assert.Throws<ArgumentOutOfRangeException>(() =>
+        ArgumentOutOfRangeException exception = Assert.Throws<ArgumentOutOfRangeException>(() =>
             topology.GetNeighbors(new Point2D(2, 5)).ToList());
 
         Assert.Equal("node", exception.ParamName);
@@ -207,7 +207,7 @@ public class Grid2DTopologyTests
         var centerNode = new Point2D(2, 2);
         var centerNeighbors = topology.GetNeighbors(centerNode).ToList();
 
-        foreach (var neighbor in centerNeighbors)
+        foreach (Point2D neighbor in centerNeighbors)
         {
             var neighborOfNeighbor = topology.GetNeighbors(neighbor).ToList();
             Assert.Contains(centerNode, neighborOfNeighbor);
@@ -223,7 +223,7 @@ public class Grid2DTopologyTests
         var edgeNode = new Point2D(0, 1);
         var edgeNeighbors = topology.GetNeighbors(edgeNode).ToList();
 
-        foreach (var neighbor in edgeNeighbors)
+        foreach (Point2D neighbor in edgeNeighbors)
         {
             var neighborOfNeighbor = topology.GetNeighbors(neighbor).ToList();
             Assert.Contains(edgeNode, neighborOfNeighbor);
@@ -235,19 +235,19 @@ public class Grid2DTopologyTests
     {
         var topology = new Grid2DTopology(3, 3);
 
-        var corners = new[]
-        {
+        Point2D[] corners =
+        [
             new Point2D(0, 0),
             new Point2D(2, 0),
             new Point2D(0, 2),
             new Point2D(2, 2)
-        };
+        ];
 
-        foreach (var corner in corners)
+        foreach (Point2D corner in corners)
         {
             var cornerNeighbors = topology.GetNeighbors(corner).ToList();
 
-            foreach (var neighbor in cornerNeighbors)
+            foreach (Point2D neighbor in cornerNeighbors)
             {
                 var neighborOfNeighbor = topology.GetNeighbors(neighbor).ToList();
                 Assert.Contains(corner, neighborOfNeighbor);
@@ -264,7 +264,7 @@ public class Grid2DTopologyTests
     {
         var topology = new Grid2DTopology(3, 3);
 
-        Assert.IsAssignableFrom<ITopology<Point2D>>(topology);
+        _ = Assert.IsAssignableFrom<ITopology<Point2D>>(topology);
     }
 
     #endregion

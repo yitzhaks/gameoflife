@@ -1,4 +1,4 @@
-namespace GameOfLife.Rendering;
+﻿namespace GameOfLife.Rendering;
 
 /// <summary>
 /// Provides access to the layout positions of nodes in a topology.

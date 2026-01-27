@@ -1,4 +1,4 @@
-using GameOfLife.Core;
+﻿using GameOfLife.Core;
 using GameOfLife.Rendering;
 
 using Xunit;
@@ -22,8 +22,8 @@ public class ConsoleRendererTests
 
         renderer.Render(topology, generation);
 
-        var result = output.ToString();
-        var lines = result.Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries);
+        string result = output.ToString();
+        string[] lines = result.Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries);
         Assert.Equal(3, lines.Length);
         Assert.All(lines, line => Assert.Equal("...", line));
     }
@@ -38,7 +38,7 @@ public class ConsoleRendererTests
 
         var topology = new Grid2DTopology(3, 3);
         var states = new Dictionary<Point2D, bool>();
-        foreach (var node in topology.Nodes)
+        foreach (Point2D node in topology.Nodes)
         {
             states[node] = true;
         }
@@ -47,8 +47,8 @@ public class ConsoleRendererTests
 
         renderer.Render(topology, generation);
 
-        var result = output.ToString();
-        var lines = result.Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries);
+        string result = output.ToString();
+        string[] lines = result.Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries);
         Assert.Equal(3, lines.Length);
         Assert.All(lines, line => Assert.Equal("###", line));
     }
@@ -79,8 +79,8 @@ public class ConsoleRendererTests
 
         renderer.Render(topology, generation);
 
-        var result = output.ToString();
-        var lines = result.Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries);
+        string result = output.ToString();
+        string[] lines = result.Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries);
         Assert.Equal(3, lines.Length);
         Assert.Equal(".#.", lines[0]);
         Assert.Equal("..#", lines[1]);
@@ -106,8 +106,8 @@ public class ConsoleRendererTests
 
         renderer.Render(topology, generation);
 
-        var result = output.ToString();
-        var lines = result.Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries);
+        string result = output.ToString();
+        string[] lines = result.Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries);
         Assert.Equal(2, lines.Length);
         Assert.Equal("O-", lines[0]);
         Assert.Equal("-O", lines[1]);
@@ -132,8 +132,8 @@ public class ConsoleRendererTests
 
         renderer.Render(topology, generation);
 
-        var result = output.ToString();
-        var lines = result.Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries);
+        string result = output.ToString();
+        string[] lines = result.Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries);
 
         // Expected output with double-line border:
         // ╔═══╗
@@ -151,18 +151,18 @@ public class ConsoleRendererTests
     public void Constructor_NullOutput_ThrowsArgumentNullException()
     {
         var engine = new IdentityLayoutEngine();
-        var theme = ConsoleTheme.Default;
+        ConsoleTheme theme = ConsoleTheme.Default;
 
-        Assert.Throws<ArgumentNullException>(() => new ConsoleRenderer(null!, engine, theme));
+        _ = Assert.Throws<ArgumentNullException>(() => new ConsoleRenderer(null!, engine, theme));
     }
 
     [Fact]
     public void Constructor_NullLayoutEngine_ThrowsArgumentNullException()
     {
         using var output = new StringWriter();
-        var theme = ConsoleTheme.Default;
+        ConsoleTheme theme = ConsoleTheme.Default;
 
-        Assert.Throws<ArgumentNullException>(() => new ConsoleRenderer(output, null!, theme));
+        _ = Assert.Throws<ArgumentNullException>(() => new ConsoleRenderer(output, null!, theme));
     }
 
     [Fact]
@@ -171,7 +171,7 @@ public class ConsoleRendererTests
         using var output = new StringWriter();
         var engine = new IdentityLayoutEngine();
 
-        Assert.Throws<ArgumentNullException>(() => new ConsoleRenderer(output, engine, null!));
+        _ = Assert.Throws<ArgumentNullException>(() => new ConsoleRenderer(output, engine, null!));
     }
 
     [Fact]
@@ -179,14 +179,14 @@ public class ConsoleRendererTests
     {
         using var output = new StringWriter();
         var engine = new IdentityLayoutEngine();
-        var theme = ConsoleTheme.Default;
+        ConsoleTheme theme = ConsoleTheme.Default;
         var renderer = new ConsoleRenderer(output, engine, theme);
 
         var generation = new DictionaryGeneration<Point2D, bool>(
             new Dictionary<Point2D, bool>(),
             defaultState: false);
 
-        Assert.Throws<ArgumentNullException>(() => renderer.Render(null!, generation));
+        _ = Assert.Throws<ArgumentNullException>(() => renderer.Render(null!, generation));
     }
 
     [Fact]
@@ -194,12 +194,12 @@ public class ConsoleRendererTests
     {
         using var output = new StringWriter();
         var engine = new IdentityLayoutEngine();
-        var theme = ConsoleTheme.Default;
+        ConsoleTheme theme = ConsoleTheme.Default;
         var renderer = new ConsoleRenderer(output, engine, theme);
 
         var topology = new Grid2DTopology(3, 3);
 
-        Assert.Throws<ArgumentNullException>(() => renderer.Render(topology, null!));
+        _ = Assert.Throws<ArgumentNullException>(() => renderer.Render(topology, null!));
     }
 
     [Fact]
@@ -215,7 +215,7 @@ public class ConsoleRendererTests
             new Dictionary<Point2D, bool>(),
             defaultState: false);
 
-        var enumerator = renderer.GetTokenEnumerator(topology, generation);
+        TokenEnumerator enumerator = renderer.GetTokenEnumerator(topology, generation);
 
         // Should be able to enumerate tokens
         var tokens = new List<Token>();
@@ -241,7 +241,7 @@ public class ConsoleRendererTests
             defaultState: false);
 
         var viewport = new Viewport(3, 3, 10, 10);
-        var enumerator = renderer.GetTokenEnumerator(topology, generation, viewport);
+        TokenEnumerator enumerator = renderer.GetTokenEnumerator(topology, generation, viewport);
 
         // Should be able to enumerate tokens
         var tokens = new List<Token>();
@@ -266,7 +266,7 @@ public class ConsoleRendererTests
             new Dictionary<Point2D, bool> { [new Point2D(0, 0)] = true },
             defaultState: false);
 
-        var enumerator = renderer.GetGlyphEnumerator(topology, generation);
+        ColorNormalizedGlyphEnumerator enumerator = renderer.GetGlyphEnumerator(topology, generation);
 
         // Should be able to enumerate glyphs
         var glyphs = new List<Glyph>();
@@ -294,7 +294,7 @@ public class ConsoleRendererTests
             defaultState: false);
 
         var viewport = new Viewport(3, 3, 10, 10);
-        var enumerator = renderer.GetGlyphEnumerator(topology, generation, viewport);
+        ColorNormalizedGlyphEnumerator enumerator = renderer.GetGlyphEnumerator(topology, generation, viewport);
 
         // Should be able to enumerate glyphs
         var glyphs = new List<Glyph>();
@@ -319,7 +319,7 @@ public class ConsoleRendererTests
             new Dictionary<Point2D, bool> { [new Point2D(0, 0)] = true },
             defaultState: false);
 
-        var result = renderer.RenderToString(topology, generation);
+        string result = renderer.RenderToString(topology, generation);
 
         // Should contain ANSI escape sequences
         Assert.Contains("\x1b[", result);
@@ -342,7 +342,7 @@ public class ConsoleRendererTests
             new Dictionary<Point2D, bool>(),
             defaultState: false);
 
-        var result = renderer.RenderToString(topology, generation);
+        string result = renderer.RenderToString(topology, generation);
 
         // Should contain border characters
         Assert.Contains("╔", result);
@@ -358,14 +358,14 @@ public class ConsoleRendererTests
     {
         using var output = new StringWriter();
         var engine = new IdentityLayoutEngine();
-        var theme = ConsoleTheme.Default;
+        ConsoleTheme theme = ConsoleTheme.Default;
         var renderer = new ConsoleRenderer(output, engine, theme);
 
         var generation = new DictionaryGeneration<Point2D, bool>(
             new Dictionary<Point2D, bool>(),
             defaultState: false);
 
-        Assert.Throws<ArgumentNullException>(() => renderer.GetTokenEnumerator(null!, generation));
+        _ = Assert.Throws<ArgumentNullException>(() => renderer.GetTokenEnumerator(null!, generation));
     }
 
     [Fact]
@@ -373,11 +373,11 @@ public class ConsoleRendererTests
     {
         using var output = new StringWriter();
         var engine = new IdentityLayoutEngine();
-        var theme = ConsoleTheme.Default;
+        ConsoleTheme theme = ConsoleTheme.Default;
         var renderer = new ConsoleRenderer(output, engine, theme);
 
         var topology = new Grid2DTopology(3, 3);
 
-        Assert.Throws<ArgumentNullException>(() => renderer.GetTokenEnumerator(topology, null!));
+        _ = Assert.Throws<ArgumentNullException>(() => renderer.GetTokenEnumerator(topology, null!));
     }
 }

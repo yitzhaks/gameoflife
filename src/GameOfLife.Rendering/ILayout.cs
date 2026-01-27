@@ -1,4 +1,4 @@
-namespace GameOfLife.Rendering;
+﻿namespace GameOfLife.Rendering;
 
 /// <summary>
 /// Represents an immutable layout snapshot bound to a topology.

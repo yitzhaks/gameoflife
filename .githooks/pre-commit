@@ -1,0 +1,15 @@
+#!/bin/sh
+# Pre-commit hook to verify code formatting
+# Install: git config core.hooksPath .githooks
+
+echo "Checking code formatting..."
+
+if ! dotnet format --verify-no-changes --verbosity minimal; then
+    echo ""
+    echo "Code formatting issues detected."
+    echo "Run 'dotnet format' to fix them, then stage the changes."
+    echo ""
+    exit 1
+fi
+
+echo "Code formatting check passed."

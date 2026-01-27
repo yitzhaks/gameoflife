@@ -1,4 +1,4 @@
-namespace GameOfLife.Core.Tests;
+﻿namespace GameOfLife.Core.Tests;
 
 public class ClassicRulesTests
 {
@@ -33,7 +33,7 @@ public class ClassicRulesTests
     public void DefaultState_ReturnsDeadState()
     {
         // Arrange & Act
-        var defaultState = _rules.DefaultState;
+        bool defaultState = _rules.DefaultState;
 
         // Assert
         Assert.False(defaultState);
@@ -47,11 +47,11 @@ public class ClassicRulesTests
     public void GetNextState_DeadCellWithZeroNeighbors_StaysDead()
     {
         // Arrange
-        var current = false;
-        var neighbors = CreateNeighborStates(aliveCount: 0);
+        bool current = false;
+        List<bool> neighbors = CreateNeighborStates(aliveCount: 0);
 
         // Act
-        var result = _rules.GetNextState(current, neighbors);
+        bool result = _rules.GetNextState(current, neighbors);
 
         // Assert
         Assert.False(result);
@@ -61,11 +61,11 @@ public class ClassicRulesTests
     public void GetNextState_DeadCellWithOneNeighbor_StaysDead()
     {
         // Arrange
-        var current = false;
-        var neighbors = CreateNeighborStates(aliveCount: 1);
+        bool current = false;
+        List<bool> neighbors = CreateNeighborStates(aliveCount: 1);
 
         // Act
-        var result = _rules.GetNextState(current, neighbors);
+        bool result = _rules.GetNextState(current, neighbors);
 
         // Assert
         Assert.False(result);
@@ -75,11 +75,11 @@ public class ClassicRulesTests
     public void GetNextState_DeadCellWithTwoNeighbors_StaysDead()
     {
         // Arrange
-        var current = false;
-        var neighbors = CreateNeighborStates(aliveCount: 2);
+        bool current = false;
+        List<bool> neighbors = CreateNeighborStates(aliveCount: 2);
 
         // Act
-        var result = _rules.GetNextState(current, neighbors);
+        bool result = _rules.GetNextState(current, neighbors);
 
         // Assert
         Assert.False(result);
@@ -89,11 +89,11 @@ public class ClassicRulesTests
     public void GetNextState_DeadCellWithThreeNeighbors_BecomesAlive()
     {
         // Arrange
-        var current = false;
-        var neighbors = CreateNeighborStates(aliveCount: 3);
+        bool current = false;
+        List<bool> neighbors = CreateNeighborStates(aliveCount: 3);
 
         // Act
-        var result = _rules.GetNextState(current, neighbors);
+        bool result = _rules.GetNextState(current, neighbors);
 
         // Assert
         Assert.True(result);
@@ -103,11 +103,11 @@ public class ClassicRulesTests
     public void GetNextState_DeadCellWithFourNeighbors_StaysDead()
     {
         // Arrange
-        var current = false;
-        var neighbors = CreateNeighborStates(aliveCount: 4);
+        bool current = false;
+        List<bool> neighbors = CreateNeighborStates(aliveCount: 4);
 
         // Act
-        var result = _rules.GetNextState(current, neighbors);
+        bool result = _rules.GetNextState(current, neighbors);
 
         // Assert
         Assert.False(result);
@@ -117,11 +117,11 @@ public class ClassicRulesTests
     public void GetNextState_DeadCellWithFiveNeighbors_StaysDead()
     {
         // Arrange
-        var current = false;
-        var neighbors = CreateNeighborStates(aliveCount: 5);
+        bool current = false;
+        List<bool> neighbors = CreateNeighborStates(aliveCount: 5);
 
         // Act
-        var result = _rules.GetNextState(current, neighbors);
+        bool result = _rules.GetNextState(current, neighbors);
 
         // Assert
         Assert.False(result);
@@ -131,11 +131,11 @@ public class ClassicRulesTests
     public void GetNextState_DeadCellWithEightNeighbors_StaysDead()
     {
         // Arrange
-        var current = false;
-        var neighbors = CreateNeighborStates(aliveCount: 8);
+        bool current = false;
+        List<bool> neighbors = CreateNeighborStates(aliveCount: 8);
 
         // Act
-        var result = _rules.GetNextState(current, neighbors);
+        bool result = _rules.GetNextState(current, neighbors);
 
         // Assert
         Assert.False(result);
@@ -149,11 +149,11 @@ public class ClassicRulesTests
     public void GetNextState_AliveCellWithZeroNeighbors_Dies()
     {
         // Arrange
-        var current = true;
-        var neighbors = CreateNeighborStates(aliveCount: 0);
+        bool current = true;
+        List<bool> neighbors = CreateNeighborStates(aliveCount: 0);
 
         // Act
-        var result = _rules.GetNextState(current, neighbors);
+        bool result = _rules.GetNextState(current, neighbors);
 
         // Assert
         Assert.False(result);
@@ -163,11 +163,11 @@ public class ClassicRulesTests
     public void GetNextState_AliveCellWithOneNeighbor_Dies()
     {
         // Arrange
-        var current = true;
-        var neighbors = CreateNeighborStates(aliveCount: 1);
+        bool current = true;
+        List<bool> neighbors = CreateNeighborStates(aliveCount: 1);
 
         // Act
-        var result = _rules.GetNextState(current, neighbors);
+        bool result = _rules.GetNextState(current, neighbors);
 
         // Assert
         Assert.False(result);
@@ -177,11 +177,11 @@ public class ClassicRulesTests
     public void GetNextState_AliveCellWithTwoNeighbors_Survives()
     {
         // Arrange
-        var current = true;
-        var neighbors = CreateNeighborStates(aliveCount: 2);
+        bool current = true;
+        List<bool> neighbors = CreateNeighborStates(aliveCount: 2);
 
         // Act
-        var result = _rules.GetNextState(current, neighbors);
+        bool result = _rules.GetNextState(current, neighbors);
 
         // Assert
         Assert.True(result);
@@ -191,11 +191,11 @@ public class ClassicRulesTests
     public void GetNextState_AliveCellWithThreeNeighbors_Survives()
     {
         // Arrange
-        var current = true;
-        var neighbors = CreateNeighborStates(aliveCount: 3);
+        bool current = true;
+        List<bool> neighbors = CreateNeighborStates(aliveCount: 3);
 
         // Act
-        var result = _rules.GetNextState(current, neighbors);
+        bool result = _rules.GetNextState(current, neighbors);
 
         // Assert
         Assert.True(result);
@@ -205,11 +205,11 @@ public class ClassicRulesTests
     public void GetNextState_AliveCellWithFourNeighbors_Dies()
     {
         // Arrange
-        var current = true;
-        var neighbors = CreateNeighborStates(aliveCount: 4);
+        bool current = true;
+        List<bool> neighbors = CreateNeighborStates(aliveCount: 4);
 
         // Act
-        var result = _rules.GetNextState(current, neighbors);
+        bool result = _rules.GetNextState(current, neighbors);
 
         // Assert
         Assert.False(result);
@@ -219,11 +219,11 @@ public class ClassicRulesTests
     public void GetNextState_AliveCellWithFiveNeighbors_Dies()
     {
         // Arrange
-        var current = true;
-        var neighbors = CreateNeighborStates(aliveCount: 5);
+        bool current = true;
+        List<bool> neighbors = CreateNeighborStates(aliveCount: 5);
 
         // Act
-        var result = _rules.GetNextState(current, neighbors);
+        bool result = _rules.GetNextState(current, neighbors);
 
         // Assert
         Assert.False(result);
@@ -233,11 +233,11 @@ public class ClassicRulesTests
     public void GetNextState_AliveCellWithEightNeighbors_Dies()
     {
         // Arrange
-        var current = true;
-        var neighbors = CreateNeighborStates(aliveCount: 8);
+        bool current = true;
+        List<bool> neighbors = CreateNeighborStates(aliveCount: 8);
 
         // Act
-        var result = _rules.GetNextState(current, neighbors);
+        bool result = _rules.GetNextState(current, neighbors);
 
         // Assert
         Assert.False(result);
@@ -251,11 +251,11 @@ public class ClassicRulesTests
     public void GetNextState_DeadCellWithThreeAliveAndTwoDeadNeighbors_BecomesAlive()
     {
         // Arrange
-        var current = false;
-        var neighbors = CreateNeighborStates(aliveCount: 3, deadCount: 2);
+        bool current = false;
+        List<bool> neighbors = CreateNeighborStates(aliveCount: 3, deadCount: 2);
 
         // Act
-        var result = _rules.GetNextState(current, neighbors);
+        bool result = _rules.GetNextState(current, neighbors);
 
         // Assert
         Assert.True(result);
@@ -265,11 +265,11 @@ public class ClassicRulesTests
     public void GetNextState_AliveCellWithTwoAliveAndFiveDeadNeighbors_Survives()
     {
         // Arrange
-        var current = true;
-        var neighbors = CreateNeighborStates(aliveCount: 2, deadCount: 5);
+        bool current = true;
+        List<bool> neighbors = CreateNeighborStates(aliveCount: 2, deadCount: 5);
 
         // Act
-        var result = _rules.GetNextState(current, neighbors);
+        bool result = _rules.GetNextState(current, neighbors);
 
         // Assert
         Assert.True(result);
@@ -279,11 +279,11 @@ public class ClassicRulesTests
     public void GetNextState_AliveCellWithThreeAliveAndFourDeadNeighbors_Survives()
     {
         // Arrange
-        var current = true;
-        var neighbors = CreateNeighborStates(aliveCount: 3, deadCount: 4);
+        bool current = true;
+        List<bool> neighbors = CreateNeighborStates(aliveCount: 3, deadCount: 4);
 
         // Act
-        var result = _rules.GetNextState(current, neighbors);
+        bool result = _rules.GetNextState(current, neighbors);
 
         // Assert
         Assert.True(result);
@@ -300,7 +300,7 @@ public class ClassicRulesTests
         var rules = new ClassicRules();
 
         // Assert
-        Assert.IsAssignableFrom<IRules<bool>>(rules);
+        _ = Assert.IsAssignableFrom<IRules<bool>>(rules);
     }
 
     #endregion
