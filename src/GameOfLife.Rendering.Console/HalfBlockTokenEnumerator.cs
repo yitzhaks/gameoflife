@@ -325,7 +325,7 @@ public ref struct HalfBlockTokenEnumerator
 
         if (!topInTopology && !bottomInTopology)
         {
-            // Points not in topology - emit space with no color change
+            // Points not in topology - render as space with dark gray foreground and background
             _pendingForeground = AnsiSequence.ForegroundDarkGray;
             _pendingBackground = AnsiSequence.BackgroundDarkGray;
         }

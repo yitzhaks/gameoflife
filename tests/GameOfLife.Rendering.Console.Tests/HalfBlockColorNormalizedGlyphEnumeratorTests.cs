@@ -315,6 +315,7 @@ public sealed class HalfBlockColorNormalizedGlyphEnumeratorTests : IDisposable
         // Exhaust the enumerator
         while (enumerator.MoveNext())
         {
+            // Intentionally empty - just consuming all elements
         }
 
         // Multiple calls should continue to return false

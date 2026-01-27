@@ -504,7 +504,7 @@ public class AnsiStateTrackerTests
 
         // Verify GetEnumerator returns a valid enumerator that can iterate
         int count = 0;
-        foreach (Glyph glyph in enumerator)
+        foreach (Glyph _ in enumerator)
         {
             count++;
         }
@@ -529,7 +529,7 @@ public class AnsiStateTrackerTests
 
         // Verify GetEnumerator returns a valid enumerator that can iterate
         int count = 0;
-        foreach (Glyph glyph in enumerator)
+        foreach (Glyph _ in enumerator)
         {
             count++;
         }
