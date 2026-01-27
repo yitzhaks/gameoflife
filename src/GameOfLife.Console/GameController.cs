@@ -100,6 +100,13 @@ internal sealed class GameController
 
     private int RunGameLoop(bool isInteractiveConsole, CancellationToken cancellationToken)
     {
+        // Validate even height for half-block mode
+        if (_options.AspectMode == AspectMode.HalfBlock && _options.Height % 2 != 0)
+        {
+            _output.WriteLine("Error: Half-block mode requires even height.");
+            return 1;
+        }
+
         Size2D boardSize = (_options.Width, _options.Height);
 
         // Create initial generation with injected shapes
@@ -137,7 +144,12 @@ internal sealed class GameController
 
         // Create viewport if board is larger than console
         Viewport? viewport = null;
-        int viewportHeight = _options.Height;
+
+        // In half-block mode, board height is halved for display purposes
+        int effectiveBoardHeight = _options.AspectMode == AspectMode.HalfBlock
+            ? _options.Height / 2
+            : _options.Height;
+        int viewportHeight = effectiveBoardHeight;
 
         if (isInteractiveConsole)
         {
@@ -145,11 +157,11 @@ internal sealed class GameController
             int availableWidth = System.Console.WindowWidth - 2;
             int availableHeight = System.Console.WindowHeight - 6; // Header(2) + Controls(2) + margins
 
-            if (_options.Width > availableWidth || _options.Height > availableHeight)
+            if (_options.Width > availableWidth || effectiveBoardHeight > availableHeight)
             {
                 int viewportWidth = Math.Min(_options.Width, availableWidth);
-                viewportHeight = Math.Min(_options.Height, availableHeight);
-                viewport = new Viewport(viewportWidth, viewportHeight, _options.Width, _options.Height);
+                viewportHeight = Math.Min(effectiveBoardHeight, availableHeight);
+                viewport = new Viewport(viewportWidth, viewportHeight, _options.Width, effectiveBoardHeight);
             }
         }
 
@@ -157,9 +169,11 @@ internal sealed class GameController
         int generation = 0;
 
         // Double-buffered frame storage for differential rendering (pre-allocated)
+        int bufferHeight = viewport?.Height ?? effectiveBoardHeight;
+        int bufferWidth = viewport?.Width ?? _options.Width;
         FrameBuffer[] frameBuffers = [
-            FrameBuffer.ForViewport(viewport?.Width ?? _options.Width, viewport?.Height ?? _options.Height),
-            FrameBuffer.ForViewport(viewport?.Width ?? _options.Width, viewport?.Height ?? _options.Height)
+            FrameBuffer.ForViewport(bufferWidth, bufferHeight),
+            FrameBuffer.ForViewport(bufferWidth, bufferHeight)
         ];
         int currentBufferIndex = 0;
 
@@ -398,17 +412,37 @@ internal sealed class GameController
 
         _output.Write("\n\n"); // Blank line before board
 
-        ColorNormalizedGlyphEnumerator currentEnumerator = renderer.GetGlyphEnumerator(topology, currentGeneration, viewport);
-
-        if (previousFrameBuffer.Count == 0)
+        if (_options.AspectMode == AspectMode.HalfBlock)
         {
-            // First frame: write full output and capture to buffer
-            StreamingDiff.WriteFullAndCapture(ref currentEnumerator, _output, currentFrameBuffer, startRow);
+            HalfBlockColorNormalizedGlyphEnumerator currentEnumerator =
+                renderer.GetHalfBlockGlyphEnumerator(topology, currentGeneration, viewport);
+
+            if (previousFrameBuffer.Count == 0)
+            {
+                // First frame: write full output and capture to buffer
+                StreamingDiff.WriteFullAndCaptureHalfBlock(ref currentEnumerator, _output, currentFrameBuffer, startRow);
+            }
+            else
+            {
+                // Subsequent frames: diff against previous frame buffer
+                StreamingDiff.ApplyAndCaptureHalfBlock(previousFrameBuffer, ref currentEnumerator, _output, currentFrameBuffer, startRow);
+            }
         }
         else
         {
-            // Subsequent frames: diff against previous frame buffer
-            StreamingDiff.ApplyAndCapture(previousFrameBuffer, ref currentEnumerator, _output, currentFrameBuffer, startRow);
+            ColorNormalizedGlyphEnumerator currentEnumerator =
+                renderer.GetGlyphEnumerator(topology, currentGeneration, viewport);
+
+            if (previousFrameBuffer.Count == 0)
+            {
+                // First frame: write full output and capture to buffer
+                StreamingDiff.WriteFullAndCapture(ref currentEnumerator, _output, currentFrameBuffer, startRow);
+            }
+            else
+            {
+                // Subsequent frames: diff against previous frame buffer
+                StreamingDiff.ApplyAndCapture(previousFrameBuffer, ref currentEnumerator, _output, currentFrameBuffer, startRow);
+            }
         }
 
         // Write controls below the board

@@ -115,4 +115,19 @@ public static class WellKnownTokens
     /// Reset color token.
     /// </summary>
     public static readonly Token Reset = Token.Ansi(AnsiSequence.Reset);
+
+    /// <summary>
+    /// Green background color token.
+    /// </summary>
+    public static readonly Token BackgroundGreen = Token.Ansi(AnsiSequence.BackgroundGreen);
+
+    /// <summary>
+    /// Dark gray background color token.
+    /// </summary>
+    public static readonly Token BackgroundDarkGray = Token.Ansi(AnsiSequence.BackgroundDarkGray);
+
+    /// <summary>
+    /// Default background color token.
+    /// </summary>
+    public static readonly Token BackgroundDefault = Token.Ansi(AnsiSequence.BackgroundDefault);
 }

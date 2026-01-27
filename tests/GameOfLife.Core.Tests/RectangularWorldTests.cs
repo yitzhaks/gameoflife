@@ -213,4 +213,67 @@ public class RectangularWorldTests
         dictGen.Dispose();
         arrayGen.Dispose();
     }
+
+    [Fact]
+    public void Constructor_WithNullRules_ThrowsArgumentNullException()
+    {
+        // Act & Assert
+        ArgumentNullException ex = Should.Throw<ArgumentNullException>(() => new RectangularWorld((10, 10), null!));
+        ex.ParamName.ShouldBe("rules");
+    }
+
+    [Fact]
+    public void Topology_AccessedViaInterface_ReturnsTopology()
+    {
+        // Arrange
+        var world = new RectangularWorld((10, 10));
+
+        // Act - access topology through the interface
+        IWorld<Point2D, bool, IGeneration<Point2D, bool>> worldInterface = world;
+        ITopology<Point2D> topologyViaInterface = worldInterface.Topology;
+
+        // Assert
+        _ = topologyViaInterface.ShouldNotBeNull();
+        topologyViaInterface.ShouldBeSameAs(world.Topology);
+    }
+
+    [Fact]
+    public void Constructor_WithCustomRules_UsesProvidedRules()
+    {
+        // Arrange - custom rules where cells always die
+        var customRules = new AlwaysDeadRules();
+        var world = new RectangularWorld((5, 5), customRules);
+        var states = new Dictionary<Point2D, bool>
+        {
+            [(1, 1)] = true,
+            [(2, 1)] = true,
+            [(1, 2)] = true,
+            [(2, 2)] = true,
+        };
+        using IGeneration<Point2D, bool> gen = TestHelpers.CreateGeneration((5, 5), states);
+
+        // Act
+        using IGeneration<Point2D, bool> next = world.Tick(gen);
+
+        // Assert - all cells should be dead because of custom rules
+        for (int y = 0; y < 5; y++)
+        {
+            for (int x = 0; x < 5; x++)
+            {
+                next[(x, y)].ShouldBeFalse();
+            }
+        }
+    }
+
+    /// <summary>
+    /// Custom rules that always returns dead state.
+    /// </summary>
+    private class AlwaysDeadRules : ICellularAutomatonRules
+    {
+        public bool DefaultState => false;
+
+        public bool GetNextState(bool currentState, IEnumerable<bool> neighborStates) => false;
+
+        public bool GetNextState(bool currentState, int aliveNeighborCount) => false;
+    }
 }

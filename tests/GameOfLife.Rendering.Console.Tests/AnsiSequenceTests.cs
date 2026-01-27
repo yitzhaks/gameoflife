@@ -11,6 +11,9 @@ public class AnsiSequenceTests
     [InlineData(AnsiSequence.ForegroundGreen, "\x1b[32m")]
     [InlineData(AnsiSequence.ForegroundDarkGray, "\x1b[90m")]
     [InlineData(AnsiSequence.ForegroundGray, "\x1b[37m")]
+    [InlineData(AnsiSequence.BackgroundGreen, "\x1b[42m")]
+    [InlineData(AnsiSequence.BackgroundDarkGray, "\x1b[100m")]
+    [InlineData(AnsiSequence.BackgroundDefault, "\x1b[49m")]
     public void ToAnsiString_KnownSequence_ReturnsCorrectString(AnsiSequence sequence, string expected)
     {
         string result = sequence.ToAnsiString();

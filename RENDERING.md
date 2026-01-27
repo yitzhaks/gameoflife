@@ -64,6 +64,7 @@ The difference between square and hex grids is in how identities map to layout p
 | Implementation | Description |
 |----------------|-------------|
 | `IdentityLayoutEngine` | For `RectangularTopology`, returns identity as coordinate with O(1) bounds |
+| `HalfBlockLayoutEngine` | For `RectangularTopology`, packs two Y rows into one for half-block rendering |
 | `HexLayoutEngine` | Maps cube hex coordinates to staggered 2D layout positions |
 
 ### Non-Grid Topologies
@@ -95,10 +96,11 @@ See [IRenderer.cs](src/GameOfLife.Rendering/IRenderer.cs).
 
 ## Console Rendering Pipeline
 
-The console renderer uses a multi-stage pipeline optimized for differential updates.
+The console renderer uses a multi-stage pipeline optimized for differential updates. Two parallel pipelines exist: standard mode (one character per cell) and half-block mode (two cells per character).
 
 ### Pipeline Stages
 
+**Standard Mode:**
 ```
 Generation + Viewport
         ↓
@@ -113,15 +115,34 @@ Generation + Viewport
    Terminal Output
 ```
 
+**Half-Block Mode:**
+```
+Generation + Viewport
+        ↓
+   HalfBlockTokenEnumerator  → Yields Token with half-block chars and background colors
+        ↓
+   HalfBlockGlyphEnumerator  → Combines tokens into Glyph (color + background + char)
+        ↓
+   HalfBlockColorNormalizedGlyphEnumerator → Normalizes colors
+        ↓
+   StreamingDiff (half-block overloads)    → Compares and outputs changes
+        ↓
+   Terminal Output
+```
+
+All enumerators are `ref struct` types for zero-allocation rendering. The parallel pipelines are necessary because ref structs cannot implement interfaces, so each stage must wrap a specific inner type.
+
 ### Key Components
 
 | Component | Purpose |
 |-----------|---------|
 | `TokenEnumerator` | Iterates grid cells and borders, yields characters and ANSI color codes |
+| `HalfBlockTokenEnumerator` | Half-block variant that emits half-block chars with background colors |
 | `Viewport` | Clips rendering to visible region for large boards |
-| `Glyph` | A character with its associated color |
+| `Glyph` | A character with its foreground and background color |
 | `FrameBuffer` | Pre-allocated buffer for storing frame glyphs (zero-allocation rendering) |
 | `StreamingDiff` | Compares current frame against cached previous frame, outputs only changes |
+| `HalfBlockLayoutEngine` | Creates layouts with packed Y coordinates for half-block rendering |
 
 ### Frame Buffer Differential Rendering
 
@@ -147,17 +168,14 @@ Border characters indicate content direction:
 
 - 3D renderers (e.g., `Point3D`-based rendering)
 - Animation output (e.g., animated GIF, multi-image TIFF)
-- Console aspect ratio correction (see below)
 
 ## Console Aspect Ratio
 
 Console characters are typically taller than they are wide (roughly 2:1 height-to-width ratio), causing Game of Life patterns to appear vertically stretched when each cell maps to a single character.
 
-### Approaches
+### Half-Block Mode (Implemented)
 
-**Double-wide cells**: Render each cell as two horizontal characters (`██` instead of `█`). Simple to implement—emit two characters per cell in `TokenEnumerator`. Could be configurable via `--cell-width` option.
-
-**Half-block vertical packing**: Use Unicode half-block characters to represent two vertically adjacent cells in one character position:
+Half-block vertical packing uses Unicode half-block characters to represent two vertically adjacent cells in one character position:
 
 | Top Cell | Bottom Cell | Character |
 |----------|-------------|-----------|
@@ -166,20 +184,28 @@ Console characters are typically taller than they are wide (roughly 2:1 height-t
 | Dead     | Alive       | `▄` Lower half (U+2584) |
 | Dead     | Dead        | ` ` Space |
 
-This requires using both foreground and background colors—the half-block's foreground fills one half while the background shows through the other. For example, `▀` with green foreground and dark gray background represents top-alive, bottom-dead.
+This uses both foreground and background colors—the half-block's foreground fills one half while the background shows through the other. For example, `▀` with green foreground and dark gray background represents top-alive, bottom-dead.
 
-**Implementation considerations for half-block mode:**
-- `AnsiSequence` needs background color codes
-- `TokenEnumerator` iterates Y in steps of 2, looks up both cells per position
-- Odd-height grids treat the missing bottom row as all-dead
-- Rendered height becomes `ceil(gridHeight / 2)`
-- `StreamingDiff` must track background color state for differential rendering
+**Usage:** `--aspect-mode half-block`
+
+**Requirements:**
+- Board height must be even (enforced at startup)
+- Terminal must support ANSI background colors
+
+**Implementation details:**
+- `HalfBlockLayoutEngine` creates layouts with packed Y coordinates (height / 2)
+- `HalfBlockTokenEnumerator` iterates the packed grid and emits half-block characters with foreground and background colors
+- Parallel glyph pipeline (`HalfBlockGlyphEnumerator`, `HalfBlockColorNormalizedGlyphEnumerator`) processes tokens
+- `StreamingDiff` has half-block-specific overloads for differential rendering
+- Viewport dimensions are computed in packed coordinate space
+
+### Double-Wide Mode (Not Implemented)
+
+**Double-wide cells**: Render each cell as two horizontal characters (`██` instead of `█`). Simple to implement—emit two characters per cell in `TokenEnumerator`. Could be configurable via `--aspect-mode wide`.
 
 **Trade-offs:**
 - Double-wide is simpler but doubles horizontal space
 - Half-block is more compact but requires background color support and has more complex color logic
-
-Either approach could be exposed via a command-line option (e.g., `--aspect-mode wide|half-block|none`).
 
 ## Design Decisions
 

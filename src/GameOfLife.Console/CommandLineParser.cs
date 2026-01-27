@@ -1,5 +1,7 @@
 ﻿using System.CommandLine;
 
+using GameOfLife.Rendering.Console;
+
 namespace GameOfLife.Console;
 
 /// <summary>
@@ -53,6 +55,12 @@ internal static class CommandLineParser
             DefaultValueFactory = _ => 30
         };
 
+        Option<string> aspectModeOption = new Option<string>(name: "--aspect-mode")
+        {
+            Description = "Aspect ratio correction mode: none (1 char per cell) or half-block (2 cells per char).",
+            DefaultValueFactory = _ => "none"
+        }.AcceptOnlyFromAmong("none", "half-block");
+
         var rootCommand = new RootCommand("Conway's Game of Life console application")
         {
             widthOption,
@@ -60,7 +68,8 @@ internal static class CommandLineParser
             injectOption,
             generationsOption,
             startAutoplayOption,
-            maxFpsOption
+            maxFpsOption,
+            aspectModeOption
         };
 
         rootCommand.SetAction(async (parseResult, cancellationToken) =>
@@ -71,6 +80,8 @@ internal static class CommandLineParser
             int? generations = parseResult.GetValue(generationsOption);
             bool startAutoplay = parseResult.GetValue(startAutoplayOption);
             int maxFps = parseResult.GetValue(maxFpsOption);
+            string aspectModeString = parseResult.GetValue(aspectModeOption) ?? "none";
+            AspectMode aspectMode = aspectModeString == "half-block" ? AspectMode.HalfBlock : AspectMode.None;
 
             var options = new CommandLineOptions
             {
@@ -78,7 +89,8 @@ internal static class CommandLineParser
                 Height = height,
                 MaxGenerations = generations,
                 StartAutoplay = startAutoplay,
-                MaxFps = maxFps
+                MaxFps = maxFps,
+                AspectMode = aspectMode
             };
 
             // Parse shape injections

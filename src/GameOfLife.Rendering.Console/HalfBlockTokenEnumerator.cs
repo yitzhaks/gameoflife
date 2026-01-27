@@ -3,18 +3,19 @@
 namespace GameOfLife.Rendering.Console;
 
 /// <summary>
-/// A zero-allocation enumerator that yields tokens for console rendering.
+/// A zero-allocation enumerator that yields tokens for half-block console rendering.
 /// </summary>
 /// <remarks>
-/// This ref struct iterates through the grid and yields tokens in rendering order:
-/// borders, color sequences, and characters. Newlines are yielded at the end of each row.
+/// This ref struct iterates through the packed grid and yields tokens in rendering order:
+/// borders, color sequences, and half-block characters. Each output row represents two input rows.
+/// Newlines are yielded at the end of each row.
 /// </remarks>
-public ref struct TokenEnumerator
+public ref struct HalfBlockTokenEnumerator
 {
     private readonly IGeneration<Point2D, bool> _generation;
     private readonly HashSet<Point2D> _nodeSet;
     private readonly ConsoleTheme _theme;
-    private readonly RectangularBounds _bounds;
+    private readonly PackedBounds _bounds;
     private readonly Viewport? _viewport;
     private readonly int _width;
     private readonly int _renderStartX;
@@ -26,13 +27,17 @@ public ref struct TokenEnumerator
     private int _y;
     private RenderPhase _phase;
     private int _borderPosition;
-    private AnsiSequence? _lastColor;
+    private AnsiSequence? _lastForegroundColor;
+    private AnsiSequence? _lastBackgroundColor;
+    private AnsiSequence _pendingForeground;
+    private AnsiSequence _pendingBackground;
 
     private enum RenderPhase
     {
         TopBorder,
         LeftBorder,
-        CellColor,
+        CellForegroundColor,
+        CellBackgroundColor,
         CellChar,
         RightBorder,
         RowNewline,
@@ -41,15 +46,15 @@ public ref struct TokenEnumerator
     }
 
     /// <summary>
-    /// Creates a new token enumerator for the specified layout and generation.
+    /// Creates a new half-block token enumerator for the specified layout and generation.
     /// </summary>
-    /// <param name="layout">The layout providing positions and bounds.</param>
+    /// <param name="layout">The layout providing positions and packed bounds.</param>
     /// <param name="generation">The generation state to render.</param>
     /// <param name="nodeSet">The set of valid nodes in the topology.</param>
     /// <param name="theme">The rendering theme.</param>
     /// <param name="viewport">Optional viewport for clipping and viewport-aware borders.</param>
-    public TokenEnumerator(
-        ILayout<Point2D, Point2D, RectangularBounds> layout,
+    public HalfBlockTokenEnumerator(
+        ILayout<Point2D, PackedPoint2D, PackedBounds> layout,
         IGeneration<Point2D, bool> generation,
         HashSet<Point2D> nodeSet,
         ConsoleTheme theme,
@@ -64,11 +69,11 @@ public ref struct TokenEnumerator
         _bounds = layout.Bounds;
         _viewport = viewport;
 
-        // Calculate render bounds based on viewport
+        // Calculate render bounds based on viewport (in packed space)
         if (viewport is not null)
         {
-            _renderStartX = _bounds.Min.X + viewport.OffsetX;
-            _renderStartY = _bounds.Min.Y + viewport.OffsetY;
+            _renderStartX = viewport.OffsetX;
+            _renderStartY = viewport.OffsetY;
             _renderEndX = Math.Min(_renderStartX + viewport.Width - 1, _bounds.Max.X);
             _renderEndY = Math.Min(_renderStartY + viewport.Height - 1, _bounds.Max.Y);
             _width = _renderEndX - _renderStartX + 1;
@@ -79,14 +84,17 @@ public ref struct TokenEnumerator
             _renderStartY = _bounds.Min.Y;
             _renderEndX = _bounds.Max.X;
             _renderEndY = _bounds.Max.Y;
-            _width = _bounds.Max.X - _bounds.Min.X + 1;
+            _width = _bounds.Width;
         }
 
         _x = _renderStartX;
         _y = _renderStartY;
-        _phase = theme.ShowBorder ? RenderPhase.TopBorder : RenderPhase.CellColor;
+        _phase = theme.ShowBorder ? RenderPhase.TopBorder : RenderPhase.CellForegroundColor;
         _borderPosition = 0;
-        _lastColor = null;
+        _lastForegroundColor = null;
+        _lastBackgroundColor = null;
+        _pendingForeground = default;
+        _pendingBackground = default;
         Current = default;
     }
 
@@ -121,8 +129,16 @@ public ref struct TokenEnumerator
 
                     break;
 
-                case RenderPhase.CellColor:
-                    if (MoveNextCellColor())
+                case RenderPhase.CellForegroundColor:
+                    if (MoveNextCellForegroundColor())
+                    {
+                        return true;
+                    }
+
+                    break;
+
+                case RenderPhase.CellBackgroundColor:
+                    if (MoveNextCellBackgroundColor())
                     {
                         return true;
                     }
@@ -179,7 +195,7 @@ public ref struct TokenEnumerator
         if (_borderPosition == 0)
         {
             // Border color
-            if (TryEmitColor(borderColor))
+            if (TryEmitForegroundColor(borderColor))
             {
                 _borderPosition++;
                 return true;
@@ -268,7 +284,7 @@ public ref struct TokenEnumerator
     {
         if (!_theme.ShowBorder)
         {
-            _phase = RenderPhase.CellColor;
+            _phase = RenderPhase.CellForegroundColor;
             return false;
         }
 
@@ -278,7 +294,7 @@ public ref struct TokenEnumerator
         // Left border: color, vertical bar or left arrow
         if (_borderPosition == 0)
         {
-            if (TryEmitColor(borderColor))
+            if (TryEmitForegroundColor(borderColor))
             {
                 _borderPosition++;
                 return true;
@@ -291,32 +307,73 @@ public ref struct TokenEnumerator
         {
             Current = Token.Char(isAtLeft ? ConsoleTheme.Border.Vertical : ConsoleTheme.ViewportBorder.Left);
             _borderPosition = 0;
-            _phase = RenderPhase.CellColor;
+            _phase = RenderPhase.CellForegroundColor;
             return true;
         }
 
         return false;
     }
 
-    private bool MoveNextCellColor()
+    private bool MoveNextCellForegroundColor()
     {
-        // Determine the color for the current cell
-        Point2D point = (_x, _y);
-        AnsiSequence targetColor;
+        // Determine the colors for the current cell pair
+        Point2D topPoint = (_x, _y * 2);
+        Point2D bottomPoint = (_x, (_y * 2) + 1);
 
-        if (_nodeSet.Contains(point))
+        bool topInTopology = _nodeSet.Contains(topPoint);
+        bool bottomInTopology = _nodeSet.Contains(bottomPoint);
+
+        if (!topInTopology && !bottomInTopology)
         {
-            bool isAlive = _generation[point];
-            targetColor = isAlive ? AnsiSequence.ForegroundGreen : AnsiSequence.ForegroundDarkGray;
+            // Points not in topology - render as space with dark gray foreground and background
+            _pendingForeground = AnsiSequence.ForegroundDarkGray;
+            _pendingBackground = AnsiSequence.BackgroundDarkGray;
         }
         else
         {
-            // Points not in topology get no color change, just a space
-            _phase = RenderPhase.CellChar;
-            return false;
+            bool topAlive = topInTopology && _generation[topPoint];
+            bool bottomAlive = bottomInTopology && _generation[bottomPoint];
+
+            // Determine colors based on half-block character mapping
+            if (topAlive && bottomAlive)
+            {
+                // Both alive: Full block with green foreground, default background
+                _pendingForeground = AnsiSequence.ForegroundGreen;
+                _pendingBackground = AnsiSequence.BackgroundDefault;
+            }
+            else if (topAlive)
+            {
+                // Top alive, bottom dead: Upper half block with green foreground, dark gray background
+                _pendingForeground = AnsiSequence.ForegroundGreen;
+                _pendingBackground = AnsiSequence.BackgroundDarkGray;
+            }
+            else if (bottomAlive)
+            {
+                // Top dead, bottom alive: Lower half block with green foreground, dark gray background
+                _pendingForeground = AnsiSequence.ForegroundGreen;
+                _pendingBackground = AnsiSequence.BackgroundDarkGray;
+            }
+            else
+            {
+                // Both dead: Space with dark gray foreground and background
+                _pendingForeground = AnsiSequence.ForegroundDarkGray;
+                _pendingBackground = AnsiSequence.BackgroundDarkGray;
+            }
         }
 
-        if (TryEmitColor(targetColor))
+        if (TryEmitForegroundColor(_pendingForeground))
+        {
+            _phase = RenderPhase.CellBackgroundColor;
+            return true;
+        }
+
+        _phase = RenderPhase.CellBackgroundColor;
+        return false;
+    }
+
+    private bool MoveNextCellBackgroundColor()
+    {
+        if (TryEmitBackgroundColor(_pendingBackground))
         {
             _phase = RenderPhase.CellChar;
             return true;
@@ -328,17 +385,39 @@ public ref struct TokenEnumerator
 
     private bool MoveNextCellChar()
     {
-        Point2D point = (_x, _y);
+        Point2D topPoint = (_x, _y * 2);
+        Point2D bottomPoint = (_x, (_y * 2) + 1);
+
+        bool topInTopology = _nodeSet.Contains(topPoint);
+        bool bottomInTopology = _nodeSet.Contains(bottomPoint);
+
         char character;
 
-        if (_nodeSet.Contains(point))
+        if (!topInTopology && !bottomInTopology)
         {
-            bool isAlive = _generation[point];
-            character = isAlive ? _theme.AliveChar : _theme.DeadChar;
+            character = ' ';
         }
         else
         {
-            character = ' ';
+            bool topAlive = topInTopology && _generation[topPoint];
+            bool bottomAlive = bottomInTopology && _generation[bottomPoint];
+
+            if (topAlive && bottomAlive)
+            {
+                character = ConsoleTheme.HalfBlock.Full;
+            }
+            else if (topAlive)
+            {
+                character = ConsoleTheme.HalfBlock.UpperHalf;
+            }
+            else if (bottomAlive)
+            {
+                character = ConsoleTheme.HalfBlock.LowerHalf;
+            }
+            else
+            {
+                character = ' ';
+            }
         }
 
         Current = Token.Char(character);
@@ -350,7 +429,7 @@ public ref struct TokenEnumerator
         }
         else
         {
-            _phase = RenderPhase.CellColor;
+            _phase = RenderPhase.CellForegroundColor;
         }
 
         return true;
@@ -364,7 +443,7 @@ public ref struct TokenEnumerator
         // Right border: color, vertical bar or right arrow
         if (_borderPosition == 0)
         {
-            if (TryEmitColor(borderColor))
+            if (TryEmitForegroundColor(borderColor))
             {
                 _borderPosition++;
                 return true;
@@ -396,7 +475,7 @@ public ref struct TokenEnumerator
         else
         {
             _x = _renderStartX;
-            _phase = _theme.ShowBorder ? RenderPhase.LeftBorder : RenderPhase.CellColor;
+            _phase = _theme.ShowBorder ? RenderPhase.LeftBorder : RenderPhase.CellForegroundColor;
         }
 
         return true;
@@ -412,7 +491,7 @@ public ref struct TokenEnumerator
 
         if (_borderPosition == 0)
         {
-            if (TryEmitColor(borderColor))
+            if (TryEmitForegroundColor(borderColor))
             {
                 _borderPosition++;
                 return true;
@@ -492,12 +571,24 @@ public ref struct TokenEnumerator
         return ConsoleTheme.ViewportBorder.DiagonalBottomRight;
     }
 
-    private bool TryEmitColor(AnsiSequence color)
+    private bool TryEmitForegroundColor(AnsiSequence color)
     {
-        if (_lastColor != color)
+        if (_lastForegroundColor != color)
         {
             Current = Token.Ansi(color);
-            _lastColor = color;
+            _lastForegroundColor = color;
+            return true;
+        }
+
+        return false;
+    }
+
+    private bool TryEmitBackgroundColor(AnsiSequence color)
+    {
+        if (_lastBackgroundColor != color)
+        {
+            Current = Token.Ansi(color);
+            _lastBackgroundColor = color;
             return true;
         }
 
@@ -507,5 +598,5 @@ public ref struct TokenEnumerator
     /// <summary>
     /// Returns this enumerator (supports foreach).
     /// </summary>
-    public readonly TokenEnumerator GetEnumerator() => this;
+    public readonly HalfBlockTokenEnumerator GetEnumerator() => this;
 }
