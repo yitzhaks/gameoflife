@@ -28,7 +28,7 @@ public class ClassicRules : IRules<bool>
         else
         {
             // Birth: dead cell with exactly 3 neighbors becomes alive
-            return aliveNeighbors == 3;
+            return aliveNeighbors is 3;
         }
     }
 }

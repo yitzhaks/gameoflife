@@ -43,7 +43,8 @@ Architecture may evolve during development, and that is expected. When it does, 
 ```bash
 dotnet build
 dotnet test
-dotnet test --collect:"XPlat Code Coverage"  # Generate coverage report
+dotnet test --collect:"XPlat Code Coverage" --results-directory ./coverage
+reportgenerator -reports:"coverage/**/coverage.cobertura.xml" -targetdir:"coverage/report" -reporttypes:TextSummary
 ```
 
 ## Testing Requirements
@@ -52,3 +53,53 @@ dotnet test --collect:"XPlat Code Coverage"  # Generate coverage report
 - **Coverage Tool**: Coverlet (via `coverlet.collector` package)
 - **Goal**: Near 100% branch coverage
 - **Naming**: `MethodName_Scenario_ExpectedBehavior`
+
+## Coverage Limitations
+
+**GameOfLife.Rendering.Console** has a practical maximum of ~90% branch coverage due to untestable code:
+
+| Class | Branch Coverage | Notes |
+|-------|-----------------|-------|
+| ConsoleRenderer | ~63% | `_supportsColor` branches require `Console.Out` |
+| ColorNormalizedGlyphEnumerator | ~87% | Unknown sequence throw is unreachable |
+| All other classes | 90-100% | Fully testable |
+
+**Why ConsoleRenderer can't reach higher coverage:**
+
+The constructor sets `_supportsColor = ReferenceEquals(output, System.Console.Out)`. This means the following code paths only execute when writing to the actual console, which unit tests cannot do:
+- Lines 59-62: Store original `Console.ForegroundColor`
+- Lines 84-102: Character-by-character colored rendering
+- Lines 144-147: Restore original color
+- Lines 162-165: `SetColor()` method
+
+**Do not attempt to improve coverage beyond ~90%** without first refactoring `ConsoleRenderer` to use an abstraction for console color operations.
+
+## Style Preferences
+
+- **Command-line arguments**: Always use full parameter syntax (e.g., `--start-autoplay` not `-a`, `--inject` not `-i`, `--width` not `-w`)
+
+## Project Structure
+
+```
+src/
+  GameOfLife.Core/           # Core abstractions (Topology, Generation, World)
+  GameOfLife.Rendering/      # Rendering interfaces
+  GameOfLife.Rendering.Console/  # Console renderer implementation
+  GameOfLife.Console/        # Console application
+    patterns/                # Pattern files (*.txt) for --inject
+tests/
+  GameOfLife.Core.Tests/
+  GameOfLife.Rendering.Console.Tests/
+```
+
+## Available Patterns
+
+Patterns are in `src/GameOfLife.Console/patterns/` and loaded via `--inject <name>@<x>,<y>`:
+
+| Category | Patterns |
+|----------|----------|
+| Still lifes | block, beehive, loaf, boat, tub |
+| Oscillators | blinker, toad, beacon, clock, pulsar, pentadecathlon |
+| Spaceships | glider, lwss, mwss, hwss |
+| Methuselahs | r-pentomino, acorn, diehard |
+| Complex | gosper-glider-gun, spaceship-flotilla, infinite-growth |

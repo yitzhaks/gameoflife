@@ -1,0 +1,53 @@
+@ECHO OFF
+:: Extra large board demo for testing viewport navigation
+:: Use WASD or arrow keys to pan around, P to play/pause, Q to quit
+
+dotnet run --project src/GameOfLife.Console -- ^
+    --width 400 ^
+    --height 100 ^
+    --start-autoplay ^
+    --inject gosper-glider-gun@5,5 ^
+    --inject gosper-glider-gun@5,50 ^
+    --inject gosper-glider-gun@200,5 ^
+    --inject gosper-glider-gun@200,50 ^
+    --inject gosper-glider-gun@350,5 ^
+    --inject gosper-glider-gun@350,50 ^
+    --inject pulsar@50,20 ^
+    --inject pulsar@150,20 ^
+    --inject pulsar@250,20 ^
+    --inject pulsar@350,20 ^
+    --inject pulsar@50,70 ^
+    --inject pulsar@150,70 ^
+    --inject pulsar@250,70 ^
+    --inject pulsar@350,70 ^
+    --inject pentadecathlon@80,45 ^
+    --inject pentadecathlon@160,45 ^
+    --inject pentadecathlon@240,45 ^
+    --inject pentadecathlon@320,45 ^
+    --inject lwss@30,30 ^
+    --inject mwss@30,60 ^
+    --inject hwss@30,80 ^
+    --inject lwss@180,30 ^
+    --inject mwss@180,60 ^
+    --inject hwss@180,80 ^
+    --inject r-pentomino@100,85 ^
+    --inject r-pentomino@300,85 ^
+    --inject acorn@100,10 ^
+    --inject acorn@300,10 ^
+    --inject beacon@90,10 ^
+    --inject beacon@130,10 ^
+    --inject beacon@270,10 ^
+    --inject beacon@310,10 ^
+    --inject beacon@90,85 ^
+    --inject beacon@130,85 ^
+    --inject beacon@270,85 ^
+    --inject beacon@310,85 ^
+    --inject toad@95,25 ^
+    --inject toad@145,25 ^
+    --inject toad@255,25 ^
+    --inject toad@305,25 ^
+    --inject clock@95,70 ^
+    --inject clock@145,70 ^
+    --inject clock@255,70 ^
+    --inject clock@305,70 ^
+    --inject spaceship-flotilla@370,40

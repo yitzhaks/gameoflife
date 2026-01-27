@@ -5,8 +5,15 @@ namespace GameOfLife.Core;
 /// </summary>
 public class Grid2DTopology : ITopology<Point2D>
 {
-    private readonly int _width;
-    private readonly int _height;
+    /// <summary>
+    /// Gets the width of the grid.
+    /// </summary>
+    public int Width { get; }
+
+    /// <summary>
+    /// Gets the height of the grid.
+    /// </summary>
+    public int Height { get; }
 
     /// <summary>
     /// Creates a new Grid2DTopology with the specified dimensions.
@@ -26,8 +33,8 @@ public class Grid2DTopology : ITopology<Point2D>
             throw new ArgumentOutOfRangeException(nameof(height), "Height must be at least 1.");
         }
 
-        _width = width;
-        _height = height;
+        Width = width;
+        Height = height;
     }
 
     /// <summary>
@@ -37,9 +44,9 @@ public class Grid2DTopology : ITopology<Point2D>
     {
         get
         {
-            for (int y = 0; y < _height; y++)
+            for (int y = 0; y < Height; y++)
             {
-                for (int x = 0; x < _width; x++)
+                for (int x = 0; x < Width; x++)
                 {
                     yield return new Point2D(x, y);
                 }
@@ -55,7 +62,7 @@ public class Grid2DTopology : ITopology<Point2D>
     /// <exception cref="ArgumentOutOfRangeException">Thrown if the node is outside the grid.</exception>
     public IEnumerable<Point2D> GetNeighbors(Point2D node)
     {
-        if (node.X < 0 || node.X >= _width || node.Y < 0 || node.Y >= _height)
+        if (node.X < 0 || node.X >= Width || node.Y < 0 || node.Y >= Height)
         {
             throw new ArgumentOutOfRangeException(nameof(node), "Node is outside the grid boundaries.");
         }
@@ -72,7 +79,7 @@ public class Grid2DTopology : ITopology<Point2D>
                 var nx = node.X + dx;
                 var ny = node.Y + dy;
 
-                if (nx >= 0 && nx < _width && ny >= 0 && ny < _height)
+                if (nx >= 0 && nx < Width && ny >= 0 && ny < Height)
                 {
                     yield return new Point2D(nx, ny);
                 }

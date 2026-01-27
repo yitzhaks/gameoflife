@@ -1,8 +1,12 @@
 <Solution>
   <Folder Name="/src/">
     <Project Path="src/GameOfLife.Core/GameOfLife.Core.csproj" />
+    <Project Path="src/GameOfLife.Rendering/GameOfLife.Rendering.csproj" />
+    <Project Path="src/GameOfLife.Rendering.Console/GameOfLife.Rendering.Console.csproj" />
+    <Project Path="src/GameOfLife.Console/GameOfLife.Console.csproj" />
   </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/GameOfLife.Core.Tests/GameOfLife.Core.Tests.csproj" />
+    <Project Path="tests/GameOfLife.Rendering.Console.Tests/GameOfLife.Rendering.Console.Tests.csproj" />
   </Folder>
 </Solution>

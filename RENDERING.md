@@ -10,7 +10,7 @@ Topology and generation define structure and state, but not geometry or visuals.
 - **Layout**: Immutable snapshot bound to a topology; exposes bounds, positions, and deterministic node ordering.
 - **Renderer**: Uses a layout engine to build geometry and converts generation state into concrete output (console/image), applying styling.
 
-Initial implementations target single-frame rendering; animation is documented later as a future improvement.
+The console application supports both single-frame and animated rendering with play/pause controls.
 
 ```
 Topology (structure)
@@ -35,59 +35,20 @@ Renderer (visuals) — cell size, shape, colors, output target
 
 Layout engines map node identities to layout positions and produce layout snapshots bound to a topology. Positions are logical layout coordinates, not output units.
 
-### `ILayoutEngine<TIdentity, TCoordinate, TBounds>`
+### Key Interfaces
 
-```csharp
-public interface ILayoutEngine<TIdentity, TCoordinate, TBounds>
-    where TIdentity : notnull, IEquatable<TIdentity>
-    where TCoordinate : struct
-    where TBounds : IBounds<TCoordinate>
-{
-    ILayout<TIdentity, TCoordinate, TBounds> CreateLayout(ITopology<TIdentity> topology);
-}
-```
-
-### `ILayout<TIdentity, TCoordinate, TBounds>`
-
-```csharp
-public interface ILayout<TIdentity, TCoordinate, TBounds>
-    where TIdentity : notnull, IEquatable<TIdentity>
-    where TCoordinate : struct
-    where TBounds : IBounds<TCoordinate>
-{
-    IEnumerable<TIdentity> EnumerateNodes(IComparer<TIdentity> order);
-    ILayoutPositions<TIdentity, TCoordinate> Positions { get; }
-    TBounds Bounds { get; }
-}
-
-public interface ILayoutPositions<TIdentity, TCoordinate>
-    where TIdentity : notnull, IEquatable<TIdentity>
-    where TCoordinate : struct
-{
-    TCoordinate this[TIdentity node] { get; }
-}
-
-public interface IBounds<TCoordinate> where TCoordinate : struct
-{
-    bool Contains(TCoordinate coordinate);
-}
-
-public interface IAxisAlignedBounds<TCoordinate> : IBounds<TCoordinate> where TCoordinate : struct
-{
-    TCoordinate Min { get; }
-    TCoordinate Max { get; }
-}
-```
+See [ILayoutEngine.cs](src/GameOfLife.Rendering/ILayoutEngine.cs), [ILayout.cs](src/GameOfLife.Rendering/ILayout.cs), and [IBounds.cs](src/GameOfLife.Rendering/IBounds.cs).
 
 **Design notes:**
+- `TTopology` constrains which topology types an engine accepts (e.g., `Grid2DTopology`)
 - `TCoordinate` is a value type representing layout coordinates; `Point2D`/`Point3D` are common examples
 - `ILayoutEngine` should be reusable and stateless
-- Layouts are bound to the topology used to create them; `EnumerateNodes` should iterate the topology's node set (implementations may forward internally)
+- Layouts are bound to the topology used to create them; `EnumerateNodes` should iterate the topology's node set
 - Renderers choose a node ordering via `EnumerateNodes(IComparer<TIdentity>)`
 - `Bounds` describes the layout region in coordinate space; all node positions satisfy `Bounds.Contains(position)`
 - If the bounds are axis-aligned, `IAxisAlignedBounds` uses inclusive `Min`/`Max` semantics
-- `Positions` indexer should be pure and deterministic and throws if the node is unknown to the layout (consistent with `IGeneration` indexer behavior)
-- Layouts are immutable snapshots; they should not maintain mutable state and can be cached/reused across generations when topology is unchanged
+- `Positions` indexer should be pure and deterministic and throws if the node is unknown to the layout
+- Layouts are immutable snapshots; they can be cached/reused across generations when topology is unchanged
 
 ### Coordinate Types
 
@@ -102,10 +63,8 @@ The difference between square and hex grids is in how identities map to layout p
 
 | Implementation | Description |
 |----------------|-------------|
-| `IdentityLayoutEngine` | For `Point2D`/`Point3D` identities, returns identity as-is |
+| `IdentityLayoutEngine` | For `Grid2DTopology`, returns identity as coordinate with O(1) bounds |
 | `HexLayoutEngine` | Maps cube hex coordinates to staggered 2D layout positions |
-
-For non-standard topologies, implement `ILayoutEngine<TIdentity, TCoordinate, TBounds>` with custom logic.
 
 ### Non-Grid Topologies
 
@@ -123,31 +82,101 @@ Converts layout positions (built from topology via a layout engine) to visual ou
 - **Cell styling**: Colors, characters, borders based on state
 - **Output**: Console, image file, animation
 
-### `IRenderer<TIdentity, TCoordinate, TBounds, TState>`
+### Key Interface
 
-```csharp
-public interface IRenderer<TIdentity, TCoordinate, TBounds, TState>
-    where TIdentity : notnull, IEquatable<TIdentity>
-    where TCoordinate : struct
-    where TBounds : IBounds<TCoordinate>
-{
-    void Render(
-        ITopology<TIdentity> topology,
-        IGeneration<TIdentity, TState> generation);
-}
-```
+See [IRenderer.cs](src/GameOfLife.Rendering/IRenderer.cs).
 
 **Design notes:**
-- **Coordinate-specific**: Renderers are bound to a coordinate type via `TCoordinate`.
-- `TBounds` is part of the renderer contract so the renderer can hold an `ILayoutEngine<TIdentity, TCoordinate, TBounds>`.
+- `TTopology` constrains which topology types a renderer accepts (e.g., `Grid2DTopology` for console)
+- Renderers are bound to a coordinate type via `TCoordinate`
 - Renderers are constructed with an output target (console, stream, image path, etc.) because `Render()` returns `void`
-- Renderers are constructed with an `ILayoutEngine` instance; additional constructor inputs are allowed as needed for the rendering domain
-- **Layout is authoritative**: Renderers use the configured `ILayoutEngine` to create a layout for the provided topology, then enumerate `layout.EnumerateNodes(...)`. `generation` is expected to provide a state for each layout node. If a node is missing, treat it as an error (e.g., propagate the exception). Callers using sparse generations should wrap or adapt them to provide default states before rendering.
+- Renderers are constructed with an `ILayoutEngine` instance
+- **Layout is authoritative**: Renderers use the configured `ILayoutEngine` to create a layout for the provided topology. `generation` is expected to provide a state for each layout node. If a node is missing, treat it as an error.
+
+## Console Rendering Pipeline
+
+The console renderer uses a multi-stage pipeline optimized for differential updates.
+
+### Pipeline Stages
+
+```
+Generation + Viewport
+        ↓
+   TokenEnumerator      → Yields Token (char or ANSI sequence)
+        ↓
+   GlyphReader          → Combines tokens into Glyph (color + char)
+        ↓
+   AnsiStateTracker     → Normalizes colors across glyphs
+        ↓
+   StreamingDiff        → Compares against frame buffer, outputs only changes
+        ↓
+   Terminal Output
+```
+
+### Key Components
+
+| Component | Purpose |
+|-----------|---------|
+| `TokenEnumerator` | Iterates grid cells and borders, yields characters and ANSI color codes |
+| `Viewport` | Clips rendering to visible region for large boards |
+| `Glyph` | A character with its associated color |
+| `StreamingDiff` | Compares current frame against cached previous frame |
+
+### Frame Buffer Differential Rendering
+
+To minimize terminal output, the renderer caches the previous frame's glyphs and only writes changes. See [StreamingDiff.cs](src/GameOfLife.Rendering.Console/StreamingDiff.cs) for implementation.
+
+This approach handles both:
+- **Generation changes**: Different cells become alive/dead
+- **Viewport scrolling**: Same generation, different visible region
+
+To minimize output when many consecutive cells change (common during scrolling), `StreamingDiff` tracks the actual cursor position and only emits positioning sequences when the cursor isn't already at the target location. Since the terminal cursor advances automatically after each character write, consecutive changed cells can be written without repositioning.
+
+### Viewport System
+
+When the board exceeds console dimensions, a `Viewport` clips the visible region. See [Viewport.cs](src/GameOfLife.Rendering.Console/Viewport.cs).
+
+Border characters indicate content direction:
+- Solid borders (`═║╔╗╚╝`) at board edges
+- Arrow borders (`↑↓←→↖↗↙↘`) where more content exists
 
 #### Future improvements
 
 - 3D renderers (e.g., `Point3D`-based rendering)
-- Animation and multi-frame rendering are intentionally out of scope for initial implementations.
+- Animation output (e.g., animated GIF, multi-image TIFF)
+- Console aspect ratio correction (see below)
+
+## Console Aspect Ratio
+
+Console characters are typically taller than they are wide (roughly 2:1 height-to-width ratio), causing Game of Life patterns to appear vertically stretched when each cell maps to a single character.
+
+### Approaches
+
+**Double-wide cells**: Render each cell as two horizontal characters (`██` instead of `█`). Simple to implement—emit two characters per cell in `TokenEnumerator`. Could be configurable via `--cell-width` option.
+
+**Half-block vertical packing**: Use Unicode half-block characters to represent two vertically adjacent cells in one character position:
+
+| Top Cell | Bottom Cell | Character |
+|----------|-------------|-----------|
+| Alive    | Alive       | `█` Full block |
+| Alive    | Dead        | `▀` Upper half (U+2580) |
+| Dead     | Alive       | `▄` Lower half (U+2584) |
+| Dead     | Dead        | ` ` Space |
+
+This requires using both foreground and background colors—the half-block's foreground fills one half while the background shows through the other. For example, `▀` with green foreground and dark gray background represents top-alive, bottom-dead.
+
+**Implementation considerations for half-block mode:**
+- `AnsiSequence` needs background color codes
+- `TokenEnumerator` iterates Y in steps of 2, looks up both cells per position
+- Odd-height grids treat the missing bottom row as all-dead
+- Rendered height becomes `ceil(gridHeight / 2)`
+- `StreamingDiff` must track background color state for differential rendering
+
+**Trade-offs:**
+- Double-wide is simpler but doubles horizontal space
+- Half-block is more compact but requires background color support and has more complex color logic
+
+Either approach could be exposed via a command-line option (e.g., `--aspect-mode wide|half-block|none`).
 
 ## Design Decisions
 
