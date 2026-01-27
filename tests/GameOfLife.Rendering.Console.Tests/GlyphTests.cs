@@ -183,4 +183,98 @@ public class GlyphTests
         glyph1.Equals(glyph2).ShouldBeTrue();
         (glyph1 == glyph2).ShouldBeTrue();
     }
+
+    // Background color tests
+
+    [Fact]
+    public void Constructor_WithForegroundBackgroundAndCharacter_SetsAllProperties()
+    {
+        var glyph = new Glyph(AnsiSequence.ForegroundGreen, AnsiSequence.BackgroundDarkGray, 'X');
+
+        glyph.Color.ShouldBe(AnsiSequence.ForegroundGreen);
+        glyph.BackgroundColor.ShouldBe(AnsiSequence.BackgroundDarkGray);
+        glyph.Character.ShouldBe('X');
+    }
+
+    [Fact]
+    public void Constructor_TwoArg_SetsBackgroundToNull()
+    {
+        var glyph = new Glyph(AnsiSequence.ForegroundGreen, 'X');
+
+        glyph.BackgroundColor.ShouldBeNull();
+    }
+
+    [Fact]
+    public void Constructor_WithNullBackground_SetsNullBackground()
+    {
+        var glyph = new Glyph(AnsiSequence.ForegroundGreen, null, 'X');
+
+        glyph.Color.ShouldBe(AnsiSequence.ForegroundGreen);
+        glyph.BackgroundColor.ShouldBeNull();
+    }
+
+    [Fact]
+    public void Equals_SameBackgroundColors_ReturnsTrue()
+    {
+        var glyph1 = new Glyph(AnsiSequence.ForegroundGreen, AnsiSequence.BackgroundDarkGray, 'A');
+        var glyph2 = new Glyph(AnsiSequence.ForegroundGreen, AnsiSequence.BackgroundDarkGray, 'A');
+
+        glyph1.ShouldBe(glyph2);
+        (glyph1 == glyph2).ShouldBeTrue();
+    }
+
+    [Fact]
+    public void Equals_DifferentBackgroundColors_ReturnsFalse()
+    {
+        var glyph1 = new Glyph(AnsiSequence.ForegroundGreen, AnsiSequence.BackgroundDarkGray, 'A');
+        var glyph2 = new Glyph(AnsiSequence.ForegroundGreen, AnsiSequence.BackgroundDefault, 'A');
+
+        glyph1.ShouldNotBe(glyph2);
+        (glyph1 != glyph2).ShouldBeTrue();
+    }
+
+    [Fact]
+    public void Equals_NullVsNonNullBackground_ReturnsFalse()
+    {
+        var glyph1 = new Glyph(AnsiSequence.ForegroundGreen, null, 'A');
+        var glyph2 = new Glyph(AnsiSequence.ForegroundGreen, AnsiSequence.BackgroundDarkGray, 'A');
+
+        glyph1.ShouldNotBe(glyph2);
+    }
+
+    [Fact]
+    public void GetHashCode_SameBackgrounds_ReturnsSameHash()
+    {
+        var glyph1 = new Glyph(AnsiSequence.ForegroundGreen, AnsiSequence.BackgroundDarkGray, 'A');
+        var glyph2 = new Glyph(AnsiSequence.ForegroundGreen, AnsiSequence.BackgroundDarkGray, 'A');
+
+        glyph1.GetHashCode().ShouldBe(glyph2.GetHashCode());
+    }
+
+    [Fact]
+    public void GetHashCode_DifferentBackgrounds_ReturnsDifferentHash()
+    {
+        var glyph1 = new Glyph(AnsiSequence.ForegroundGreen, AnsiSequence.BackgroundDarkGray, 'A');
+        var glyph2 = new Glyph(AnsiSequence.ForegroundGreen, AnsiSequence.BackgroundDefault, 'A');
+
+        glyph1.GetHashCode().ShouldNotBe(glyph2.GetHashCode());
+    }
+
+    [Fact]
+    public void ToString_WithBackground_ContainsBackgroundInfo()
+    {
+        var glyph = new Glyph(AnsiSequence.ForegroundGreen, AnsiSequence.BackgroundDarkGray, 'X');
+
+        string result = glyph.ToString();
+
+        result.ShouldContain("BackgroundDarkGray");
+    }
+
+    [Fact]
+    public void Default_HasNullBackgroundColor()
+    {
+        var glyph = default(Glyph);
+
+        glyph.BackgroundColor.ShouldBeNull();
+    }
 }

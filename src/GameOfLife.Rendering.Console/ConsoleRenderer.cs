@@ -12,11 +12,13 @@ public sealed class ConsoleRenderer : IRenderer<RectangularTopology, Point2D, Po
     private readonly TextWriter _output;
     private readonly ILayoutEngine<RectangularTopology, Point2D, Point2D, RectangularBounds> _layoutEngine;
     private readonly ConsoleTheme _theme;
+    private readonly HalfBlockLayoutEngine _halfBlockLayoutEngine = new();
 
     // Cached topology data to avoid re-creating per frame
     private RectangularTopology? _cachedTopology;
     private HashSet<Point2D>? _cachedNodeSet;
     private ILayout<Point2D, Point2D, RectangularBounds>? _cachedLayout;
+    private ILayout<Point2D, PackedPoint2D, PackedBounds>? _cachedHalfBlockLayout;
 
     /// <summary>
     /// Creates a new console renderer.
@@ -145,6 +147,16 @@ public sealed class ConsoleRenderer : IRenderer<RectangularTopology, Point2D, Po
         return (_cachedLayout!, _cachedNodeSet!);
     }
 
+    private ILayout<Point2D, PackedPoint2D, PackedBounds> GetCachedHalfBlockLayout(RectangularTopology topology)
+    {
+        if (_cachedTopology != topology || _cachedHalfBlockLayout is null)
+        {
+            _cachedHalfBlockLayout = _halfBlockLayoutEngine.CreateLayout(topology);
+        }
+
+        return _cachedHalfBlockLayout;
+    }
+
     /// <summary>
     /// Gets a color-normalized glyph enumerator for streaming rendering.
     /// </summary>
@@ -158,6 +170,30 @@ public sealed class ConsoleRenderer : IRenderer<RectangularTopology, Point2D, Po
         TokenEnumerator tokenEnumerator = GetTokenEnumerator(topology, generation, viewport);
         GlyphEnumerator glyphEnumerator = GlyphReader.FromTokens(tokenEnumerator);
         return AnsiStateTracker.FromGlyphs(glyphEnumerator);
+    }
+
+    /// <summary>
+    /// Gets a half-block color-normalized glyph enumerator for streaming rendering.
+    /// </summary>
+    /// <param name="topology">The topology defining the structure.</param>
+    /// <param name="generation">The generation state to render.</param>
+    /// <param name="viewport">Optional viewport for clipping large boards.</param>
+    /// <returns>A half-block color-normalized glyph enumerator.</returns>
+    /// <exception cref="ArgumentNullException">Thrown if topology or generation is null.</exception>
+    public HalfBlockColorNormalizedGlyphEnumerator GetHalfBlockGlyphEnumerator(
+        RectangularTopology topology,
+        IGeneration<Point2D, bool> generation,
+        Viewport? viewport = null)
+    {
+        ArgumentNullException.ThrowIfNull(topology);
+        ArgumentNullException.ThrowIfNull(generation);
+
+        (ILayout<Point2D, Point2D, RectangularBounds> _, HashSet<Point2D> nodeSet) = GetCachedTopologyData(topology);
+        ILayout<Point2D, PackedPoint2D, PackedBounds> halfBlockLayout = GetCachedHalfBlockLayout(topology);
+
+        var tokenEnumerator = new HalfBlockTokenEnumerator(halfBlockLayout, generation, nodeSet, _theme, viewport);
+        HalfBlockGlyphEnumerator glyphEnumerator = GlyphReader.FromTokensHalfBlock(tokenEnumerator);
+        return AnsiStateTracker.FromGlyphsHalfBlock(glyphEnumerator);
     }
 
     /// <summary>

@@ -24,6 +24,21 @@ public enum AnsiSequence : byte
     /// Gray foreground color for borders (\x1b[37m).
     /// </summary>
     ForegroundGray,
+
+    /// <summary>
+    /// Green background color (\x1b[42m).
+    /// </summary>
+    BackgroundGreen,
+
+    /// <summary>
+    /// Dark gray background color (\x1b[100m).
+    /// </summary>
+    BackgroundDarkGray,
+
+    /// <summary>
+    /// Default background color (\x1b[49m).
+    /// </summary>
+    BackgroundDefault,
 }
 
 /// <summary>
@@ -43,6 +58,9 @@ public static class AnsiSequenceExtensions
         AnsiSequence.ForegroundGreen => "\x1b[32m",
         AnsiSequence.ForegroundDarkGray => "\x1b[90m",
         AnsiSequence.ForegroundGray => "\x1b[37m",
+        AnsiSequence.BackgroundGreen => "\x1b[42m",
+        AnsiSequence.BackgroundDarkGray => "\x1b[100m",
+        AnsiSequence.BackgroundDefault => "\x1b[49m",
         _ => throw new ArgumentOutOfRangeException(nameof(seq), seq, "Unknown ANSI sequence")
     };
 }

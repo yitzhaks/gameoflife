@@ -1,4 +1,6 @@
-﻿namespace GameOfLife.Console;
+﻿using GameOfLife.Rendering.Console;
+
+namespace GameOfLife.Console;
 
 /// <summary>
 /// Command-line options for the Game of Life console application.
@@ -34,4 +36,9 @@ internal sealed class CommandLineOptions
     /// Gets or sets the maximum frames per second during autoplay (default: 30).
     /// </summary>
     public int MaxFps { get; set; } = 30;
+
+    /// <summary>
+    /// Gets or sets the aspect ratio correction mode (default: None).
+    /// </summary>
+    public AspectMode AspectMode { get; set; } = AspectMode.None;
 }

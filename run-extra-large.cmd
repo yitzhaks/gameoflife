@@ -6,6 +6,7 @@ dotnet run --project src/GameOfLife.Console -- ^
     --width 400 ^
     --height 100 ^
     --start-autoplay ^
+    --aspect-mode half-block ^
     --inject gosper-glider-gun@5,5 ^
     --inject gosper-glider-gun@5,50 ^
     --inject gosper-glider-gun@200,5 ^

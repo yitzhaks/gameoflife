@@ -30,6 +30,7 @@ public static class StreamingDiff
         int row = startRow;
         int col = 1;
         AnsiSequence? lastWrittenColor = null;
+        AnsiSequence? lastWrittenBackground = null;
 
         // Track where the cursor actually is to avoid redundant positioning
         int cursorRow = -1;
@@ -56,11 +57,18 @@ public static class StreamingDiff
                     cursorCol = col;
                 }
 
-                // Emit color if different from last written
+                // Emit foreground color if different from last written
                 if (currGlyph.Color.HasValue && currGlyph.Color != lastWrittenColor)
                 {
                     output.Write(currGlyph.Color.Value.ToAnsiString());
                     lastWrittenColor = currGlyph.Color;
+                }
+
+                // Emit background color if different from last written
+                if (currGlyph.BackgroundColor.HasValue && currGlyph.BackgroundColor != lastWrittenBackground)
+                {
+                    output.Write(currGlyph.BackgroundColor.Value.ToAnsiString());
+                    lastWrittenBackground = currGlyph.BackgroundColor;
                 }
 
                 output.Write(currGlyph.Character);
@@ -91,6 +99,7 @@ public static class StreamingDiff
         int row = startRow;
         int col = 1;
         AnsiSequence? lastWrittenColor = null;
+        AnsiSequence? lastWrittenBackground = null;
 
         // Position cursor at start
         output.Write($"\x1b[{row};{col}H");
@@ -108,11 +117,18 @@ public static class StreamingDiff
             }
             else
             {
-                // Emit color if different from last written
+                // Emit foreground color if different from last written
                 if (glyph.Color.HasValue && glyph.Color != lastWrittenColor)
                 {
                     output.Write(glyph.Color.Value.ToAnsiString());
                     lastWrittenColor = glyph.Color;
+                }
+
+                // Emit background color if different from last written
+                if (glyph.BackgroundColor.HasValue && glyph.BackgroundColor != lastWrittenBackground)
+                {
+                    output.Write(glyph.BackgroundColor.Value.ToAnsiString());
+                    lastWrittenBackground = glyph.BackgroundColor;
                 }
 
                 output.Write(glyph.Character);
@@ -177,6 +193,7 @@ public static class StreamingDiff
         int col = 1;
         int prevIndex = 0;
         AnsiSequence? lastWrittenColor = null;
+        AnsiSequence? lastWrittenBackground = null;
 
         // Track where the cursor actually is to avoid redundant positioning
         int cursorRow = -1;
@@ -218,7 +235,7 @@ public static class StreamingDiff
                 {
                     bool hasPrev = prevIndex < previousFrame!.Count;
                     Glyph prevGlyph = hasPrev ? previousFrame[prevIndex] : default;
-                    needsWrite = !hasPrev || currGlyph.Color != prevGlyph.Color || currGlyph.Character != prevGlyph.Character;
+                    needsWrite = !hasPrev || currGlyph.Color != prevGlyph.Color || currGlyph.BackgroundColor != prevGlyph.BackgroundColor || currGlyph.Character != prevGlyph.Character;
                 }
 
                 prevIndex++;
@@ -233,10 +250,154 @@ public static class StreamingDiff
                         cursorCol = col;
                     }
 
+                    // Emit foreground color if different from last written
                     if (currGlyph.Color.HasValue && currGlyph.Color != lastWrittenColor)
                     {
                         output.Write(currGlyph.Color.Value.ToAnsiString());
                         lastWrittenColor = currGlyph.Color;
+                    }
+
+                    // Emit background color if different from last written
+                    if (currGlyph.BackgroundColor.HasValue && currGlyph.BackgroundColor != lastWrittenBackground)
+                    {
+                        output.Write(currGlyph.BackgroundColor.Value.ToAnsiString());
+                        lastWrittenBackground = currGlyph.BackgroundColor;
+                    }
+
+                    output.Write(currGlyph.Character);
+                    cursorCol++;
+                }
+
+                col++;
+            }
+        }
+    }
+
+    /// <summary>
+    /// Writes the full frame to output and captures glyphs to a pre-allocated buffer (half-block version).
+    /// </summary>
+    /// <param name="current">The half-block glyph enumerator for the frame.</param>
+    /// <param name="output">The text writer to output to.</param>
+    /// <param name="frameBuffer">The pre-allocated buffer to store glyphs in. Will be cleared first.</param>
+    /// <param name="startRow">The starting row for the board (1-indexed). Default is 1.</param>
+    public static void WriteFullAndCaptureHalfBlock(
+        ref HalfBlockColorNormalizedGlyphEnumerator current,
+        TextWriter output,
+        FrameBuffer frameBuffer,
+        int startRow = 1)
+    {
+        ArgumentNullException.ThrowIfNull(output);
+        ArgumentNullException.ThrowIfNull(frameBuffer);
+
+        ApplyAndCaptureCoreHalfBlock(previousFrame: null, ref current, output, frameBuffer, startRow);
+    }
+
+    /// <summary>
+    /// Applies differences between a pre-allocated frame buffer and a half-block glyph stream.
+    /// Zero-allocation diffing using pre-allocated buffers.
+    /// </summary>
+    /// <param name="previousFrame">The cached previous frame buffer.</param>
+    /// <param name="current">The current frame's half-block glyph enumerator.</param>
+    /// <param name="output">The text writer to output changes to.</param>
+    /// <param name="currentFrame">The pre-allocated buffer to store current frame. Will be cleared first.</param>
+    /// <param name="startRow">The starting row for the board (1-indexed). Default is 1.</param>
+    public static void ApplyAndCaptureHalfBlock(
+        FrameBuffer previousFrame,
+        ref HalfBlockColorNormalizedGlyphEnumerator current,
+        TextWriter output,
+        FrameBuffer currentFrame,
+        int startRow = 1)
+    {
+        ArgumentNullException.ThrowIfNull(previousFrame);
+        ArgumentNullException.ThrowIfNull(output);
+        ArgumentNullException.ThrowIfNull(currentFrame);
+
+        ApplyAndCaptureCoreHalfBlock(previousFrame, ref current, output, currentFrame, startRow);
+    }
+
+    private static void ApplyAndCaptureCoreHalfBlock(
+        FrameBuffer? previousFrame,
+        ref HalfBlockColorNormalizedGlyphEnumerator current,
+        TextWriter output,
+        FrameBuffer currentFrame,
+        int startRow)
+    {
+        currentFrame.Clear();
+
+        bool isFullWrite = previousFrame is null || previousFrame.Count == 0;
+        int row = startRow;
+        int col = 1;
+        int prevIndex = 0;
+        AnsiSequence? lastWrittenColor = null;
+        AnsiSequence? lastWrittenBackground = null;
+
+        // Track where the cursor actually is to avoid redundant positioning
+        int cursorRow = -1;
+        int cursorCol = -1;
+
+        // For full write, position cursor at start
+        if (isFullWrite)
+        {
+            output.Write($"\x1b[{row};{col}H");
+            cursorRow = row;
+            cursorCol = col;
+        }
+
+        while (current.MoveNext())
+        {
+            Glyph currGlyph = current.Current;
+            currentFrame.Add(currGlyph);
+
+            if (currGlyph.IsNewline)
+            {
+                if (isFullWrite)
+                {
+                    output.Write('\n');
+                }
+
+                prevIndex++; // Newlines are stored in buffer, so must increment
+                row++;
+                col = 1;
+                if (isFullWrite)
+                {
+                    cursorRow = row;
+                    cursorCol = col;
+                }
+            }
+            else
+            {
+                bool needsWrite = isFullWrite;
+                if (!isFullWrite)
+                {
+                    bool hasPrev = prevIndex < previousFrame!.Count;
+                    Glyph prevGlyph = hasPrev ? previousFrame[prevIndex] : default;
+                    needsWrite = !hasPrev || currGlyph.Color != prevGlyph.Color || currGlyph.BackgroundColor != prevGlyph.BackgroundColor || currGlyph.Character != prevGlyph.Character;
+                }
+
+                prevIndex++;
+
+                if (needsWrite)
+                {
+                    // Only emit cursor position if not already there
+                    if (cursorRow != row || cursorCol != col)
+                    {
+                        output.Write($"\x1b[{row};{col}H");
+                        cursorRow = row;
+                        cursorCol = col;
+                    }
+
+                    // Emit foreground color if different from last written
+                    if (currGlyph.Color.HasValue && currGlyph.Color != lastWrittenColor)
+                    {
+                        output.Write(currGlyph.Color.Value.ToAnsiString());
+                        lastWrittenColor = currGlyph.Color;
+                    }
+
+                    // Emit background color if different from last written
+                    if (currGlyph.BackgroundColor.HasValue && currGlyph.BackgroundColor != lastWrittenBackground)
+                    {
+                        output.Write(currGlyph.BackgroundColor.Value.ToAnsiString());
+                        lastWrittenBackground = currGlyph.BackgroundColor;
                     }
 
                     output.Write(currGlyph.Character);

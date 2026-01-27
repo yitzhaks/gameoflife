@@ -13,6 +13,7 @@ public ref struct ColorNormalizedGlyphEnumerator
 {
     private GlyphEnumerator _glyphEnumerator;
     private AnsiSequence? _currentColor;
+    private AnsiSequence? _currentBackgroundColor;
 
     /// <summary>
     /// Creates a new color-normalized glyph enumerator.
@@ -23,6 +24,7 @@ public ref struct ColorNormalizedGlyphEnumerator
         _glyphEnumerator = glyphEnumerator;
         Current = default;
         _currentColor = null;
+        _currentBackgroundColor = null;
     }
 
     /// <summary>
@@ -50,15 +52,22 @@ public ref struct ColorNormalizedGlyphEnumerator
             return true;
         }
 
-        // Update color state if the glyph has a color
+        // Update foreground color state if the glyph has a color
         if (glyph.Color.HasValue)
         {
             ValidateSequence(glyph.Color.Value);
             _currentColor = glyph.Color.Value;
         }
 
+        // Update background color state if the glyph has a background color
+        if (glyph.BackgroundColor.HasValue)
+        {
+            ValidateSequence(glyph.BackgroundColor.Value);
+            _currentBackgroundColor = glyph.BackgroundColor.Value;
+        }
+
         // Normalize the glyph with the current color state
-        Current = new Glyph(_currentColor, glyph.Character);
+        Current = new Glyph(_currentColor, _currentBackgroundColor, glyph.Character);
         return true;
     }
 
@@ -79,10 +88,93 @@ public ref struct ColorNormalizedGlyphEnumerator
             case AnsiSequence.ForegroundGray:
                 // Known sequences - ok
                 break;
+            case AnsiSequence.BackgroundGreen:
+                break;
+            case AnsiSequence.BackgroundDarkGray:
+                break;
+            case AnsiSequence.BackgroundDefault:
+                break;
             default:
                 throw new InvalidOperationException($"Unknown ANSI sequence: {sequence}");
         }
     }
+}
+
+/// <summary>
+/// A zero-allocation enumerator that normalizes half-block glyph colors based on tracked state.
+/// </summary>
+/// <remarks>
+/// This ref struct wraps a HalfBlockGlyphEnumerator and tracks the current color state.
+/// It normalizes glyphs so that each glyph has the actual color it should be rendered with,
+/// regardless of whether the color was explicitly set for that glyph.
+/// Throws on unknown ANSI sequences to ensure we don't silently mishandle color state.
+/// </remarks>
+public ref struct HalfBlockColorNormalizedGlyphEnumerator
+{
+    private HalfBlockGlyphEnumerator _glyphEnumerator;
+    private AnsiSequence? _currentColor;
+    private AnsiSequence? _currentBackgroundColor;
+
+    /// <summary>
+    /// Creates a new color-normalized glyph enumerator for half-block rendering.
+    /// </summary>
+    /// <param name="glyphEnumerator">The half-block glyph enumerator to wrap.</param>
+    public HalfBlockColorNormalizedGlyphEnumerator(HalfBlockGlyphEnumerator glyphEnumerator)
+    {
+        _glyphEnumerator = glyphEnumerator;
+        Current = default;
+        _currentColor = null;
+        _currentBackgroundColor = null;
+    }
+
+    /// <summary>
+    /// Gets the current normalized glyph.
+    /// </summary>
+    public Glyph Current { get; private set; }
+
+    /// <summary>
+    /// Advances the enumerator to the next glyph.
+    /// </summary>
+    /// <returns>True if there is a next glyph; false if the enumeration is complete.</returns>
+    public bool MoveNext()
+    {
+        if (!_glyphEnumerator.MoveNext())
+        {
+            return false;
+        }
+
+        Glyph glyph = _glyphEnumerator.Current;
+
+        if (glyph.IsNewline)
+        {
+            // Newlines don't have color state
+            Current = glyph;
+            return true;
+        }
+
+        // Update foreground color state if the glyph has a color
+        if (glyph.Color.HasValue)
+        {
+            ColorNormalizedGlyphEnumerator.ValidateSequence(glyph.Color.Value);
+            _currentColor = glyph.Color.Value;
+        }
+
+        // Update background color state if the glyph has a background color
+        if (glyph.BackgroundColor.HasValue)
+        {
+            ColorNormalizedGlyphEnumerator.ValidateSequence(glyph.BackgroundColor.Value);
+            _currentBackgroundColor = glyph.BackgroundColor.Value;
+        }
+
+        // Normalize the glyph with the current color state
+        Current = new Glyph(_currentColor, _currentBackgroundColor, glyph.Character);
+        return true;
+    }
+
+    /// <summary>
+    /// Returns this enumerator (supports foreach).
+    /// </summary>
+    public readonly HalfBlockColorNormalizedGlyphEnumerator GetEnumerator() => this;
 }
 
 /// <summary>
@@ -96,4 +188,11 @@ public static class AnsiStateTracker
     /// <param name="glyphEnumerator">The glyph enumerator to read from.</param>
     /// <returns>A color-normalized glyph enumerator.</returns>
     public static ColorNormalizedGlyphEnumerator FromGlyphs(GlyphEnumerator glyphEnumerator) => new(glyphEnumerator);
+
+    /// <summary>
+    /// Creates a color-normalized glyph enumerator from a half-block glyph enumerator.
+    /// </summary>
+    /// <param name="glyphEnumerator">The half-block glyph enumerator to read from.</param>
+    /// <returns>A half-block color-normalized glyph enumerator.</returns>
+    public static HalfBlockColorNormalizedGlyphEnumerator FromGlyphsHalfBlock(HalfBlockGlyphEnumerator glyphEnumerator) => new(glyphEnumerator);
 }

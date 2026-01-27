@@ -36,6 +36,25 @@ public sealed class FrameBuffer
     }
 
     /// <summary>
+    /// Creates a frame buffer sized for a half-block viewport with borders.
+    /// The height is halved since half-block mode packs 2 rows into 1.
+    /// </summary>
+    /// <param name="viewportWidth">The viewport width (content area).</param>
+    /// <param name="viewportHeight">The viewport height in original coordinates (will be halved).</param>
+    /// <returns>A frame buffer with appropriate capacity for half-block rendering.</returns>
+    public static FrameBuffer ForHalfBlockViewport(int viewportWidth, int viewportHeight)
+    {
+        // Width: content + 2 borders
+        // Height: packed content (half) + 2 borders
+        // Plus newlines at end of each row
+        int width = viewportWidth + 2;
+        int packedHeight = viewportHeight / 2;
+        int height = packedHeight + 2;
+        int capacity = (width * height) + height; // chars + newlines
+        return new FrameBuffer(capacity);
+    }
+
+    /// <summary>
     /// Gets the number of glyphs currently in the buffer.
     /// </summary>
     public int Count { get; private set; }

@@ -51,4 +51,14 @@ public sealed record ConsoleTheme(
         public const char DiagonalBottomLeft = '↙';
         public const char DiagonalBottomRight = '↘';
     }
+
+    /// <summary>
+    /// Half-block characters for double-height rendering.
+    /// </summary>
+    internal static class HalfBlock
+    {
+        public const char Full = '\u2588';
+        public const char UpperHalf = '\u2580';
+        public const char LowerHalf = '\u2584';
+    }
 }
