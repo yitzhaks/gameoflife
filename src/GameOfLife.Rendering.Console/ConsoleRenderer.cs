@@ -139,6 +139,7 @@ public sealed class ConsoleRenderer : IRenderer<RectangularTopology, Point2D, Po
         {
             _cachedTopology = topology;
             _cachedLayout = _layoutEngine.CreateLayout(topology);
+            _cachedHalfBlockLayout = null; // Invalidate half-block cache when topology changes
 #pragma warning disable IDE0028, IDE0306 // Collection initialization can be simplified - HashSet requires constructor
             _cachedNodeSet = new HashSet<Point2D>(topology.Nodes);
 #pragma warning restore IDE0028, IDE0306

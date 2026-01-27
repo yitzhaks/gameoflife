@@ -39,6 +39,11 @@ public sealed class PackedBounds : IAxisAlignedBounds<PackedPoint2D>
     /// <exception cref="ArgumentException">Thrown if originalHeight is odd.</exception>
     public PackedBounds(int width, int originalHeight)
     {
+        if (width < 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(width), "Width cannot be negative.");
+        }
+
         if (originalHeight < 0)
         {
             throw new ArgumentOutOfRangeException(nameof(originalHeight), "Height cannot be negative.");

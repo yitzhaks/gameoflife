@@ -56,16 +56,6 @@ public sealed class Viewport
     public bool IsAtRight => OffsetX + Width >= BoardWidth;
 
     /// <summary>
-    /// Gets the viewport height in packed space (half the normal height, rounded up).
-    /// </summary>
-    public int PackedHeight => (Height + 1) / 2;
-
-    /// <summary>
-    /// Gets the board height in packed space (half the normal height, rounded up).
-    /// </summary>
-    public int PackedBoardHeight => (BoardHeight + 1) / 2;
-
-    /// <summary>
     /// Creates a new viewport.
     /// </summary>
     /// <param name="viewportWidth">The width of the viewport.</param>

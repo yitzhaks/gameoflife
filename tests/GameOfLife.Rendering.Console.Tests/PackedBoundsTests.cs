@@ -55,6 +55,9 @@ public class PackedBoundsTests
     public void Constructor_NegativeHeight_ThrowsArgumentOutOfRangeException() => _ = Should.Throw<ArgumentOutOfRangeException>(() => new PackedBounds(10, -2));
 
     [Fact]
+    public void Constructor_NegativeWidth_ThrowsArgumentOutOfRangeException() => _ = Should.Throw<ArgumentOutOfRangeException>(() => new PackedBounds(-1, 4));
+
+    [Fact]
     public void Min_NonEmptyBounds_ReturnsOrigin()
     {
         var bounds = new PackedBounds(10, 8);

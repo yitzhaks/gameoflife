@@ -55,7 +55,8 @@ public ref struct GlyphEnumerator
                 }
                 else if (seq == AnsiSequence.BackgroundDefault)
                 {
-                    _pendingBackgroundColor = null;
+                    // Preserve BackgroundDefault so downstream can emit reset sequence
+                    _pendingBackgroundColor = AnsiSequence.BackgroundDefault;
                 }
                 else
                 {
@@ -141,7 +142,8 @@ public ref struct HalfBlockGlyphEnumerator
                 }
                 else if (seq is AnsiSequence.BackgroundGreen or AnsiSequence.BackgroundDarkGray or AnsiSequence.BackgroundDefault)
                 {
-                    _pendingBackgroundColor = seq == AnsiSequence.BackgroundDefault ? null : seq;
+                    // Preserve BackgroundDefault so downstream can emit reset sequence
+                    _pendingBackgroundColor = seq;
                 }
                 else
                 {
