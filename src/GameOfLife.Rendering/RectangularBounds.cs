@@ -54,6 +54,6 @@ public sealed class RectangularBounds : IAxisAlignedBounds<Point2D>
     /// <param name="coordinate">The coordinate to test.</param>
     /// <returns><c>true</c> if the coordinate is within the bounds; otherwise, <c>false</c>.</returns>
     public bool Contains(Point2D coordinate) =>
-        coordinate.IsGreaterOrEqual(Min) &&
-        coordinate.IsLessOrEqual(Max);
+        coordinate.IsGreaterThanOrEqualTo(Min) &&
+        coordinate.IsLessThanOrEqualTo(Max);
 }
