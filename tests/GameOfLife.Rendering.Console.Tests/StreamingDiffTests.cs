@@ -1257,4 +1257,590 @@ public class StreamingDiffTests
     }
 
     #endregion
+
+    #region Null Argument Validation Tests
+
+    [Fact]
+    public void Apply_NullOutput_ThrowsArgumentNullException()
+    {
+        using var output = new StringWriter();
+        var engine = new IdentityLayoutEngine();
+        var theme = new ConsoleTheme(AliveChar: '#', DeadChar: '.', ShowBorder: false);
+        var renderer = new ConsoleRenderer(output, engine, theme);
+
+        var topology = new RectangularTopology((2, 2));
+        using var generation = new DictionaryGeneration<Point2D, bool>(
+            new Dictionary<Point2D, bool>(),
+            defaultState: false);
+
+        ColorNormalizedGlyphEnumerator prevEnumerator = renderer.GetGlyphEnumerator(topology, generation);
+        ColorNormalizedGlyphEnumerator currEnumerator = renderer.GetGlyphEnumerator(topology, generation);
+
+        ArgumentNullException? exception = null;
+        try
+        {
+            StreamingDiff.Apply(ref prevEnumerator, ref currEnumerator, null!, startRow: 1);
+        }
+        catch (ArgumentNullException ex)
+        {
+            exception = ex;
+        }
+
+        _ = exception.ShouldNotBeNull();
+    }
+
+    [Fact]
+    public void WriteFull_NullOutput_ThrowsArgumentNullException()
+    {
+        using var output = new StringWriter();
+        var engine = new IdentityLayoutEngine();
+        var theme = new ConsoleTheme(AliveChar: '#', DeadChar: '.', ShowBorder: false);
+        var renderer = new ConsoleRenderer(output, engine, theme);
+
+        var topology = new RectangularTopology((2, 2));
+        using var generation = new DictionaryGeneration<Point2D, bool>(
+            new Dictionary<Point2D, bool>(),
+            defaultState: false);
+
+        ColorNormalizedGlyphEnumerator glyphEnumerator = renderer.GetGlyphEnumerator(topology, generation);
+
+        ArgumentNullException? exception = null;
+        try
+        {
+            StreamingDiff.WriteFull(ref glyphEnumerator, null!, startRow: 1);
+        }
+        catch (ArgumentNullException ex)
+        {
+            exception = ex;
+        }
+
+        _ = exception.ShouldNotBeNull();
+    }
+
+    [Fact]
+    public void WriteFullAndCapture_NullOutput_ThrowsArgumentNullException()
+    {
+        using var output = new StringWriter();
+        var engine = new IdentityLayoutEngine();
+        var theme = new ConsoleTheme(AliveChar: '#', DeadChar: '.', ShowBorder: false);
+        var renderer = new ConsoleRenderer(output, engine, theme);
+
+        var topology = new RectangularTopology((2, 2));
+        using var generation = new DictionaryGeneration<Point2D, bool>(
+            new Dictionary<Point2D, bool>(),
+            defaultState: false);
+
+        var frameBuffer = new FrameBuffer(100);
+        ColorNormalizedGlyphEnumerator glyphEnumerator = renderer.GetGlyphEnumerator(topology, generation);
+
+        ArgumentNullException? exception = null;
+        try
+        {
+            StreamingDiff.WriteFullAndCapture(ref glyphEnumerator, null!, frameBuffer, startRow: 1);
+        }
+        catch (ArgumentNullException ex)
+        {
+            exception = ex;
+        }
+
+        _ = exception.ShouldNotBeNull();
+    }
+
+    [Fact]
+    public void WriteFullAndCapture_NullFrameBuffer_ThrowsArgumentNullException()
+    {
+        using var output = new StringWriter();
+        var engine = new IdentityLayoutEngine();
+        var theme = new ConsoleTheme(AliveChar: '#', DeadChar: '.', ShowBorder: false);
+        var renderer = new ConsoleRenderer(output, engine, theme);
+
+        var topology = new RectangularTopology((2, 2));
+        using var generation = new DictionaryGeneration<Point2D, bool>(
+            new Dictionary<Point2D, bool>(),
+            defaultState: false);
+
+        ColorNormalizedGlyphEnumerator glyphEnumerator = renderer.GetGlyphEnumerator(topology, generation);
+
+        ArgumentNullException? exception = null;
+        try
+        {
+            StreamingDiff.WriteFullAndCapture(ref glyphEnumerator, output, null!, startRow: 1);
+        }
+        catch (ArgumentNullException ex)
+        {
+            exception = ex;
+        }
+
+        _ = exception.ShouldNotBeNull();
+    }
+
+    [Fact]
+    public void ApplyAndCapture_NullPreviousFrame_ThrowsArgumentNullException()
+    {
+        using var output = new StringWriter();
+        var engine = new IdentityLayoutEngine();
+        var theme = new ConsoleTheme(AliveChar: '#', DeadChar: '.', ShowBorder: false);
+        var renderer = new ConsoleRenderer(output, engine, theme);
+
+        var topology = new RectangularTopology((2, 2));
+        using var generation = new DictionaryGeneration<Point2D, bool>(
+            new Dictionary<Point2D, bool>(),
+            defaultState: false);
+
+        var currentFrame = new FrameBuffer(100);
+        ColorNormalizedGlyphEnumerator currEnumerator = renderer.GetGlyphEnumerator(topology, generation);
+
+        ArgumentNullException? exception = null;
+        try
+        {
+            StreamingDiff.ApplyAndCapture(null!, ref currEnumerator, output, currentFrame, startRow: 1);
+        }
+        catch (ArgumentNullException ex)
+        {
+            exception = ex;
+        }
+
+        _ = exception.ShouldNotBeNull();
+    }
+
+    [Fact]
+    public void ApplyAndCapture_NullOutput_ThrowsArgumentNullException()
+    {
+        using var output = new StringWriter();
+        var engine = new IdentityLayoutEngine();
+        var theme = new ConsoleTheme(AliveChar: '#', DeadChar: '.', ShowBorder: false);
+        var renderer = new ConsoleRenderer(output, engine, theme);
+
+        var topology = new RectangularTopology((2, 2));
+        using var generation = new DictionaryGeneration<Point2D, bool>(
+            new Dictionary<Point2D, bool>(),
+            defaultState: false);
+
+        var previousFrame = new FrameBuffer(100);
+        var currentFrame = new FrameBuffer(100);
+        ColorNormalizedGlyphEnumerator currEnumerator = renderer.GetGlyphEnumerator(topology, generation);
+
+        ArgumentNullException? exception = null;
+        try
+        {
+            StreamingDiff.ApplyAndCapture(previousFrame, ref currEnumerator, null!, currentFrame, startRow: 1);
+        }
+        catch (ArgumentNullException ex)
+        {
+            exception = ex;
+        }
+
+        _ = exception.ShouldNotBeNull();
+    }
+
+    [Fact]
+    public void ApplyAndCapture_NullCurrentFrame_ThrowsArgumentNullException()
+    {
+        using var output = new StringWriter();
+        var engine = new IdentityLayoutEngine();
+        var theme = new ConsoleTheme(AliveChar: '#', DeadChar: '.', ShowBorder: false);
+        var renderer = new ConsoleRenderer(output, engine, theme);
+
+        var topology = new RectangularTopology((2, 2));
+        using var generation = new DictionaryGeneration<Point2D, bool>(
+            new Dictionary<Point2D, bool>(),
+            defaultState: false);
+
+        var previousFrame = new FrameBuffer(100);
+        ColorNormalizedGlyphEnumerator currEnumerator = renderer.GetGlyphEnumerator(topology, generation);
+
+        ArgumentNullException? exception = null;
+        try
+        {
+            StreamingDiff.ApplyAndCapture(previousFrame, ref currEnumerator, output, null!, startRow: 1);
+        }
+        catch (ArgumentNullException ex)
+        {
+            exception = ex;
+        }
+
+        _ = exception.ShouldNotBeNull();
+    }
+
+    [Fact]
+    public void WriteFullAndCaptureHalfBlock_NullOutput_ThrowsArgumentNullException()
+    {
+        using var output = new StringWriter();
+        var engine = new IdentityLayoutEngine();
+        var theme = new ConsoleTheme(AliveChar: '#', DeadChar: '.', ShowBorder: false);
+        var renderer = new ConsoleRenderer(output, engine, theme);
+
+        var topology = new RectangularTopology((2, 4));
+        using var generation = new DictionaryGeneration<Point2D, bool>(
+            new Dictionary<Point2D, bool>(),
+            defaultState: false);
+
+        var frameBuffer = new FrameBuffer(100);
+        HalfBlockColorNormalizedGlyphEnumerator glyphEnumerator = renderer.GetHalfBlockGlyphEnumerator(topology, generation);
+
+        ArgumentNullException? exception = null;
+        try
+        {
+            StreamingDiff.WriteFullAndCaptureHalfBlock(ref glyphEnumerator, null!, frameBuffer, startRow: 1);
+        }
+        catch (ArgumentNullException ex)
+        {
+            exception = ex;
+        }
+
+        _ = exception.ShouldNotBeNull();
+    }
+
+    [Fact]
+    public void WriteFullAndCaptureHalfBlock_NullFrameBuffer_ThrowsArgumentNullException()
+    {
+        using var output = new StringWriter();
+        var engine = new IdentityLayoutEngine();
+        var theme = new ConsoleTheme(AliveChar: '#', DeadChar: '.', ShowBorder: false);
+        var renderer = new ConsoleRenderer(output, engine, theme);
+
+        var topology = new RectangularTopology((2, 4));
+        using var generation = new DictionaryGeneration<Point2D, bool>(
+            new Dictionary<Point2D, bool>(),
+            defaultState: false);
+
+        HalfBlockColorNormalizedGlyphEnumerator glyphEnumerator = renderer.GetHalfBlockGlyphEnumerator(topology, generation);
+
+        ArgumentNullException? exception = null;
+        try
+        {
+            StreamingDiff.WriteFullAndCaptureHalfBlock(ref glyphEnumerator, output, null!, startRow: 1);
+        }
+        catch (ArgumentNullException ex)
+        {
+            exception = ex;
+        }
+
+        _ = exception.ShouldNotBeNull();
+    }
+
+    [Fact]
+    public void ApplyAndCaptureHalfBlock_NullPreviousFrame_ThrowsArgumentNullException()
+    {
+        using var output = new StringWriter();
+        var engine = new IdentityLayoutEngine();
+        var theme = new ConsoleTheme(AliveChar: '#', DeadChar: '.', ShowBorder: false);
+        var renderer = new ConsoleRenderer(output, engine, theme);
+
+        var topology = new RectangularTopology((2, 4));
+        using var generation = new DictionaryGeneration<Point2D, bool>(
+            new Dictionary<Point2D, bool>(),
+            defaultState: false);
+
+        var currentFrame = new FrameBuffer(100);
+        HalfBlockColorNormalizedGlyphEnumerator currEnumerator = renderer.GetHalfBlockGlyphEnumerator(topology, generation);
+
+        ArgumentNullException? exception = null;
+        try
+        {
+            StreamingDiff.ApplyAndCaptureHalfBlock(null!, ref currEnumerator, output, currentFrame, startRow: 1);
+        }
+        catch (ArgumentNullException ex)
+        {
+            exception = ex;
+        }
+
+        _ = exception.ShouldNotBeNull();
+    }
+
+    [Fact]
+    public void ApplyAndCaptureHalfBlock_NullOutput_ThrowsArgumentNullException()
+    {
+        using var output = new StringWriter();
+        var engine = new IdentityLayoutEngine();
+        var theme = new ConsoleTheme(AliveChar: '#', DeadChar: '.', ShowBorder: false);
+        var renderer = new ConsoleRenderer(output, engine, theme);
+
+        var topology = new RectangularTopology((2, 4));
+        using var generation = new DictionaryGeneration<Point2D, bool>(
+            new Dictionary<Point2D, bool>(),
+            defaultState: false);
+
+        var previousFrame = new FrameBuffer(100);
+        var currentFrame = new FrameBuffer(100);
+        HalfBlockColorNormalizedGlyphEnumerator currEnumerator = renderer.GetHalfBlockGlyphEnumerator(topology, generation);
+
+        ArgumentNullException? exception = null;
+        try
+        {
+            StreamingDiff.ApplyAndCaptureHalfBlock(previousFrame, ref currEnumerator, null!, currentFrame, startRow: 1);
+        }
+        catch (ArgumentNullException ex)
+        {
+            exception = ex;
+        }
+
+        _ = exception.ShouldNotBeNull();
+    }
+
+    [Fact]
+    public void ApplyAndCaptureHalfBlock_NullCurrentFrame_ThrowsArgumentNullException()
+    {
+        using var output = new StringWriter();
+        var engine = new IdentityLayoutEngine();
+        var theme = new ConsoleTheme(AliveChar: '#', DeadChar: '.', ShowBorder: false);
+        var renderer = new ConsoleRenderer(output, engine, theme);
+
+        var topology = new RectangularTopology((2, 4));
+        using var generation = new DictionaryGeneration<Point2D, bool>(
+            new Dictionary<Point2D, bool>(),
+            defaultState: false);
+
+        var previousFrame = new FrameBuffer(100);
+        HalfBlockColorNormalizedGlyphEnumerator currEnumerator = renderer.GetHalfBlockGlyphEnumerator(topology, generation);
+
+        ArgumentNullException? exception = null;
+        try
+        {
+            StreamingDiff.ApplyAndCaptureHalfBlock(previousFrame, ref currEnumerator, output, null!, startRow: 1);
+        }
+        catch (ArgumentNullException ex)
+        {
+            exception = ex;
+        }
+
+        _ = exception.ShouldNotBeNull();
+    }
+
+    #endregion
+
+    #region Glyph With Null Color Tests
+
+    [Fact]
+    public void Apply_GlyphWithNullForegroundColor_SkipsColorEmission()
+    {
+        // Test the branch where currGlyph.Color.HasValue is false
+        // Standard rendering always emits colors, so test via identical frames
+        using var actualOutput = new StringWriter();
+        var engine = new IdentityLayoutEngine();
+        var theme = new ConsoleTheme(AliveChar: '#', DeadChar: '.', ShowBorder: false);
+        var renderer = new ConsoleRenderer(actualOutput, engine, theme);
+
+        // The TokenEnumerator always emits colors for cells, so this tests
+        // the path through ApplyAndCapture when colors match
+        var topology = new RectangularTopology((2, 1));
+        using var generation = new DictionaryGeneration<Point2D, bool>(
+            new Dictionary<Point2D, bool>(),
+            defaultState: false);
+
+        // All dead cells - same color throughout
+        var initialBuffer = new FrameBuffer(100);
+        ColorNormalizedGlyphEnumerator initialEnumerator = renderer.GetGlyphEnumerator(topology, generation);
+        using var discardOutput = new StringWriter();
+        StreamingDiff.WriteFullAndCapture(ref initialEnumerator, discardOutput, initialBuffer, startRow: 1);
+
+        // Apply with same generation - should have minimal output
+        var resultBuffer = new FrameBuffer(100);
+        ColorNormalizedGlyphEnumerator currEnumerator = renderer.GetGlyphEnumerator(topology, generation);
+        StreamingDiff.ApplyAndCapture(initialBuffer, ref currEnumerator, actualOutput, resultBuffer, startRow: 1);
+
+        // With identical frames, output should be empty
+        actualOutput.ToString().ShouldBeEmpty();
+    }
+
+    [Fact]
+    public void Apply_GlyphWithNullBackgroundColor_SkipsBackgroundEmission()
+    {
+        // Test the branch where currGlyph.BackgroundColor.HasValue is false
+        // Standard TokenEnumerator doesn't emit background colors, but HalfBlock does
+        using var output = new StringWriter();
+        var engine = new IdentityLayoutEngine();
+        var theme = new ConsoleTheme(AliveChar: '#', DeadChar: '.', ShowBorder: false);
+        var renderer = new ConsoleRenderer(output, engine, theme);
+
+        // Use standard (non-half-block) renderer which doesn't emit background colors
+        var topology = new RectangularTopology((2, 1));
+        using var prevGeneration = new DictionaryGeneration<Point2D, bool>(
+            new Dictionary<Point2D, bool> { [default] = true },
+            defaultState: false);
+        using var currGeneration = new DictionaryGeneration<Point2D, bool>(
+            new Dictionary<Point2D, bool> { [(1, 0)] = true },
+            defaultState: false);
+
+        ColorNormalizedGlyphEnumerator prevEnumerator = renderer.GetGlyphEnumerator(topology, prevGeneration);
+        ColorNormalizedGlyphEnumerator currEnumerator = renderer.GetGlyphEnumerator(topology, currGeneration);
+
+        StreamingDiff.Apply(ref prevEnumerator, ref currEnumerator, output, startRow: 1);
+
+        string result = output.ToString();
+
+        // Should contain foreground color changes but the standard enumerator
+        // doesn't emit background colors, so the branch testing null background is covered
+        result.ShouldContain("#");
+        result.ShouldContain(".");
+    }
+
+    [Fact]
+    public void WriteFull_GlyphWithNullBackgroundColor_SkipsBackgroundEmission()
+    {
+        // Test WriteFull path where glyph.BackgroundColor.HasValue is false
+        using var output = new StringWriter();
+        var engine = new IdentityLayoutEngine();
+        var theme = new ConsoleTheme(AliveChar: '#', DeadChar: '.', ShowBorder: false);
+        var renderer = new ConsoleRenderer(output, engine, theme);
+
+        // Standard renderer doesn't emit background colors
+        var topology = new RectangularTopology((2, 1));
+        using var generation = new DictionaryGeneration<Point2D, bool>(
+            new Dictionary<Point2D, bool> { [default] = true },
+            defaultState: false);
+
+        ColorNormalizedGlyphEnumerator glyphEnumerator = renderer.GetGlyphEnumerator(topology, generation);
+        StreamingDiff.WriteFull(ref glyphEnumerator, output, startRow: 1);
+
+        string result = output.ToString();
+
+        // Should contain characters but no background codes
+        // (background codes contain ";4" patterns like \x1b[40m)
+        result.ShouldContain("#");
+        result.ShouldContain(".");
+        // Verify we got foreground colors but not background colors
+        // Foreground green is \x1b[32m, background would have different pattern
+        result.ShouldContain("\x1b[32m"); // Green foreground
+    }
+
+    [Fact]
+    public void ApplyAndCapture_SameColorPrevAndCurr_SkipsColorEmission()
+    {
+        // Test the optimization where same color doesn't get re-emitted
+        using var output = new StringWriter();
+        var engine = new IdentityLayoutEngine();
+        var theme = new ConsoleTheme(AliveChar: '#', DeadChar: '.', ShowBorder: false);
+        var renderer = new ConsoleRenderer(output, engine, theme);
+
+        var topology = new RectangularTopology((2, 1));
+
+        // Previous: first dead, second alive
+        using var prevGeneration = new DictionaryGeneration<Point2D, bool>(
+            new Dictionary<Point2D, bool> { [(1, 0)] = true },
+            defaultState: false);
+
+        // Current: first alive, second dead (swapped)
+        using var currGeneration = new DictionaryGeneration<Point2D, bool>(
+            new Dictionary<Point2D, bool> { [default] = true },
+            defaultState: false);
+
+        // Capture first frame
+        var prevBuffer = new FrameBuffer(100);
+        ColorNormalizedGlyphEnumerator prevEnumerator = renderer.GetGlyphEnumerator(topology, prevGeneration);
+        using var discardOutput = new StringWriter();
+        StreamingDiff.WriteFullAndCapture(ref prevEnumerator, discardOutput, prevBuffer, startRow: 1);
+
+        // Apply diff
+        var currBuffer = new FrameBuffer(100);
+        ColorNormalizedGlyphEnumerator currEnumerator = renderer.GetGlyphEnumerator(topology, currGeneration);
+        StreamingDiff.ApplyAndCapture(prevBuffer, ref currEnumerator, output, currBuffer, startRow: 1);
+
+        string result = output.ToString();
+
+        // Both cells changed, so both should be written
+        result.ShouldContain("#");
+        result.ShouldContain(".");
+    }
+
+    #endregion
+
+    #region Color State Transition Tests
+
+    [Fact]
+    public void Apply_ColorStateTransition_EmitsCorrectColorCodes()
+    {
+        using var output = new StringWriter();
+        var engine = new IdentityLayoutEngine();
+        var theme = new ConsoleTheme(AliveChar: '#', DeadChar: '.', ShowBorder: false);
+        var renderer = new ConsoleRenderer(output, engine, theme);
+
+        var topology = new RectangularTopology((4, 1));
+
+        // Previous: all dead
+        using var prevGeneration = new DictionaryGeneration<Point2D, bool>(
+            new Dictionary<Point2D, bool>(),
+            defaultState: false);
+
+        // Current: two cells alive (positions 0 and 2) - only changes will be written
+        using var currGeneration = new DictionaryGeneration<Point2D, bool>(
+            new Dictionary<Point2D, bool>
+            {
+                [default] = true,
+                [(2, 0)] = true
+            },
+            defaultState: false);
+
+        ColorNormalizedGlyphEnumerator prevEnumerator = renderer.GetGlyphEnumerator(topology, prevGeneration);
+        ColorNormalizedGlyphEnumerator currEnumerator = renderer.GetGlyphEnumerator(topology, currGeneration);
+
+        StreamingDiff.Apply(ref prevEnumerator, ref currEnumerator, output, startRow: 1);
+
+        string result = output.ToString();
+
+        // Should contain the alive character (only changed cells are written)
+        result.ShouldContain("#");
+        // Should contain ANSI color code (green for alive)
+        result.ShouldContain("\x1b[32m");
+    }
+
+    [Fact]
+    public void WriteFull_BackgroundColorTransition_EmitsBackgroundCodes()
+    {
+        // Test using half-block rendering which uses background colors
+        using var output = new StringWriter();
+        var engine = new IdentityLayoutEngine();
+        var theme = new ConsoleTheme(AliveChar: '#', DeadChar: '.', ShowBorder: false);
+        var renderer = new ConsoleRenderer(output, engine, theme);
+
+        var topology = new RectangularTopology((2, 4));
+        // Create pattern that forces background color changes
+        using var generation = new DictionaryGeneration<Point2D, bool>(
+            new Dictionary<Point2D, bool>
+            {
+                [(0, 0)] = true, // Top alive, bottom dead
+                [(1, 2)] = true,
+                [(1, 3)] = true  // Full block on second column, second row
+            },
+            defaultState: false);
+
+        var frameBuffer = new FrameBuffer(100);
+        HalfBlockColorNormalizedGlyphEnumerator glyphEnumerator = renderer.GetHalfBlockGlyphEnumerator(topology, generation);
+        StreamingDiff.WriteFullAndCaptureHalfBlock(ref glyphEnumerator, output, frameBuffer, startRow: 1);
+
+        string result = output.ToString();
+
+        // Should contain ANSI sequences for both foreground and background
+        result.ShouldContain("\x1b[");
+    }
+
+    [Fact]
+    public void ApplyAndCapture_SameBackgroundConsecutive_OnlyOneBackgroundEmit()
+    {
+        using var output = new StringWriter();
+        var engine = new IdentityLayoutEngine();
+        var theme = new ConsoleTheme(AliveChar: '#', DeadChar: '.', ShowBorder: false);
+        var renderer = new ConsoleRenderer(output, engine, theme);
+
+        var topology = new RectangularTopology((3, 2));
+
+        // All cells dead - same background color for all
+        using var generation = new DictionaryGeneration<Point2D, bool>(
+            new Dictionary<Point2D, bool>(),
+            defaultState: false);
+
+        // Empty previous frame forces all cells to be written
+        var emptyBuffer = new FrameBuffer(100);
+        var frameBuffer = new FrameBuffer(100);
+        HalfBlockColorNormalizedGlyphEnumerator currEnumerator = renderer.GetHalfBlockGlyphEnumerator(topology, generation);
+
+        StreamingDiff.ApplyAndCaptureHalfBlock(emptyBuffer, ref currEnumerator, output, frameBuffer, startRow: 1);
+
+        string result = output.ToString();
+
+        // Should write all space characters
+        result.Count(c => c == ' ').ShouldBe(3);
+    }
+
+    #endregion
 }

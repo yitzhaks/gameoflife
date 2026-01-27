@@ -13,7 +13,6 @@ public ref struct ColorNormalizedGlyphEnumerator
 {
     private GlyphEnumerator _glyphEnumerator;
     private AnsiSequence? _currentColor;
-    private AnsiSequence? _currentBackgroundColor;
 
     /// <summary>
     /// Creates a new color-normalized glyph enumerator.
@@ -24,7 +23,6 @@ public ref struct ColorNormalizedGlyphEnumerator
         _glyphEnumerator = glyphEnumerator;
         Current = default;
         _currentColor = null;
-        _currentBackgroundColor = null;
     }
 
     /// <summary>
@@ -53,21 +51,15 @@ public ref struct ColorNormalizedGlyphEnumerator
         }
 
         // Update foreground color state if the glyph has a color
+        // Note: GlyphEnumerator only produces foreground colors, not background colors
         if (glyph.Color.HasValue)
         {
             ValidateSequence(glyph.Color.Value);
             _currentColor = glyph.Color.Value;
         }
 
-        // Update background color state if the glyph has a background color
-        if (glyph.BackgroundColor.HasValue)
-        {
-            ValidateSequence(glyph.BackgroundColor.Value);
-            _currentBackgroundColor = glyph.BackgroundColor.Value;
-        }
-
-        // Normalize the glyph with the current color state
-        Current = new Glyph(_currentColor, _currentBackgroundColor, glyph.Character);
+        // Normalize the glyph with the current foreground color state (no background)
+        Current = new Glyph(_currentColor, null, glyph.Character);
         return true;
     }
 

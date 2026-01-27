@@ -274,4 +274,74 @@ public class TimelineTests
         generations[2][0].ShouldBe(2);
         generations[3][0].ShouldBe(3);
     }
+
+    [Theory]
+    [AutoNSubstituteData]
+    public void Current_AfterDispose_ThrowsObjectDisposedException(ITopology<int> topology)
+    {
+        // Arrange
+        _ = topology.Nodes.Returns([]);
+        var rules = new CountingRules();
+        var world = new World<int, int>(topology, rules);
+        using var initial = new DictionaryGeneration<int, int>(new Dictionary<int, int>(), 0);
+        var timeline = Timeline.Create(world, initial);
+
+        // Act
+        timeline.Dispose();
+
+        // Assert
+        _ = Should.Throw<ObjectDisposedException>(() => _ = timeline.Current);
+    }
+
+    [Theory]
+    [AutoNSubstituteData]
+    public void Step_AfterDispose_ThrowsObjectDisposedException(ITopology<int> topology)
+    {
+        // Arrange
+        _ = topology.Nodes.Returns([]);
+        var rules = new CountingRules();
+        var world = new World<int, int>(topology, rules);
+        using var initial = new DictionaryGeneration<int, int>(new Dictionary<int, int>(), 0);
+        var timeline = Timeline.Create(world, initial);
+
+        // Act
+        timeline.Dispose();
+
+        // Assert
+        _ = Should.Throw<ObjectDisposedException>(timeline.Step);
+    }
+
+    [Theory]
+    [AutoNSubstituteData]
+    public void Dispose_CalledTwice_IsIdempotent(ITopology<int> topology)
+    {
+        // Arrange
+        _ = topology.Nodes.Returns([]);
+        var rules = new CountingRules();
+        var world = new World<int, int>(topology, rules);
+        using var initial = new DictionaryGeneration<int, int>(new Dictionary<int, int>(), 0);
+        var timeline = Timeline.Create(world, initial);
+
+        // Act & Assert - should not throw
+        timeline.Dispose();
+        timeline.Dispose();
+    }
+
+    [Theory]
+    [AutoNSubstituteData]
+    public void StepWithCount_AfterDispose_ThrowsObjectDisposedException(ITopology<int> topology)
+    {
+        // Arrange
+        _ = topology.Nodes.Returns([]);
+        var rules = new CountingRules();
+        var world = new World<int, int>(topology, rules);
+        using var initial = new DictionaryGeneration<int, int>(new Dictionary<int, int>(), 0);
+        var timeline = Timeline.Create(world, initial);
+
+        // Act
+        timeline.Dispose();
+
+        // Assert
+        _ = Should.Throw<ObjectDisposedException>(() => timeline.Step(5));
+    }
 }

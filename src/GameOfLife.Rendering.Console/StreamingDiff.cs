@@ -30,7 +30,6 @@ public static class StreamingDiff
         int row = startRow;
         int col = 1;
         AnsiSequence? lastWrittenColor = null;
-        AnsiSequence? lastWrittenBackground = null;
 
         // Track where the cursor actually is to avoid redundant positioning
         int cursorRow = -1;
@@ -58,17 +57,11 @@ public static class StreamingDiff
                 }
 
                 // Emit foreground color if different from last written
+                // Note: ColorNormalizedGlyphEnumerator only produces foreground colors
                 if (currGlyph.Color.HasValue && currGlyph.Color != lastWrittenColor)
                 {
                     output.Write(currGlyph.Color.Value.ToAnsiString());
                     lastWrittenColor = currGlyph.Color;
-                }
-
-                // Emit background color if different from last written
-                if (currGlyph.BackgroundColor.HasValue && currGlyph.BackgroundColor != lastWrittenBackground)
-                {
-                    output.Write(currGlyph.BackgroundColor.Value.ToAnsiString());
-                    lastWrittenBackground = currGlyph.BackgroundColor;
                 }
 
                 output.Write(currGlyph.Character);
@@ -99,7 +92,6 @@ public static class StreamingDiff
         int row = startRow;
         int col = 1;
         AnsiSequence? lastWrittenColor = null;
-        AnsiSequence? lastWrittenBackground = null;
 
         // Position cursor at start
         output.Write($"\x1b[{row};{col}H");
@@ -118,17 +110,11 @@ public static class StreamingDiff
             else
             {
                 // Emit foreground color if different from last written
+                // Note: ColorNormalizedGlyphEnumerator only produces foreground colors
                 if (glyph.Color.HasValue && glyph.Color != lastWrittenColor)
                 {
                     output.Write(glyph.Color.Value.ToAnsiString());
                     lastWrittenColor = glyph.Color;
-                }
-
-                // Emit background color if different from last written
-                if (glyph.BackgroundColor.HasValue && glyph.BackgroundColor != lastWrittenBackground)
-                {
-                    output.Write(glyph.BackgroundColor.Value.ToAnsiString());
-                    lastWrittenBackground = glyph.BackgroundColor;
                 }
 
                 output.Write(glyph.Character);
@@ -193,7 +179,6 @@ public static class StreamingDiff
         int col = 1;
         int prevIndex = 0;
         AnsiSequence? lastWrittenColor = null;
-        AnsiSequence? lastWrittenBackground = null;
 
         // Track where the cursor actually is to avoid redundant positioning
         int cursorRow = -1;
@@ -235,7 +220,8 @@ public static class StreamingDiff
                 {
                     bool hasPrev = prevIndex < previousFrame!.Count;
                     Glyph prevGlyph = hasPrev ? previousFrame[prevIndex] : default;
-                    needsWrite = !hasPrev || currGlyph.Color != prevGlyph.Color || currGlyph.BackgroundColor != prevGlyph.BackgroundColor || currGlyph.Character != prevGlyph.Character;
+                    // Note: ColorNormalizedGlyphEnumerator only produces foreground colors
+                    needsWrite = !hasPrev || currGlyph.Color != prevGlyph.Color || currGlyph.Character != prevGlyph.Character;
                 }
 
                 prevIndex++;
@@ -251,17 +237,11 @@ public static class StreamingDiff
                     }
 
                     // Emit foreground color if different from last written
+                    // Note: ColorNormalizedGlyphEnumerator only produces foreground colors
                     if (currGlyph.Color.HasValue && currGlyph.Color != lastWrittenColor)
                     {
                         output.Write(currGlyph.Color.Value.ToAnsiString());
                         lastWrittenColor = currGlyph.Color;
-                    }
-
-                    // Emit background color if different from last written
-                    if (currGlyph.BackgroundColor.HasValue && currGlyph.BackgroundColor != lastWrittenBackground)
-                    {
-                        output.Write(currGlyph.BackgroundColor.Value.ToAnsiString());
-                        lastWrittenBackground = currGlyph.BackgroundColor;
                     }
 
                     output.Write(currGlyph.Character);

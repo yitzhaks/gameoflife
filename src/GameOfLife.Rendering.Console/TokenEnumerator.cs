@@ -162,10 +162,8 @@ public ref struct TokenEnumerator
                     break;
 
                 case RenderPhase.Done:
-                    return false;
-
                 default:
-                    throw new InvalidOperationException($"Unhandled render phase: {_phase}");
+                    return false;
             }
         }
     }

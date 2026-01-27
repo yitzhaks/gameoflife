@@ -11,7 +11,6 @@ public ref struct GlyphEnumerator
 {
     private TokenEnumerator _tokenEnumerator;
     private AnsiSequence? _pendingColor;
-    private AnsiSequence? _pendingBackgroundColor;
 
     /// <summary>
     /// Creates a new glyph enumerator wrapping the specified token enumerator.
@@ -22,7 +21,6 @@ public ref struct GlyphEnumerator
         _tokenEnumerator = tokenEnumerator;
         Current = default;
         _pendingColor = null;
-        _pendingBackgroundColor = null;
     }
 
     /// <summary>
@@ -42,26 +40,9 @@ public ref struct GlyphEnumerator
 
             if (token.IsSequence)
             {
-                // Accumulate color sequences
-                AnsiSequence seq = token.Sequence;
-                if (seq == AnsiSequence.Reset)
-                {
-                    _pendingColor = null;
-                    _pendingBackgroundColor = null;
-                }
-                else if (seq is AnsiSequence.BackgroundGreen or AnsiSequence.BackgroundDarkGray)
-                {
-                    _pendingBackgroundColor = seq;
-                }
-                else if (seq == AnsiSequence.BackgroundDefault)
-                {
-                    // Preserve BackgroundDefault so downstream can emit reset sequence
-                    _pendingBackgroundColor = AnsiSequence.BackgroundDefault;
-                }
-                else
-                {
-                    _pendingColor = seq;
-                }
+                // Accumulate foreground color sequences
+                // Note: TokenEnumerator only emits foreground colors (Green, DarkGray, Gray)
+                _pendingColor = token.Sequence;
             }
             else
             {
@@ -75,7 +56,7 @@ public ref struct GlyphEnumerator
                 }
                 else
                 {
-                    Current = new Glyph(_pendingColor, _pendingBackgroundColor, character);
+                    Current = new Glyph(_pendingColor, null, character);
                 }
 
                 return true;
@@ -134,15 +115,10 @@ public ref struct HalfBlockGlyphEnumerator
             if (token.IsSequence)
             {
                 // Accumulate color sequences
+                // HalfBlockTokenEnumerator emits foreground and background colors
                 AnsiSequence seq = token.Sequence;
-                if (seq == AnsiSequence.Reset)
+                if (seq is AnsiSequence.BackgroundGreen or AnsiSequence.BackgroundDarkGray or AnsiSequence.BackgroundDefault)
                 {
-                    _pendingColor = null;
-                    _pendingBackgroundColor = null;
-                }
-                else if (seq is AnsiSequence.BackgroundGreen or AnsiSequence.BackgroundDarkGray or AnsiSequence.BackgroundDefault)
-                {
-                    // Preserve BackgroundDefault so downstream can emit reset sequence
                     _pendingBackgroundColor = seq;
                 }
                 else

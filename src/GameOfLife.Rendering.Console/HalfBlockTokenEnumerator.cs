@@ -178,10 +178,8 @@ public ref struct HalfBlockTokenEnumerator
                     break;
 
                 case RenderPhase.Done:
-                    return false;
-
                 default:
-                    throw new InvalidOperationException($"Unhandled render phase: {_phase}");
+                    return false;
             }
         }
     }
