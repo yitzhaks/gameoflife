@@ -7,10 +7,10 @@ using Xunit;
 
 namespace GameOfLife.Rendering.Console.Tests;
 
-public static class ShapeLoaderTests
+public class ShapeLoaderTests
 {
     [Fact]
-    public static void ParsePattern_GliderPattern_ReturnsCorrectPoints()
+    public void ParsePattern_GliderPattern_ReturnsCorrectPoints()
     {
         string pattern = ".#.\n..#\n###";
 
@@ -25,7 +25,7 @@ public static class ShapeLoaderTests
     }
 
     [Fact]
-    public static void ParsePattern_BlockPattern_ReturnsCorrectPoints()
+    public void ParsePattern_BlockPattern_ReturnsCorrectPoints()
     {
         string pattern = "##\n##";
 
@@ -39,7 +39,7 @@ public static class ShapeLoaderTests
     }
 
     [Fact]
-    public static void ParsePattern_BlinkerPattern_ReturnsCorrectPoints()
+    public void ParsePattern_BlinkerPattern_ReturnsCorrectPoints()
     {
         string pattern = "###";
 
@@ -52,7 +52,7 @@ public static class ShapeLoaderTests
     }
 
     [Fact]
-    public static void ParsePattern_EmptyPattern_ReturnsEmptyList()
+    public void ParsePattern_EmptyPattern_ReturnsEmptyList()
     {
         string pattern = "...\n...\n...";
 
@@ -62,7 +62,7 @@ public static class ShapeLoaderTests
     }
 
     [Fact]
-    public static void ParsePattern_SingleAliveCell_ReturnsSinglePoint()
+    public void ParsePattern_SingleAliveCell_ReturnsSinglePoint()
     {
         string pattern = "#";
 
@@ -73,7 +73,7 @@ public static class ShapeLoaderTests
     }
 
     [Fact]
-    public static void ParsePattern_WindowsLineEndings_ParsesCorrectly()
+    public void ParsePattern_WindowsLineEndings_ParsesCorrectly()
     {
         string pattern = ".#.\r\n..#\r\n###";
 
@@ -84,7 +84,7 @@ public static class ShapeLoaderTests
     }
 
     [Fact]
-    public static void ParsePattern_MixedLineEndings_ParsesCorrectly()
+    public void ParsePattern_MixedLineEndings_ParsesCorrectly()
     {
         string pattern = ".#.\r\n..#\n###";
 
@@ -94,10 +94,10 @@ public static class ShapeLoaderTests
     }
 
     [Fact]
-    public static void ParsePattern_NullInput_ThrowsArgumentNullException() => _ = Should.Throw<ArgumentNullException>(() => ShapeLoader.ParsePattern(null!));
+    public void ParsePattern_NullInput_ThrowsArgumentNullException() => _ = Should.Throw<ArgumentNullException>(() => ShapeLoader.ParsePattern(null!));
 
     [Fact]
-    public static void ParsePattern_EmptyString_ReturnsEmptyList()
+    public void ParsePattern_EmptyString_ReturnsEmptyList()
     {
         IReadOnlyList<Point2D> points = ShapeLoader.ParsePattern(string.Empty);
 
@@ -105,10 +105,10 @@ public static class ShapeLoaderTests
     }
 
     [Fact]
-    public static void Constructor_NullDirectory_ThrowsArgumentNullException() => _ = Should.Throw<ArgumentNullException>(() => new ShapeLoader(null!));
+    public void Constructor_NullDirectory_ThrowsArgumentNullException() => _ = Should.Throw<ArgumentNullException>(() => new ShapeLoader(null!));
 
     [Fact]
-    public static void GetAvailablePatterns_NonExistentDirectory_ReturnsEmptyEnumerable()
+    public void GetAvailablePatterns_NonExistentDirectory_ReturnsEmptyEnumerable()
     {
         var loader = new ShapeLoader("nonexistent_directory_12345");
 
@@ -118,7 +118,7 @@ public static class ShapeLoaderTests
     }
 
     [Fact]
-    public static void GetAvailablePatterns_DirectoryWithPatterns_ReturnsPatternNames()
+    public void GetAvailablePatterns_DirectoryWithPatterns_ReturnsPatternNames()
     {
         string tempDir = Path.Combine(Path.GetTempPath(), $"gol_test_{Guid.NewGuid()}");
         _ = Directory.CreateDirectory(tempDir);
@@ -143,7 +143,7 @@ public static class ShapeLoaderTests
     }
 
     [Fact]
-    public static void GetAvailablePatterns_DirectoryWithMixedFiles_ReturnsOnlyTxtFiles()
+    public void GetAvailablePatterns_DirectoryWithMixedFiles_ReturnsOnlyTxtFiles()
     {
         string tempDir = Path.Combine(Path.GetTempPath(), $"gol_test_{Guid.NewGuid()}");
         _ = Directory.CreateDirectory(tempDir);
@@ -166,7 +166,7 @@ public static class ShapeLoaderTests
     }
 
     [Fact]
-    public static void LoadPattern_NullName_ThrowsArgumentNullException()
+    public void LoadPattern_NullName_ThrowsArgumentNullException()
     {
         var loader = new ShapeLoader(".");
 
@@ -174,7 +174,7 @@ public static class ShapeLoaderTests
     }
 
     [Fact]
-    public static void LoadPattern_NonExistentPattern_ThrowsFileNotFoundException()
+    public void LoadPattern_NonExistentPattern_ThrowsFileNotFoundException()
     {
         var loader = new ShapeLoader(".");
 
@@ -182,7 +182,7 @@ public static class ShapeLoaderTests
     }
 
     [Fact]
-    public static void LoadPattern_ExistingPattern_ReturnsPoints()
+    public void LoadPattern_ExistingPattern_ReturnsPoints()
     {
         string tempDir = Path.Combine(Path.GetTempPath(), $"gol_test_{Guid.NewGuid()}");
         _ = Directory.CreateDirectory(tempDir);

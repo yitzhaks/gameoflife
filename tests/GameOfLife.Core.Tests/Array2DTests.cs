@@ -14,17 +14,10 @@ public class Array2DTests
         Size2D size = new(3, 3); // Requires 9 elements
 
         // Act & Assert
-        try
-        {
-            _ = new ReadOnlyArray2D<int>(data, size);
-            Assert.Fail("Expected ArgumentException was not thrown");
-        }
-        catch (ArgumentException ex)
-        {
-            ex.ParamName.ShouldBe("data");
-            ex.Message.ShouldContain("5");
-            ex.Message.ShouldContain("9");
-        }
+        ArgumentException ex = Should.Throw<ArgumentException>(() => _ = new ReadOnlyArray2D<int>(data, size));
+        ex.ParamName.ShouldBe("data");
+        ex.Message.ShouldContain("5");
+        ex.Message.ShouldContain("9");
     }
 
     [Fact]
@@ -61,21 +54,17 @@ public class Array2DTests
         // Arrange
         int[] data = [1, 2, 3, 4, 5, 6, 7, 8, 9];
         Size2D size = new(3, 3);
-        var array = new ReadOnlyArray2D<int>(data, size);
         Point2D outOfBounds = (5, 5);
 
-        // Act & Assert
-        try
+        // Act & Assert (create array inside lambda to avoid ref struct capture)
+        ArgumentOutOfRangeException ex = Should.Throw<ArgumentOutOfRangeException>(() =>
         {
+            var array = new ReadOnlyArray2D<int>(data, size);
             _ = array[outOfBounds];
-            Assert.Fail("Expected ArgumentOutOfRangeException was not thrown");
-        }
-        catch (ArgumentOutOfRangeException ex)
-        {
-            ex.ParamName.ShouldBe("point");
-            ex.Message.ShouldContain("5");
-            ex.Message.ShouldContain("3x3");
-        }
+        });
+        ex.ParamName.ShouldBe("point");
+        ex.Message.ShouldContain("5");
+        ex.Message.ShouldContain("3x3");
     }
 
     [Fact]
@@ -84,19 +73,14 @@ public class Array2DTests
         // Arrange
         int[] data = [1, 2, 3, 4, 5, 6, 7, 8, 9];
         Size2D size = new(3, 3);
-        var array = new ReadOnlyArray2D<int>(data, size);
         Point2D negative = (-1, 0);
 
-        // Act & Assert
-        try
+        // Act & Assert (create array inside lambda to avoid ref struct capture)
+        _ = Should.Throw<ArgumentOutOfRangeException>(() =>
         {
+            var array = new ReadOnlyArray2D<int>(data, size);
             _ = array[negative];
-            Assert.Fail("Expected ArgumentOutOfRangeException was not thrown");
-        }
-        catch (ArgumentOutOfRangeException)
-        {
-            // Expected
-        }
+        });
     }
 
     [Fact]
@@ -167,17 +151,10 @@ public class Array2DTests
         Size2D size = new(3, 3); // Requires 9 elements
 
         // Act & Assert
-        try
-        {
-            _ = new Array2D<int>(data, size);
-            Assert.Fail("Expected ArgumentException was not thrown");
-        }
-        catch (ArgumentException ex)
-        {
-            ex.ParamName.ShouldBe("data");
-            ex.Message.ShouldContain("5");
-            ex.Message.ShouldContain("9");
-        }
+        ArgumentException ex = Should.Throw<ArgumentException>(() => _ = new Array2D<int>(data, size));
+        ex.ParamName.ShouldBe("data");
+        ex.Message.ShouldContain("5");
+        ex.Message.ShouldContain("9");
     }
 
     [Fact]
@@ -214,21 +191,17 @@ public class Array2DTests
         // Arrange
         int[] data = [1, 2, 3, 4, 5, 6, 7, 8, 9];
         Size2D size = new(3, 3);
-        var array = new Array2D<int>(data, size);
         Point2D outOfBounds = (5, 5);
 
-        // Act & Assert
-        try
+        // Act & Assert (create array inside lambda to avoid ref struct capture)
+        ArgumentOutOfRangeException ex = Should.Throw<ArgumentOutOfRangeException>(() =>
         {
+            var array = new Array2D<int>(data, size);
             _ = array[outOfBounds];
-            Assert.Fail("Expected ArgumentOutOfRangeException was not thrown");
-        }
-        catch (ArgumentOutOfRangeException ex)
-        {
-            ex.ParamName.ShouldBe("point");
-            ex.Message.ShouldContain("5");
-            ex.Message.ShouldContain("3x3");
-        }
+        });
+        ex.ParamName.ShouldBe("point");
+        ex.Message.ShouldContain("5");
+        ex.Message.ShouldContain("3x3");
     }
 
     [Fact]
@@ -237,19 +210,14 @@ public class Array2DTests
         // Arrange
         int[] data = [1, 2, 3, 4, 5, 6, 7, 8, 9];
         Size2D size = new(3, 3);
-        var array = new Array2D<int>(data, size);
         Point2D negative = (-1, 0);
 
-        // Act & Assert
-        try
+        // Act & Assert (create array inside lambda to avoid ref struct capture)
+        _ = Should.Throw<ArgumentOutOfRangeException>(() =>
         {
+            var array = new Array2D<int>(data, size);
             _ = array[negative];
-            Assert.Fail("Expected ArgumentOutOfRangeException was not thrown");
-        }
-        catch (ArgumentOutOfRangeException)
-        {
-            // Expected
-        }
+        });
     }
 
     [Fact]
