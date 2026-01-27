@@ -1,37 +1,6 @@
 ﻿namespace GameOfLife.Core;
 
 /// <summary>
-/// Represents the result of a partial order comparison.
-/// </summary>
-public enum PartialOrdering
-{
-    /// <summary>
-    /// The values are not comparable (neither less/equal nor greater/equal in all dimensions).
-    /// </summary>
-    Incomparable = 0,
-
-    /// <summary>
-    /// The first value is strictly less than the second in all dimensions.
-    /// </summary>
-    Less = -2,
-
-    /// <summary>
-    /// The first value is less than or equal in all dimensions, but not strictly less in all.
-    /// </summary>
-    LessOrEqual = -1,
-
-    /// <summary>
-    /// The first value is greater than or equal in all dimensions, but not strictly greater in all.
-    /// </summary>
-    GreaterOrEqual = 1,
-
-    /// <summary>
-    /// The first value is strictly greater than the second in all dimensions.
-    /// </summary>
-    Greater = 2
-}
-
-/// <summary>
 /// Provides partial ordering comparisons for 2D points.
 /// Unlike total ordering, partial ordering allows for incomparable elements.
 /// </summary>
