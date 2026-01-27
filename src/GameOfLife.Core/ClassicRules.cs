@@ -16,11 +16,13 @@ public class ClassicRules : IRules<bool>
     /// <summary>
     /// Computes the next state based on B3/S23 rules.
     /// </summary>
-    public bool GetNextState(bool current, IEnumerable<bool> neighborStates)
+    public bool GetNextState(bool currentState, IEnumerable<bool> neighborStates)
     {
-        int aliveNeighbors = neighborStates.Count(s => s);
+        ArgumentNullException.ThrowIfNull(neighborStates);
 
-        if (current)
+        int aliveNeighbors = neighborStates.Count(alive => alive);
+
+        if (currentState)
         {
             // Survival: alive cell with 2 or 3 neighbors survives
             return aliveNeighbors is 2 or 3;

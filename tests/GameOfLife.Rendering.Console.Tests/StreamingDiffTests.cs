@@ -15,8 +15,8 @@ public class StreamingDiffTests
         var theme = new ConsoleTheme(AliveChar: '#', DeadChar: '.', ShowBorder: false);
         var renderer = new ConsoleRenderer(output, engine, theme);
 
-        var topology = new Grid2DTopology(2, 2);
-        var generation = new DictionaryGeneration<Point2D, bool>(
+        var topology = new RectangularTopology((2, 2));
+        using var generation = new DictionaryGeneration<Point2D, bool>(
             new Dictionary<Point2D, bool>(),
             defaultState: false);
 
@@ -38,8 +38,8 @@ public class StreamingDiffTests
         var theme = new ConsoleTheme(AliveChar: '#', DeadChar: '.', ShowBorder: false);
         var renderer = new ConsoleRenderer(output, engine, theme);
 
-        var topology = new Grid2DTopology(2, 2);
-        var generation = new DictionaryGeneration<Point2D, bool>(
+        var topology = new RectangularTopology((2, 2));
+        using var generation = new DictionaryGeneration<Point2D, bool>(
             new Dictionary<Point2D, bool>(),
             defaultState: false);
 
@@ -63,15 +63,15 @@ public class StreamingDiffTests
         var theme = new ConsoleTheme(AliveChar: '#', DeadChar: '.', ShowBorder: false);
         var renderer = new ConsoleRenderer(output, engine, theme);
 
-        var topology = new Grid2DTopology(3, 3);
+        var topology = new RectangularTopology((3, 3));
 
         // Previous: all dead
-        var prevGeneration = new DictionaryGeneration<Point2D, bool>(
+        using var prevGeneration = new DictionaryGeneration<Point2D, bool>(
             new Dictionary<Point2D, bool>(),
             defaultState: false);
 
         // Current: center cell alive
-        var currGeneration = new DictionaryGeneration<Point2D, bool>(
+        using var currGeneration = new DictionaryGeneration<Point2D, bool>(
             new Dictionary<Point2D, bool> { [new Point2D(1, 1)] = true },
             defaultState: false);
 
@@ -97,10 +97,10 @@ public class StreamingDiffTests
         var theme = new ConsoleTheme(AliveChar: '#', DeadChar: '.', ShowBorder: false);
         var renderer = new ConsoleRenderer(output, engine, theme);
 
-        var topology = new Grid2DTopology(2, 2);
+        var topology = new RectangularTopology((2, 2));
 
         // Previous: all dead
-        var prevGeneration = new DictionaryGeneration<Point2D, bool>(
+        using var prevGeneration = new DictionaryGeneration<Point2D, bool>(
             new Dictionary<Point2D, bool>(),
             defaultState: false);
 
@@ -111,7 +111,7 @@ public class StreamingDiffTests
             allAlive[node] = true;
         }
 
-        var currGeneration = new DictionaryGeneration<Point2D, bool>(allAlive, defaultState: false);
+        using var currGeneration = new DictionaryGeneration<Point2D, bool>(allAlive, defaultState: false);
 
         ColorNormalizedGlyphEnumerator prevEnumerator = renderer.GetGlyphEnumerator(topology, prevGeneration);
         ColorNormalizedGlyphEnumerator currEnumerator = renderer.GetGlyphEnumerator(topology, currGeneration);
@@ -133,15 +133,15 @@ public class StreamingDiffTests
         var theme = new ConsoleTheme(AliveChar: '#', DeadChar: '.', ShowBorder: false);
         var renderer = new ConsoleRenderer(output, engine, theme);
 
-        var topology = new Grid2DTopology(1, 1);
+        var topology = new RectangularTopology((1, 1));
 
         // Previous: dead
-        var prevGeneration = new DictionaryGeneration<Point2D, bool>(
+        using var prevGeneration = new DictionaryGeneration<Point2D, bool>(
             new Dictionary<Point2D, bool>(),
             defaultState: false);
 
         // Current: alive
-        var currGeneration = new DictionaryGeneration<Point2D, bool>(
+        using var currGeneration = new DictionaryGeneration<Point2D, bool>(
             new Dictionary<Point2D, bool> { [new Point2D(0, 0)] = true },
             defaultState: false);
 
@@ -165,8 +165,8 @@ public class StreamingDiffTests
         var theme = new ConsoleTheme(AliveChar: '#', DeadChar: '.', ShowBorder: false);
         var renderer = new ConsoleRenderer(output, engine, theme);
 
-        var topology = new Grid2DTopology(2, 2);
-        var generation = new DictionaryGeneration<Point2D, bool>(
+        var topology = new RectangularTopology((2, 2));
+        using var generation = new DictionaryGeneration<Point2D, bool>(
             new Dictionary<Point2D, bool> { [new Point2D(0, 0)] = true },
             defaultState: false);
 
@@ -188,15 +188,15 @@ public class StreamingDiffTests
         var theme = new ConsoleTheme(AliveChar: '#', DeadChar: '.', ShowBorder: false);
         var renderer = new ConsoleRenderer(output, engine, theme);
 
-        var topology = new Grid2DTopology(2, 2);
+        var topology = new RectangularTopology((2, 2));
 
         // Previous: all dead
-        var prevGeneration = new DictionaryGeneration<Point2D, bool>(
+        using var prevGeneration = new DictionaryGeneration<Point2D, bool>(
             new Dictionary<Point2D, bool>(),
             defaultState: false);
 
         // Current: one alive
-        var currGeneration = new DictionaryGeneration<Point2D, bool>(
+        using var currGeneration = new DictionaryGeneration<Point2D, bool>(
             new Dictionary<Point2D, bool> { [new Point2D(1, 1)] = true },
             defaultState: false);
 
@@ -226,15 +226,15 @@ public class StreamingDiffTests
         var theme = new ConsoleTheme(AliveChar: '#', DeadChar: '.', ShowBorder: false);
         var renderer = new ConsoleRenderer(output, engine, theme);
 
-        var topology = new Grid2DTopology(2, 1);
+        var topology = new RectangularTopology((2, 1));
 
         // Previous: first alive, second dead
-        var prevGeneration = new DictionaryGeneration<Point2D, bool>(
+        using var prevGeneration = new DictionaryGeneration<Point2D, bool>(
             new Dictionary<Point2D, bool> { [new Point2D(0, 0)] = true },
             defaultState: false);
 
         // Current: first dead, second alive (color change for both)
-        var currGeneration = new DictionaryGeneration<Point2D, bool>(
+        using var currGeneration = new DictionaryGeneration<Point2D, bool>(
             new Dictionary<Point2D, bool> { [new Point2D(1, 0)] = true },
             defaultState: false);
 
@@ -258,14 +258,14 @@ public class StreamingDiffTests
         var renderer = new ConsoleRenderer(output, engine, theme);
 
         // Previous: 1x1
-        var prevTopology = new Grid2DTopology(1, 1);
-        var prevGeneration = new DictionaryGeneration<Point2D, bool>(
+        var prevTopology = new RectangularTopology((1, 1));
+        using var prevGeneration = new DictionaryGeneration<Point2D, bool>(
             new Dictionary<Point2D, bool>(),
             defaultState: false);
 
         // Current: 2x2 (larger)
-        var currTopology = new Grid2DTopology(2, 2);
-        var currGeneration = new DictionaryGeneration<Point2D, bool>(
+        var currTopology = new RectangularTopology((2, 2));
+        using var currGeneration = new DictionaryGeneration<Point2D, bool>(
             new Dictionary<Point2D, bool>(),
             defaultState: false);
 
@@ -288,8 +288,8 @@ public class StreamingDiffTests
         var theme = new ConsoleTheme(AliveChar: '#', DeadChar: '.', ShowBorder: false);
         var renderer = new ConsoleRenderer(output, engine, theme);
 
-        var topology = new Grid2DTopology(3, 3);
-        var generation = new DictionaryGeneration<Point2D, bool>(
+        var topology = new RectangularTopology((3, 3));
+        using var generation = new DictionaryGeneration<Point2D, bool>(
             new Dictionary<Point2D, bool>(),
             defaultState: false);
 
@@ -313,9 +313,9 @@ public class StreamingDiffTests
         var theme = new ConsoleTheme(AliveChar: '#', DeadChar: '.', ShowBorder: false);
         var renderer = new ConsoleRenderer(output, engine, theme);
 
-        var topology = new Grid2DTopology(2, 1);
+        var topology = new RectangularTopology((2, 1));
         // One alive, one dead - different colors
-        var generation = new DictionaryGeneration<Point2D, bool>(
+        using var generation = new DictionaryGeneration<Point2D, bool>(
             new Dictionary<Point2D, bool> { [new Point2D(0, 0)] = true },
             defaultState: false);
 
@@ -340,8 +340,8 @@ public class StreamingDiffTests
         var theme = new ConsoleTheme(AliveChar: '#', DeadChar: '.', ShowBorder: false);
         var renderer = new ConsoleRenderer(output, engine, theme);
 
-        var topology = new Grid2DTopology(1, 1);
-        var generation = new DictionaryGeneration<Point2D, bool>(
+        var topology = new RectangularTopology((1, 1));
+        using var generation = new DictionaryGeneration<Point2D, bool>(
             new Dictionary<Point2D, bool>(),
             defaultState: false);
 
@@ -365,14 +365,14 @@ public class StreamingDiffTests
         var renderer = new ConsoleRenderer(output, engine, theme);
 
         // Previous: 2x2 (larger)
-        var prevTopology = new Grid2DTopology(2, 2);
-        var prevGeneration = new DictionaryGeneration<Point2D, bool>(
+        var prevTopology = new RectangularTopology((2, 2));
+        using var prevGeneration = new DictionaryGeneration<Point2D, bool>(
             new Dictionary<Point2D, bool>(),
             defaultState: false);
 
         // Current: 1x1 (smaller)
-        var currTopology = new Grid2DTopology(1, 1);
-        var currGeneration = new DictionaryGeneration<Point2D, bool>(
+        var currTopology = new RectangularTopology((1, 1));
+        using var currGeneration = new DictionaryGeneration<Point2D, bool>(
             new Dictionary<Point2D, bool> { [new Point2D(0, 0)] = true },
             defaultState: false);
 
@@ -399,15 +399,15 @@ public class StreamingDiffTests
         var theme = new ConsoleTheme(AliveChar: '#', DeadChar: '.', ShowBorder: false);
         var renderer = new ConsoleRenderer(output, engine, theme);
 
-        var topology = new Grid2DTopology(3, 1);
+        var topology = new RectangularTopology((3, 1));
 
         // Previous: all dead
-        var prevGeneration = new DictionaryGeneration<Point2D, bool>(
+        using var prevGeneration = new DictionaryGeneration<Point2D, bool>(
             new Dictionary<Point2D, bool>(),
             defaultState: false);
 
         // Current: all alive (same color for all 3 cells)
-        var currGeneration = new DictionaryGeneration<Point2D, bool>(
+        using var currGeneration = new DictionaryGeneration<Point2D, bool>(
             new Dictionary<Point2D, bool>
             {
                 [new Point2D(0, 0)] = true,
@@ -489,10 +489,10 @@ public class StreamingDiffTests
         var theme = new ConsoleTheme(AliveChar: '#', DeadChar: '.', ShowBorder: false);
         var renderer = new ConsoleRenderer(output, engine, theme);
 
-        var topology = new Grid2DTopology(3, 1);
+        var topology = new RectangularTopology((3, 1));
 
         // All alive - same color
-        var generation = new DictionaryGeneration<Point2D, bool>(
+        using var generation = new DictionaryGeneration<Point2D, bool>(
             new Dictionary<Point2D, bool>
             {
                 [new Point2D(0, 0)] = true,
@@ -522,10 +522,10 @@ public class StreamingDiffTests
         var theme = new ConsoleTheme(AliveChar: '#', DeadChar: '.', ShowBorder: false);
         var renderer = new ConsoleRenderer(output, engine, theme);
 
-        var topology = new Grid2DTopology(3, 1);
+        var topology = new RectangularTopology((3, 1));
 
         // All alive - same color
-        var generation = new DictionaryGeneration<Point2D, bool>(
+        using var generation = new DictionaryGeneration<Point2D, bool>(
             new Dictionary<Point2D, bool>
             {
                 [new Point2D(0, 0)] = true,
@@ -555,15 +555,15 @@ public class StreamingDiffTests
         var theme = new ConsoleTheme(AliveChar: '#', DeadChar: '.', ShowBorder: false);
         var renderer = new ConsoleRenderer(output, engine, theme);
 
-        var topology = new Grid2DTopology(3, 1);
+        var topology = new RectangularTopology((3, 1));
 
         // Previous: all dead
-        var prevGeneration = new DictionaryGeneration<Point2D, bool>(
+        using var prevGeneration = new DictionaryGeneration<Point2D, bool>(
             new Dictionary<Point2D, bool>(),
             defaultState: false);
 
         // Current: all alive
-        var currGeneration = new DictionaryGeneration<Point2D, bool>(
+        using var currGeneration = new DictionaryGeneration<Point2D, bool>(
             new Dictionary<Point2D, bool>
             {
                 [new Point2D(0, 0)] = true,

@@ -3,38 +3,31 @@
 /// <summary>
 /// A finite 2D rectangular grid topology with Moore neighborhood (8 neighbors).
 /// </summary>
-public class Grid2DTopology : ITopology<Point2D>
+public class RectangularTopology : ITopology<Point2D>
 {
     /// <summary>
-    /// Gets the width of the grid.
+    /// Gets the size of the grid.
     /// </summary>
-    public int Width { get; }
+    public Size2D Size { get; }
 
     /// <summary>
-    /// Gets the height of the grid.
+    /// Creates a new RectangularTopology with the specified dimensions.
     /// </summary>
-    public int Height { get; }
-
-    /// <summary>
-    /// Creates a new Grid2DTopology with the specified dimensions.
-    /// </summary>
-    /// <param name="width">The width of the grid.</param>
-    /// <param name="height">The height of the grid.</param>
+    /// <param name="size">The size of the grid.</param>
     /// <exception cref="ArgumentOutOfRangeException">Thrown if width or height is less than 1.</exception>
-    public Grid2DTopology(int width, int height)
+    public RectangularTopology(Size2D size)
     {
-        if (width < 1)
+        if (size.Width < 1)
         {
-            throw new ArgumentOutOfRangeException(nameof(width), "Width must be at least 1.");
+            throw new ArgumentOutOfRangeException(nameof(size), "Width must be at least 1.");
         }
 
-        if (height < 1)
+        if (size.Height < 1)
         {
-            throw new ArgumentOutOfRangeException(nameof(height), "Height must be at least 1.");
+            throw new ArgumentOutOfRangeException(nameof(size), "Height must be at least 1.");
         }
 
-        Width = width;
-        Height = height;
+        Size = size;
     }
 
     /// <summary>
@@ -44,11 +37,11 @@ public class Grid2DTopology : ITopology<Point2D>
     {
         get
         {
-            for (int y = 0; y < Height; y++)
+            for (int y = 0; y < Size.Height; y++)
             {
-                for (int x = 0; x < Width; x++)
+                for (int x = 0; x < Size.Width; x++)
                 {
-                    yield return new Point2D(x, y);
+                    yield return (x, y);
                 }
             }
         }
@@ -62,7 +55,7 @@ public class Grid2DTopology : ITopology<Point2D>
     /// <exception cref="ArgumentOutOfRangeException">Thrown if the node is outside the grid.</exception>
     public IEnumerable<Point2D> GetNeighbors(Point2D node)
     {
-        if (node.X < 0 || node.X >= Width || node.Y < 0 || node.Y >= Height)
+        if (!node.IsInBounds(Size))
         {
             throw new ArgumentOutOfRangeException(nameof(node), "Node is outside the grid boundaries.");
         }
@@ -76,12 +69,10 @@ public class Grid2DTopology : ITopology<Point2D>
                     continue;
                 }
 
-                int nx = node.X + dx;
-                int ny = node.Y + dy;
-
-                if (nx >= 0 && nx < Width && ny >= 0 && ny < Height)
+                Point2D neighbor = node + (dx, dy);
+                if (neighbor.IsInBounds(Size))
                 {
-                    yield return new Point2D(nx, ny);
+                    yield return neighbor;
                 }
             }
         }

@@ -7,12 +7,17 @@ namespace GameOfLife.Rendering.Console;
 /// <summary>
 /// Renders Game of Life generations to the console.
 /// </summary>
-public sealed class ConsoleRenderer : IRenderer<Grid2DTopology, Point2D, Point2D, RectangularBounds, bool>
+public sealed class ConsoleRenderer : IRenderer<RectangularTopology, Point2D, Point2D, RectangularBounds, bool>
 {
     private readonly TextWriter _output;
-    private readonly ILayoutEngine<Grid2DTopology, Point2D, Point2D, RectangularBounds> _layoutEngine;
+    private readonly ILayoutEngine<RectangularTopology, Point2D, Point2D, RectangularBounds> _layoutEngine;
     private readonly ConsoleTheme _theme;
     private readonly bool _supportsColor;
+
+    // Cached topology data to avoid re-creating per frame
+    private RectangularTopology? _cachedTopology;
+    private HashSet<Point2D>? _cachedNodeSet;
+    private ILayout<Point2D, Point2D, RectangularBounds>? _cachedLayout;
 
     /// <summary>
     /// Creates a new console renderer.
@@ -23,7 +28,7 @@ public sealed class ConsoleRenderer : IRenderer<Grid2DTopology, Point2D, Point2D
     /// <exception cref="ArgumentNullException">Thrown if output, layoutEngine, or theme is null.</exception>
     public ConsoleRenderer(
         TextWriter output,
-        ILayoutEngine<Grid2DTopology, Point2D, Point2D, RectangularBounds> layoutEngine,
+        ILayoutEngine<RectangularTopology, Point2D, Point2D, RectangularBounds> layoutEngine,
         ConsoleTheme theme)
     {
         ArgumentNullException.ThrowIfNull(output);
@@ -43,16 +48,13 @@ public sealed class ConsoleRenderer : IRenderer<Grid2DTopology, Point2D, Point2D
     /// <param name="topology">The topology defining the structure.</param>
     /// <param name="generation">The generation state to render.</param>
     /// <exception cref="ArgumentNullException">Thrown if topology or generation is null.</exception>
-    public void Render(Grid2DTopology topology, IGeneration<Point2D, bool> generation)
+    public void Render(RectangularTopology topology, IGeneration<Point2D, bool> generation)
     {
         ArgumentNullException.ThrowIfNull(topology);
         ArgumentNullException.ThrowIfNull(generation);
 
-        ILayout<Point2D, Point2D, RectangularBounds> layout = _layoutEngine.CreateLayout(topology);
+        (ILayout<Point2D, Point2D, RectangularBounds> layout, HashSet<Point2D> nodeSet) = GetCachedTopologyData(topology);
         RectangularBounds bounds = layout.Bounds;
-
-        // Build a set of valid nodes for quick lookup
-        var nodeSet = new HashSet<Point2D>(topology.Nodes);
 
         // Store the original color to restore later
         ConsoleColor? originalColor = null;
@@ -173,15 +175,29 @@ public sealed class ConsoleRenderer : IRenderer<Grid2DTopology, Point2D, Point2D
     /// <param name="viewport">Optional viewport for clipping large boards.</param>
     /// <returns>A token enumerator that yields rendering tokens.</returns>
     /// <exception cref="ArgumentNullException">Thrown if topology or generation is null.</exception>
-    public TokenEnumerator GetTokenEnumerator(Grid2DTopology topology, IGeneration<Point2D, bool> generation, Viewport? viewport = null)
+    public TokenEnumerator GetTokenEnumerator(RectangularTopology topology, IGeneration<Point2D, bool> generation, Viewport? viewport = null)
     {
         ArgumentNullException.ThrowIfNull(topology);
         ArgumentNullException.ThrowIfNull(generation);
 
-        ILayout<Point2D, Point2D, RectangularBounds> layout = _layoutEngine.CreateLayout(topology);
-        var nodeSet = new HashSet<Point2D>(topology.Nodes);
+        (ILayout<Point2D, Point2D, RectangularBounds> layout, HashSet<Point2D> nodeSet) = GetCachedTopologyData(topology);
 
         return new TokenEnumerator(layout, generation, nodeSet, _theme, viewport);
+    }
+
+    private (ILayout<Point2D, Point2D, RectangularBounds> Layout, HashSet<Point2D> NodeSet) GetCachedTopologyData(RectangularTopology topology)
+    {
+        // Cache layout and node set for the topology (topologies are immutable and typically reused)
+        if (_cachedTopology != topology)
+        {
+            _cachedTopology = topology;
+            _cachedLayout = _layoutEngine.CreateLayout(topology);
+#pragma warning disable IDE0028, IDE0306 // Collection initialization can be simplified - HashSet requires constructor
+            _cachedNodeSet = new HashSet<Point2D>(topology.Nodes);
+#pragma warning restore IDE0028, IDE0306
+        }
+
+        return (_cachedLayout!, _cachedNodeSet!);
     }
 
     /// <summary>
@@ -192,7 +208,7 @@ public sealed class ConsoleRenderer : IRenderer<Grid2DTopology, Point2D, Point2D
     /// <param name="viewport">Optional viewport for clipping large boards.</param>
     /// <returns>A color-normalized glyph enumerator.</returns>
     /// <exception cref="ArgumentNullException">Thrown if topology or generation is null.</exception>
-    public ColorNormalizedGlyphEnumerator GetGlyphEnumerator(Grid2DTopology topology, IGeneration<Point2D, bool> generation, Viewport? viewport = null)
+    public ColorNormalizedGlyphEnumerator GetGlyphEnumerator(RectangularTopology topology, IGeneration<Point2D, bool> generation, Viewport? viewport = null)
     {
         TokenEnumerator tokenEnumerator = GetTokenEnumerator(topology, generation, viewport);
         GlyphEnumerator glyphEnumerator = GlyphReader.FromTokens(tokenEnumerator);
@@ -206,7 +222,7 @@ public sealed class ConsoleRenderer : IRenderer<Grid2DTopology, Point2D, Point2D
     /// <param name="generation">The generation state to render.</param>
     /// <returns>A string containing the rendered output with ANSI codes.</returns>
     /// <exception cref="ArgumentNullException">Thrown if topology or generation is null.</exception>
-    public string RenderToString(Grid2DTopology topology, IGeneration<Point2D, bool> generation)
+    public string RenderToString(RectangularTopology topology, IGeneration<Point2D, bool> generation)
     {
         ArgumentNullException.ThrowIfNull(topology);
         ArgumentNullException.ThrowIfNull(generation);

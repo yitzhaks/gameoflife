@@ -12,8 +12,8 @@ public class ShapeInjectionTests
         var result = ShapeInjection.Parse("glider@5,10");
 
         Assert.Equal("glider", result.PatternName);
-        Assert.Equal(5, result.X);
-        Assert.Equal(10, result.Y);
+        Assert.Equal(5, result.Position.X);
+        Assert.Equal(10, result.Position.Y);
     }
 
     [Fact]
@@ -22,8 +22,8 @@ public class ShapeInjectionTests
         var result = ShapeInjection.Parse("block@-5,-10");
 
         Assert.Equal("block", result.PatternName);
-        Assert.Equal(-5, result.X);
-        Assert.Equal(-10, result.Y);
+        Assert.Equal(-5, result.Position.X);
+        Assert.Equal(-10, result.Position.Y);
     }
 
     [Fact]
@@ -32,8 +32,8 @@ public class ShapeInjectionTests
         var result = ShapeInjection.Parse("blinker@0,0");
 
         Assert.Equal("blinker", result.PatternName);
-        Assert.Equal(0, result.X);
-        Assert.Equal(0, result.Y);
+        Assert.Equal(0, result.Position.X);
+        Assert.Equal(0, result.Position.Y);
     }
 
     [Fact]
@@ -42,8 +42,8 @@ public class ShapeInjectionTests
         var result = ShapeInjection.Parse("r-pentomino@10,20");
 
         Assert.Equal("r-pentomino", result.PatternName);
-        Assert.Equal(10, result.X);
-        Assert.Equal(20, result.Y);
+        Assert.Equal(10, result.Position.X);
+        Assert.Equal(20, result.Position.Y);
     }
 
     [Fact]

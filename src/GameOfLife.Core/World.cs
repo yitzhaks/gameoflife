@@ -6,7 +6,8 @@
 /// </summary>
 /// <typeparam name="TIdentity">The type used to identify nodes.</typeparam>
 /// <typeparam name="TState">The type representing cell state.</typeparam>
-public class World<TIdentity, TState> where TIdentity : notnull, IEquatable<TIdentity>
+public class World<TIdentity, TState> : IWorld<TIdentity, TState, IGeneration<TIdentity, TState>>
+    where TIdentity : notnull, IEquatable<TIdentity>
 {
     /// <summary>
     /// Gets the topology defining the structure of the world.
@@ -32,20 +33,17 @@ public class World<TIdentity, TState> where TIdentity : notnull, IEquatable<TIde
     /// <summary>
     /// Computes the next generation by applying rules to each node.
     /// </summary>
-    /// <param name="current">The current generation state.</param>
+    /// <param name="currentGeneration">The current generation state.</param>
     /// <returns>A new generation representing the next state.</returns>
-    public IGeneration<TIdentity, TState> Tick(IGeneration<TIdentity, TState> current)
+    public IGeneration<TIdentity, TState> Tick(IGeneration<TIdentity, TState> currentGeneration)
     {
-        ArgumentNullException.ThrowIfNull(current);
+        ArgumentNullException.ThrowIfNull(currentGeneration);
 
         Dictionary<TIdentity, TState> nextStates = [];
 
         foreach (TIdentity node in Topology.Nodes)
         {
-            TState currentState = current[node];
-            IEnumerable<TState> neighborStates = Topology.GetNeighbors(node).Select(neighbor => current[neighbor]);
-            TState nextState = Rules.GetNextState(currentState, neighborStates);
-            nextStates[node] = nextState;
+            nextStates[node] = Rules.GetNextState(currentGeneration[node], currentGeneration.GetNeighborStates(Topology, node));
         }
 
         return new DictionaryGeneration<TIdentity, TState>(nextStates, Rules.DefaultState);

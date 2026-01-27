@@ -11,7 +11,7 @@ public class IdentityLayoutEngineTests
     public void CreateLayout_ValidTopology_ReturnsLayout()
     {
         var engine = new IdentityLayoutEngine();
-        var topology = new Grid2DTopology(5, 5);
+        var topology = new RectangularTopology((5, 5));
 
         ILayout<Point2D, Point2D, RectangularBounds> layout = engine.CreateLayout(topology);
 
@@ -32,7 +32,7 @@ public class IdentityLayoutEngineTests
     public void CreateLayout_3x3Grid_BoundsAreCorrect()
     {
         var engine = new IdentityLayoutEngine();
-        var topology = new Grid2DTopology(3, 3);
+        var topology = new RectangularTopology((3, 3));
 
         ILayout<Point2D, Point2D, RectangularBounds> layout = engine.CreateLayout(topology);
 
@@ -44,7 +44,7 @@ public class IdentityLayoutEngineTests
     public void CreateLayout_PositionsReturnIdentity()
     {
         var engine = new IdentityLayoutEngine();
-        var topology = new Grid2DTopology(3, 3);
+        var topology = new RectangularTopology((3, 3));
 
         ILayout<Point2D, Point2D, RectangularBounds> layout = engine.CreateLayout(topology);
 
@@ -56,7 +56,7 @@ public class IdentityLayoutEngineTests
     public void CreateLayout_PositionsThrowForInvalidNode()
     {
         var engine = new IdentityLayoutEngine();
-        var topology = new Grid2DTopology(3, 3);
+        var topology = new RectangularTopology((3, 3));
 
         ILayout<Point2D, Point2D, RectangularBounds> layout = engine.CreateLayout(topology);
 
@@ -67,7 +67,7 @@ public class IdentityLayoutEngineTests
     public void CreateLayout_EnumerateNodesWithComparer_ReturnsOrderedNodes()
     {
         var engine = new IdentityLayoutEngine();
-        var topology = new Grid2DTopology(3, 3);
+        var topology = new RectangularTopology((3, 3));
 
         ILayout<Point2D, Point2D, RectangularBounds> layout = engine.CreateLayout(topology);
 

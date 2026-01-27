@@ -19,6 +19,14 @@ public sealed class RectangularBounds : IAxisAlignedBounds<Point2D>
     public Point2D Max { get; }
 
     /// <summary>
+    /// Creates a new rectangular bounds from (0, 0) to (width-1, height-1).
+    /// </summary>
+    /// <param name="size">The size of the bounds.</param>
+    public RectangularBounds(Size2D size) : this(default, (size.Width - 1, size.Height - 1))
+    {
+    }
+
+    /// <summary>
     /// Creates a new rectangular bounds with the specified corners.
     /// </summary>
     /// <param name="min">The minimum corner (inclusive).</param>
@@ -45,9 +53,7 @@ public sealed class RectangularBounds : IAxisAlignedBounds<Point2D>
     /// </summary>
     /// <param name="coordinate">The coordinate to test.</param>
     /// <returns><c>true</c> if the coordinate is within the bounds; otherwise, <c>false</c>.</returns>
-    public bool Contains(Point2D coordinate)
-    {
-        return coordinate.X >= Min.X && coordinate.X <= Max.X
-            && coordinate.Y >= Min.Y && coordinate.Y <= Max.Y;
-    }
+    public bool Contains(Point2D coordinate) =>
+        coordinate.IsGreaterOrEqual(Min) &&
+        coordinate.IsLessOrEqual(Max);
 }

@@ -54,10 +54,10 @@ public class TimelineTests
         var rules = new CountingRules();
         var world = new World<int, int>(topology, rules);
         var initialStates = new Dictionary<int, int> { [0] = 10, [1] = 20, [2] = 30 };
-        var initial = new DictionaryGeneration<int, int>(initialStates, 0);
+        using var initial = new DictionaryGeneration<int, int>(initialStates, 0);
 
         // Act
-        var timeline = new Timeline<int, int>(world, initial);
+        using var timeline = Timeline.Create(world, initial);
 
         // Assert
         Assert.Same(initial, timeline.Current);
@@ -73,10 +73,10 @@ public class TimelineTests
         var topology = new TestTopology(1);
         var rules = new CountingRules();
         var world = new World<int, int>(topology, rules);
-        var initial = new DictionaryGeneration<int, int>(new Dictionary<int, int>(), 0);
+        using var initial = new DictionaryGeneration<int, int>(new Dictionary<int, int>(), 0);
 
         // Act
-        var timeline = new Timeline<int, int>(world, initial);
+        using var timeline = Timeline.Create(world, initial);
 
         // Assert
         Assert.Same(world, timeline.World);
@@ -86,10 +86,10 @@ public class TimelineTests
     public void Constructor_NullWorld_ThrowsArgumentNullException()
     {
         // Arrange
-        var initial = new DictionaryGeneration<int, int>(new Dictionary<int, int>(), 0);
+        using var initial = new DictionaryGeneration<int, int>(new Dictionary<int, int>(), 0);
 
         // Act & Assert
-        ArgumentNullException ex = Assert.Throws<ArgumentNullException>(() => new Timeline<int, int>(null!, initial));
+        ArgumentNullException ex = Assert.Throws<ArgumentNullException>(() => new Timeline<int, int, IGeneration<int, int>>(null!, initial));
         Assert.Equal("world", ex.ParamName);
     }
 
@@ -102,8 +102,8 @@ public class TimelineTests
         var world = new World<int, int>(topology, rules);
 
         // Act & Assert
-        ArgumentNullException ex = Assert.Throws<ArgumentNullException>(() => new Timeline<int, int>(world, null!));
-        Assert.Equal("initial", ex.ParamName);
+        ArgumentNullException ex = Assert.Throws<ArgumentNullException>(() => new Timeline<int, int, IGeneration<int, int>>(world, null!));
+        Assert.Equal("value", ex.ParamName);
     }
 
     [Fact]
@@ -114,8 +114,8 @@ public class TimelineTests
         var rules = new CountingRules();
         var world = new World<int, int>(topology, rules);
         var initialStates = new Dictionary<int, int> { [0] = 0, [1] = 5 };
-        var initial = new DictionaryGeneration<int, int>(initialStates, 0);
-        var timeline = new Timeline<int, int>(world, initial);
+        using var initial = new DictionaryGeneration<int, int>(initialStates, 0);
+        using var timeline = Timeline.Create(world, initial);
 
         // Act
         timeline.Step();
@@ -134,8 +134,8 @@ public class TimelineTests
         var rules = new CountingRules();
         var world = new World<int, int>(topology, rules);
         var initialStates = new Dictionary<int, int> { [0] = 0 };
-        var initial = new DictionaryGeneration<int, int>(initialStates, 0);
-        var timeline = new Timeline<int, int>(world, initial);
+        using var initial = new DictionaryGeneration<int, int>(initialStates, 0);
+        using var timeline = Timeline.Create(world, initial);
 
         // Act
         timeline.Step();
@@ -153,8 +153,8 @@ public class TimelineTests
         var rules = new CountingRules();
         var world = new World<int, int>(topology, rules);
         var initialStates = new Dictionary<int, int> { [0] = 0 };
-        var initial = new DictionaryGeneration<int, int>(initialStates, 0);
-        var timeline = new Timeline<int, int>(world, initial);
+        using var initial = new DictionaryGeneration<int, int>(initialStates, 0);
+        using var timeline = Timeline.Create(world, initial);
 
         // Act
         timeline.Step(5);
@@ -171,8 +171,8 @@ public class TimelineTests
         var rules = new CountingRules();
         var world = new World<int, int>(topology, rules);
         var initialStates = new Dictionary<int, int> { [0] = 42 };
-        var initial = new DictionaryGeneration<int, int>(initialStates, 0);
-        var timeline = new Timeline<int, int>(world, initial);
+        using var initial = new DictionaryGeneration<int, int>(initialStates, 0);
+        using var timeline = Timeline.Create(world, initial);
 
         // Act
         timeline.Step(0);
@@ -190,8 +190,8 @@ public class TimelineTests
         var rules = new CountingRules();
         var world = new World<int, int>(topology, rules);
         var initialStates = new Dictionary<int, int> { [0] = 42 };
-        var initial = new DictionaryGeneration<int, int>(initialStates, 0);
-        var timeline = new Timeline<int, int>(world, initial);
+        using var initial = new DictionaryGeneration<int, int>(initialStates, 0);
+        using var timeline = Timeline.Create(world, initial);
 
         // Act
         timeline.Step(-5);
@@ -211,8 +211,8 @@ public class TimelineTests
         var rules = new SumNeighborsRules();
         var world = new World<int, int>(topology, rules);
         var initialStates = new Dictionary<int, int> { [0] = 0, [1] = 1, [2] = 2 };
-        var initial = new DictionaryGeneration<int, int>(initialStates, 0);
-        var timeline = new Timeline<int, int>(world, initial);
+        using var initial = new DictionaryGeneration<int, int>(initialStates, 0);
+        using var timeline = Timeline.Create(world, initial);
 
         // Act
         timeline.Step();
@@ -231,8 +231,8 @@ public class TimelineTests
         var rules = new CountingRules();
         var world = new World<int, int>(topology, rules);
         var initialStates = new Dictionary<int, int> { [0] = 0 };
-        var initial = new DictionaryGeneration<int, int>(initialStates, 0);
-        var timeline = new Timeline<int, int>(world, initial);
+        using var initial = new DictionaryGeneration<int, int>(initialStates, 0);
+        using var timeline = Timeline.Create(world, initial);
 
         // Act
         timeline.Step(100);
@@ -249,8 +249,8 @@ public class TimelineTests
         var rules = new CountingRules();
         var world = new World<int, int>(topology, rules);
         var initialStates = new Dictionary<int, int> { [0] = 0 };
-        var initial = new DictionaryGeneration<int, int>(initialStates, 0);
-        var timeline = new Timeline<int, int>(world, initial);
+        using var initial = new DictionaryGeneration<int, int>(initialStates, 0);
+        using var timeline = Timeline.Create(world, initial);
 
         var generations = new List<IGeneration<int, int>> { timeline.Current };
 

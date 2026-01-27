@@ -55,6 +55,8 @@ public class WorldTests
         }
 
         public bool this[int node] => _states.TryGetValue(node, out bool state) ? state : _defaultState;
+
+        public void Dispose() { }
     }
 
     #endregion
@@ -123,7 +125,7 @@ public class WorldTests
         ArgumentNullException exception = Assert.Throws<ArgumentNullException>(() =>
             world.Tick(null!));
 
-        Assert.Equal("current", exception.ParamName);
+        Assert.Equal("currentGeneration", exception.ParamName);
     }
 
     #endregion
@@ -136,7 +138,7 @@ public class WorldTests
         var topology = new StubTopology(new[] { 1, 2, 3 });
         var rules = new StubRules();
         var world = new World<int, bool>(topology, rules);
-        var currentGeneration = new StubGeneration();
+        using var currentGeneration = new StubGeneration();
 
         IGeneration<int, bool> nextGeneration = world.Tick(currentGeneration);
 
@@ -155,7 +157,7 @@ public class WorldTests
         var world = new World<int, bool>(topology, rules);
 
         // Node 1 starts as alive (true)
-        var currentGeneration = new StubGeneration(
+        using var currentGeneration = new StubGeneration(
             new Dictionary<int, bool> { [1] = true });
 
         IGeneration<int, bool> nextGeneration = world.Tick(currentGeneration);
@@ -193,7 +195,7 @@ public class WorldTests
         var world = new World<int, bool>(topology, rules);
 
         // Node 2 is alive, Node 3 is dead
-        var currentGeneration = new StubGeneration(
+        using var currentGeneration = new StubGeneration(
             new Dictionary<int, bool> { [2] = true, [3] = false });
 
         IGeneration<int, bool> nextGeneration = world.Tick(currentGeneration);
@@ -216,7 +218,7 @@ public class WorldTests
             nextStateFunc: (_, _) => true);
         var world = new World<int, bool>(topology, rules);
 
-        var currentGeneration = new StubGeneration();
+        using var currentGeneration = new StubGeneration();
 
         IGeneration<int, bool> nextGeneration = world.Tick(currentGeneration);
 
@@ -235,7 +237,7 @@ public class WorldTests
         var rules = new StubRules(defaultState: true);
         var world = new World<int, bool>(topology, rules);
 
-        var currentGeneration = new StubGeneration();
+        using var currentGeneration = new StubGeneration();
 
         IGeneration<int, bool> nextGeneration = world.Tick(currentGeneration);
 

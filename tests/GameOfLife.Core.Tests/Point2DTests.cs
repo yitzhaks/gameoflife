@@ -134,7 +134,7 @@ public class Point2DTests
     {
         var set = new HashSet<Point2D>
         {
-            (0, 0),
+            default,
             (1, 1),
             (2, 2)
         };
@@ -149,11 +149,11 @@ public class Point2DTests
     {
         var dict = new Dictionary<Point2D, string>
         {
-            [(0, 0)] = "origin",
+            [default] = "origin",
             [(1, 0)] = "right"
         };
 
-        Assert.Equal("origin", dict[(0, 0)]);
+        Assert.Equal("origin", dict[default]);
         Assert.Equal("right", dict[(1, 0)]);
     }
 
@@ -169,7 +169,7 @@ public class Point2DTests
     [Fact]
     public void ImplicitConversion_InCollection_WorksCorrectly()
     {
-        Point2D[] points = [(0, 0), (1, 2), (3, 4)];
+        Point2D[] points = [default, (1, 2), (3, 4)];
 
         Assert.Equal(3, points.Length);
         Assert.Equal(new Point2D(0, 0), points[0]);

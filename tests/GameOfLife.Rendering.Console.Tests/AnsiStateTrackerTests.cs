@@ -15,14 +15,14 @@ public class AnsiStateTrackerTests
         var theme = new ConsoleTheme(AliveChar: '#', DeadChar: '.', ShowBorder: false);
         var renderer = new ConsoleRenderer(output, engine, theme);
 
-        var topology = new Grid2DTopology(2, 1);
+        var topology = new RectangularTopology((2, 1));
         // Two alive cells in a row
         var states = new Dictionary<Point2D, bool>
         {
             [new Point2D(0, 0)] = true,
             [new Point2D(1, 0)] = true
         };
-        var generation = new DictionaryGeneration<Point2D, bool>(states, defaultState: false);
+        using var generation = new DictionaryGeneration<Point2D, bool>(states, defaultState: false);
 
         ColorNormalizedGlyphEnumerator glyphEnumerator = renderer.GetGlyphEnumerator(topology, generation);
 
@@ -46,13 +46,13 @@ public class AnsiStateTrackerTests
         var theme = new ConsoleTheme(AliveChar: '#', DeadChar: '.', ShowBorder: false);
         var renderer = new ConsoleRenderer(output, engine, theme);
 
-        var topology = new Grid2DTopology(2, 1);
+        var topology = new RectangularTopology((2, 1));
         // First dead, second alive
         var states = new Dictionary<Point2D, bool>
         {
             [new Point2D(1, 0)] = true
         };
-        var generation = new DictionaryGeneration<Point2D, bool>(states, defaultState: false);
+        using var generation = new DictionaryGeneration<Point2D, bool>(states, defaultState: false);
 
         ColorNormalizedGlyphEnumerator glyphEnumerator = renderer.GetGlyphEnumerator(topology, generation);
 
@@ -80,8 +80,8 @@ public class AnsiStateTrackerTests
         var theme = new ConsoleTheme(AliveChar: '#', DeadChar: '.', ShowBorder: false);
         var renderer = new ConsoleRenderer(output, engine, theme);
 
-        var topology = new Grid2DTopology(1, 2);
-        var generation = new DictionaryGeneration<Point2D, bool>(
+        var topology = new RectangularTopology((1, 2));
+        using var generation = new DictionaryGeneration<Point2D, bool>(
             new Dictionary<Point2D, bool>(),
             defaultState: false);
 
@@ -108,7 +108,7 @@ public class AnsiStateTrackerTests
         var theme = new ConsoleTheme(AliveChar: '#', DeadChar: '.', ShowBorder: false);
         var renderer = new ConsoleRenderer(output, engine, theme);
 
-        var topology = new Grid2DTopology(3, 1);
+        var topology = new RectangularTopology((3, 1));
         // All cells alive - color should persist
         var states = new Dictionary<Point2D, bool>
         {
@@ -116,7 +116,7 @@ public class AnsiStateTrackerTests
             [new Point2D(1, 0)] = true,
             [new Point2D(2, 0)] = true
         };
-        var generation = new DictionaryGeneration<Point2D, bool>(states, defaultState: false);
+        using var generation = new DictionaryGeneration<Point2D, bool>(states, defaultState: false);
 
         ColorNormalizedGlyphEnumerator glyphEnumerator = renderer.GetGlyphEnumerator(topology, generation);
 
@@ -142,7 +142,7 @@ public class AnsiStateTrackerTests
         var theme = new ConsoleTheme(AliveChar: '#', DeadChar: '.', ShowBorder: false);
         var renderer = new ConsoleRenderer(output, engine, theme);
 
-        var topology = new Grid2DTopology(5, 1);
+        var topology = new RectangularTopology((5, 1));
         // Pattern: alive, dead, alive, dead, alive (5 color transitions)
         var states = new Dictionary<Point2D, bool>
         {
@@ -150,7 +150,7 @@ public class AnsiStateTrackerTests
             [new Point2D(2, 0)] = true,
             [new Point2D(4, 0)] = true
         };
-        var generation = new DictionaryGeneration<Point2D, bool>(states, defaultState: false);
+        using var generation = new DictionaryGeneration<Point2D, bool>(states, defaultState: false);
 
         ColorNormalizedGlyphEnumerator glyphEnumerator = renderer.GetGlyphEnumerator(topology, generation);
 
@@ -181,8 +181,8 @@ public class AnsiStateTrackerTests
         var theme = new ConsoleTheme(AliveChar: '#', DeadChar: '.', ShowBorder: true);
         var renderer = new ConsoleRenderer(output, engine, theme);
 
-        var topology = new Grid2DTopology(2, 2);
-        var generation = new DictionaryGeneration<Point2D, bool>(
+        var topology = new RectangularTopology((2, 2));
+        using var generation = new DictionaryGeneration<Point2D, bool>(
             new Dictionary<Point2D, bool>(),
             defaultState: false);
 
@@ -207,8 +207,8 @@ public class AnsiStateTrackerTests
         var renderer = new ConsoleRenderer(output, engine, theme);
 
         // 0x0 grid would be invalid, but 1x0 results in empty enumeration
-        var topology = new Grid2DTopology(1, 1);
-        var generation = new DictionaryGeneration<Point2D, bool>(
+        var topology = new RectangularTopology((1, 1));
+        using var generation = new DictionaryGeneration<Point2D, bool>(
             new Dictionary<Point2D, bool>(),
             defaultState: false);
 

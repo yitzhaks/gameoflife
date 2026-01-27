@@ -7,7 +7,7 @@
 /// </summary>
 /// <typeparam name="TIdentity">The type used to identify nodes.</typeparam>
 /// <typeparam name="TState">The type representing cell state.</typeparam>
-public class DictionaryGeneration<TIdentity, TState> : IGeneration<TIdentity, TState>
+public sealed class DictionaryGeneration<TIdentity, TState> : IGeneration<TIdentity, TState>
     where TIdentity : notnull, IEquatable<TIdentity>
 {
     private readonly Dictionary<TIdentity, TState> _states;
@@ -32,4 +32,12 @@ public class DictionaryGeneration<TIdentity, TState> : IGeneration<TIdentity, TS
     /// Gets the state of a node. Returns the default state if the node is not explicitly stored.
     /// </summary>
     public TState this[TIdentity node] => _states.TryGetValue(node, out TState? state) ? state : _defaultState;
+
+    /// <summary>
+    /// No-op disposal. DictionaryGeneration does not own unmanaged resources.
+    /// </summary>
+    public void Dispose()
+    {
+        // No unmanaged resources to dispose
+    }
 }
