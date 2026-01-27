@@ -157,7 +157,7 @@ public class GlyphTests
     {
         var glyph = new Glyph(null, 'X');
 
-        var result = glyph.ToString();
+        string result = glyph.ToString();
 
         Assert.Contains("null", result);
         Assert.Contains("X", result);

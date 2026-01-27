@@ -171,7 +171,7 @@ public class StreamingDiffTests
             defaultState: false);
 
         var frameBuffer = new List<Glyph>();
-        var glyphEnumerator = renderer.GetGlyphEnumerator(topology, generation);
+        ColorNormalizedGlyphEnumerator glyphEnumerator = renderer.GetGlyphEnumerator(topology, generation);
         StreamingDiff.WriteFullAndCapture(ref glyphEnumerator, output, frameBuffer, startRow: 1);
 
         // Buffer should contain all glyphs (2x2 grid + newlines)
@@ -202,19 +202,19 @@ public class StreamingDiffTests
 
         // Capture initial frame
         var initialBuffer = new List<Glyph>();
-        var initialEnumerator = renderer.GetGlyphEnumerator(topology, prevGeneration);
+        ColorNormalizedGlyphEnumerator initialEnumerator = renderer.GetGlyphEnumerator(topology, prevGeneration);
         using var discardOutput = new StringWriter();
         StreamingDiff.WriteFullAndCapture(ref initialEnumerator, discardOutput, initialBuffer, startRow: 1);
 
         // Apply diff and capture
         var resultBuffer = new List<Glyph>();
-        var currEnumerator = renderer.GetGlyphEnumerator(topology, currGeneration);
+        ColorNormalizedGlyphEnumerator currEnumerator = renderer.GetGlyphEnumerator(topology, currGeneration);
         StreamingDiff.ApplyAndCapture(initialBuffer, ref currEnumerator, output, resultBuffer, startRow: 1);
 
         // Buffer should match current frame
         Assert.NotEmpty(resultBuffer);
         // The changed cell should be written
-        var result = output.ToString();
+        string result = output.ToString();
         Assert.Contains("#", result);
     }
 
@@ -238,12 +238,12 @@ public class StreamingDiffTests
             new Dictionary<Point2D, bool> { [new Point2D(1, 0)] = true },
             defaultState: false);
 
-        var prevEnumerator = renderer.GetGlyphEnumerator(topology, prevGeneration);
-        var currEnumerator = renderer.GetGlyphEnumerator(topology, currGeneration);
+        ColorNormalizedGlyphEnumerator prevEnumerator = renderer.GetGlyphEnumerator(topology, prevGeneration);
+        ColorNormalizedGlyphEnumerator currEnumerator = renderer.GetGlyphEnumerator(topology, currGeneration);
 
         StreamingDiff.Apply(ref prevEnumerator, ref currEnumerator, output, startRow: 1);
 
-        var result = output.ToString();
+        string result = output.ToString();
 
         // Should contain color codes for the changes
         Assert.Contains("\x1b[", result);
@@ -269,12 +269,12 @@ public class StreamingDiffTests
             new Dictionary<Point2D, bool>(),
             defaultState: false);
 
-        var prevEnumerator = renderer.GetGlyphEnumerator(prevTopology, prevGeneration);
-        var currEnumerator = renderer.GetGlyphEnumerator(currTopology, currGeneration);
+        ColorNormalizedGlyphEnumerator prevEnumerator = renderer.GetGlyphEnumerator(prevTopology, prevGeneration);
+        ColorNormalizedGlyphEnumerator currEnumerator = renderer.GetGlyphEnumerator(currTopology, currGeneration);
 
         StreamingDiff.Apply(ref prevEnumerator, ref currEnumerator, output, startRow: 1);
 
-        var result = output.ToString();
+        string result = output.ToString();
 
         // New cells beyond previous frame should be written
         Assert.Contains(".", result);
@@ -294,12 +294,12 @@ public class StreamingDiffTests
             defaultState: false);
 
         // Same generation twice
-        var prevEnumerator = renderer.GetGlyphEnumerator(topology, generation);
-        var currEnumerator = renderer.GetGlyphEnumerator(topology, generation);
+        ColorNormalizedGlyphEnumerator prevEnumerator = renderer.GetGlyphEnumerator(topology, generation);
+        ColorNormalizedGlyphEnumerator currEnumerator = renderer.GetGlyphEnumerator(topology, generation);
 
         StreamingDiff.Apply(ref prevEnumerator, ref currEnumerator, output, startRow: 1);
 
-        var result = output.ToString();
+        string result = output.ToString();
 
         // No output for identical frames
         Assert.Empty(result);
@@ -319,10 +319,10 @@ public class StreamingDiffTests
             new Dictionary<Point2D, bool> { [new Point2D(0, 0)] = true },
             defaultState: false);
 
-        var glyphEnumerator = renderer.GetGlyphEnumerator(topology, generation);
+        ColorNormalizedGlyphEnumerator glyphEnumerator = renderer.GetGlyphEnumerator(topology, generation);
         StreamingDiff.WriteFull(ref glyphEnumerator, output, startRow: 1);
 
-        var result = output.ToString();
+        string result = output.ToString();
 
         // Should contain the alive character
         Assert.Contains("#", result);
@@ -348,7 +348,7 @@ public class StreamingDiffTests
         // Pre-populate buffer with dummy data
         var frameBuffer = new List<Glyph> { new(null, 'X'), new(null, 'Y') };
 
-        var glyphEnumerator = renderer.GetGlyphEnumerator(topology, generation);
+        ColorNormalizedGlyphEnumerator glyphEnumerator = renderer.GetGlyphEnumerator(topology, generation);
         StreamingDiff.WriteFullAndCapture(ref glyphEnumerator, output, frameBuffer, startRow: 1);
 
         // Buffer should be cleared and only contain new glyphs (1 cell + newline = 2)
@@ -378,13 +378,13 @@ public class StreamingDiffTests
 
         // Capture initial larger frame
         var initialBuffer = new List<Glyph>();
-        var initialEnumerator = renderer.GetGlyphEnumerator(prevTopology, prevGeneration);
+        ColorNormalizedGlyphEnumerator initialEnumerator = renderer.GetGlyphEnumerator(prevTopology, prevGeneration);
         using var discardOutput = new StringWriter();
         StreamingDiff.WriteFullAndCapture(ref initialEnumerator, discardOutput, initialBuffer, startRow: 1);
 
         // Apply diff with smaller current frame
         var resultBuffer = new List<Glyph>();
-        var currEnumerator = renderer.GetGlyphEnumerator(currTopology, currGeneration);
+        ColorNormalizedGlyphEnumerator currEnumerator = renderer.GetGlyphEnumerator(currTopology, currGeneration);
         StreamingDiff.ApplyAndCapture(initialBuffer, ref currEnumerator, output, resultBuffer, startRow: 1);
 
         // Should handle gracefully
@@ -416,19 +416,19 @@ public class StreamingDiffTests
             },
             defaultState: false);
 
-        var prevEnumerator = renderer.GetGlyphEnumerator(topology, prevGeneration);
-        var currEnumerator = renderer.GetGlyphEnumerator(topology, currGeneration);
+        ColorNormalizedGlyphEnumerator prevEnumerator = renderer.GetGlyphEnumerator(topology, prevGeneration);
+        ColorNormalizedGlyphEnumerator currEnumerator = renderer.GetGlyphEnumerator(topology, currGeneration);
 
         StreamingDiff.Apply(ref prevEnumerator, ref currEnumerator, output, startRow: 1);
 
-        var result = output.ToString();
+        string result = output.ToString();
 
         // Should contain 3 alive characters
         Assert.Equal(3, result.Count(c => c == '#'));
 
         // Color code should appear only once (for the first cell)
         // Count color code sequences by counting escape character followed by '[' and 'm'
-        var colorCodeCount = CountAnsiColorCodes(result);
+        int colorCodeCount = CountAnsiColorCodes(result);
         Assert.Equal(1, colorCodeCount);
     }
 
@@ -504,11 +504,11 @@ public class StreamingDiffTests
         // Empty previous frame forces all cells to be written
         var emptyBuffer = new List<Glyph>();
         var frameBuffer = new List<Glyph>();
-        var currEnumerator = renderer.GetGlyphEnumerator(topology, generation);
+        ColorNormalizedGlyphEnumerator currEnumerator = renderer.GetGlyphEnumerator(topology, generation);
 
         StreamingDiff.ApplyAndCapture(emptyBuffer, ref currEnumerator, output, frameBuffer, startRow: 1);
 
-        var result = output.ToString();
+        string result = output.ToString();
 
         // Should contain 3 alive characters
         Assert.Equal(3, result.Count(c => c == '#'));
@@ -534,16 +534,16 @@ public class StreamingDiffTests
             },
             defaultState: false);
 
-        var glyphEnumerator = renderer.GetGlyphEnumerator(topology, generation);
+        ColorNormalizedGlyphEnumerator glyphEnumerator = renderer.GetGlyphEnumerator(topology, generation);
         StreamingDiff.WriteFull(ref glyphEnumerator, output, startRow: 1);
 
-        var result = output.ToString();
+        string result = output.ToString();
 
         // Should contain 3 alive characters
         Assert.Equal(3, result.Count(c => c == '#'));
 
         // Color code should appear only once
-        var colorCodeCount = CountAnsiColorCodes(result);
+        int colorCodeCount = CountAnsiColorCodes(result);
         Assert.Equal(1, colorCodeCount);
     }
 
@@ -572,15 +572,15 @@ public class StreamingDiffTests
             },
             defaultState: false);
 
-        var prevEnumerator = renderer.GetGlyphEnumerator(topology, prevGeneration);
-        var currEnumerator = renderer.GetGlyphEnumerator(topology, currGeneration);
+        ColorNormalizedGlyphEnumerator prevEnumerator = renderer.GetGlyphEnumerator(topology, prevGeneration);
+        ColorNormalizedGlyphEnumerator currEnumerator = renderer.GetGlyphEnumerator(topology, currGeneration);
 
         StreamingDiff.Apply(ref prevEnumerator, ref currEnumerator, output, startRow: 1);
 
-        var result = output.ToString();
+        string result = output.ToString();
 
         // Count cursor position sequences (e.g., \x1b[1;1H)
-        var cursorMoveCount = CountCursorPositionCodes(result);
+        int cursorMoveCount = CountCursorPositionCodes(result);
 
         // Should only have 1 cursor move (to first cell), not 3
         Assert.Equal(1, cursorMoveCount);

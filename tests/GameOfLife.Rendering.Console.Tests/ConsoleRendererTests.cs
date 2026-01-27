@@ -215,7 +215,7 @@ public class ConsoleRendererTests
             new Dictionary<Point2D, bool>(),
             defaultState: false);
 
-        var enumerator = renderer.GetTokenEnumerator(topology, generation);
+        TokenEnumerator enumerator = renderer.GetTokenEnumerator(topology, generation);
 
         // Should be able to enumerate tokens
         var tokens = new List<Token>();
@@ -241,7 +241,7 @@ public class ConsoleRendererTests
             defaultState: false);
 
         var viewport = new Viewport(3, 3, 10, 10);
-        var enumerator = renderer.GetTokenEnumerator(topology, generation, viewport);
+        TokenEnumerator enumerator = renderer.GetTokenEnumerator(topology, generation, viewport);
 
         // Should be able to enumerate tokens
         var tokens = new List<Token>();
@@ -266,7 +266,7 @@ public class ConsoleRendererTests
             new Dictionary<Point2D, bool> { [new Point2D(0, 0)] = true },
             defaultState: false);
 
-        var enumerator = renderer.GetGlyphEnumerator(topology, generation);
+        ColorNormalizedGlyphEnumerator enumerator = renderer.GetGlyphEnumerator(topology, generation);
 
         // Should be able to enumerate glyphs
         var glyphs = new List<Glyph>();
@@ -294,7 +294,7 @@ public class ConsoleRendererTests
             defaultState: false);
 
         var viewport = new Viewport(3, 3, 10, 10);
-        var enumerator = renderer.GetGlyphEnumerator(topology, generation, viewport);
+        ColorNormalizedGlyphEnumerator enumerator = renderer.GetGlyphEnumerator(topology, generation, viewport);
 
         // Should be able to enumerate glyphs
         var glyphs = new List<Glyph>();
@@ -319,7 +319,7 @@ public class ConsoleRendererTests
             new Dictionary<Point2D, bool> { [new Point2D(0, 0)] = true },
             defaultState: false);
 
-        var result = renderer.RenderToString(topology, generation);
+        string result = renderer.RenderToString(topology, generation);
 
         // Should contain ANSI escape sequences
         Assert.Contains("\x1b[", result);
@@ -342,7 +342,7 @@ public class ConsoleRendererTests
             new Dictionary<Point2D, bool>(),
             defaultState: false);
 
-        var result = renderer.RenderToString(topology, generation);
+        string result = renderer.RenderToString(topology, generation);
 
         // Should contain border characters
         Assert.Contains("╔", result);
@@ -358,14 +358,14 @@ public class ConsoleRendererTests
     {
         using var output = new StringWriter();
         var engine = new IdentityLayoutEngine();
-        var theme = ConsoleTheme.Default;
+        ConsoleTheme theme = ConsoleTheme.Default;
         var renderer = new ConsoleRenderer(output, engine, theme);
 
         var generation = new DictionaryGeneration<Point2D, bool>(
             new Dictionary<Point2D, bool>(),
             defaultState: false);
 
-        Assert.Throws<ArgumentNullException>(() => renderer.GetTokenEnumerator(null!, generation));
+        _ = Assert.Throws<ArgumentNullException>(() => renderer.GetTokenEnumerator(null!, generation));
     }
 
     [Fact]
@@ -373,11 +373,11 @@ public class ConsoleRendererTests
     {
         using var output = new StringWriter();
         var engine = new IdentityLayoutEngine();
-        var theme = ConsoleTheme.Default;
+        ConsoleTheme theme = ConsoleTheme.Default;
         var renderer = new ConsoleRenderer(output, engine, theme);
 
         var topology = new Grid2DTopology(3, 3);
 
-        Assert.Throws<ArgumentNullException>(() => renderer.GetTokenEnumerator(topology, null!));
+        _ = Assert.Throws<ArgumentNullException>(() => renderer.GetTokenEnumerator(topology, null!));
     }
 }
