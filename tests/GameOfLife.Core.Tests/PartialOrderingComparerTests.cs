@@ -5,8 +5,8 @@ public class PartialOrderingComparerTests
     [Fact]
     public void IsLessThan_BothDimensionsLess_ReturnsTrue()
     {
-        var a = new Point2D(1, 2);
-        var b = new Point2D(3, 4);
+        Point2D a = (1, 2);
+        Point2D b = (3, 4);
 
         Assert.True(a.IsLessThan(b));
     }
@@ -14,8 +14,8 @@ public class PartialOrderingComparerTests
     [Fact]
     public void IsLessThan_OneDimensionEqual_ReturnsFalse()
     {
-        var a = new Point2D(3, 2);
-        var b = new Point2D(3, 4);
+        Point2D a = (3, 2);
+        Point2D b = (3, 4);
 
         Assert.False(a.IsLessThan(b));
     }
@@ -23,8 +23,8 @@ public class PartialOrderingComparerTests
     [Fact]
     public void IsLessThan_OneDimensionGreater_ReturnsFalse()
     {
-        var a = new Point2D(5, 2);
-        var b = new Point2D(3, 4);
+        Point2D a = (5, 2);
+        Point2D b = (3, 4);
 
         Assert.False(a.IsLessThan(b));
     }
@@ -32,8 +32,8 @@ public class PartialOrderingComparerTests
     [Fact]
     public void IsLessThanOrEqualTo_BothDimensionsLess_ReturnsTrue()
     {
-        var a = new Point2D(1, 2);
-        var b = new Point2D(3, 4);
+        Point2D a = (1, 2);
+        Point2D b = (3, 4);
 
         Assert.True(a.IsLessThanOrEqualTo(b));
     }
@@ -41,8 +41,8 @@ public class PartialOrderingComparerTests
     [Fact]
     public void IsLessThanOrEqualTo_BothDimensionsEqual_ReturnsTrue()
     {
-        var a = new Point2D(3, 4);
-        var b = new Point2D(3, 4);
+        Point2D a = (3, 4);
+        Point2D b = (3, 4);
 
         Assert.True(a.IsLessThanOrEqualTo(b));
     }
@@ -50,8 +50,8 @@ public class PartialOrderingComparerTests
     [Fact]
     public void IsLessThanOrEqualTo_OneDimensionGreater_ReturnsFalse()
     {
-        var a = new Point2D(5, 2);
-        var b = new Point2D(3, 4);
+        Point2D a = (5, 2);
+        Point2D b = (3, 4);
 
         Assert.False(a.IsLessThanOrEqualTo(b));
     }
@@ -59,8 +59,8 @@ public class PartialOrderingComparerTests
     [Fact]
     public void IsGreaterThan_BothDimensionsGreater_ReturnsTrue()
     {
-        var a = new Point2D(5, 6);
-        var b = new Point2D(3, 4);
+        Point2D a = (5, 6);
+        Point2D b = (3, 4);
 
         Assert.True(a.IsGreaterThan(b));
     }
@@ -68,8 +68,8 @@ public class PartialOrderingComparerTests
     [Fact]
     public void IsGreaterThan_OneDimensionEqual_ReturnsFalse()
     {
-        var a = new Point2D(3, 6);
-        var b = new Point2D(3, 4);
+        Point2D a = (3, 6);
+        Point2D b = (3, 4);
 
         Assert.False(a.IsGreaterThan(b));
     }
@@ -77,8 +77,8 @@ public class PartialOrderingComparerTests
     [Fact]
     public void IsGreaterThan_OneDimensionLess_ReturnsFalse()
     {
-        var a = new Point2D(5, 2);
-        var b = new Point2D(3, 4);
+        Point2D a = (5, 2);
+        Point2D b = (3, 4);
 
         Assert.False(a.IsGreaterThan(b));
     }
@@ -86,8 +86,8 @@ public class PartialOrderingComparerTests
     [Fact]
     public void IsGreaterThanOrEqualTo_BothDimensionsGreater_ReturnsTrue()
     {
-        var a = new Point2D(5, 6);
-        var b = new Point2D(3, 4);
+        Point2D a = (5, 6);
+        Point2D b = (3, 4);
 
         Assert.True(a.IsGreaterThanOrEqualTo(b));
     }
@@ -95,8 +95,8 @@ public class PartialOrderingComparerTests
     [Fact]
     public void IsGreaterThanOrEqualTo_BothDimensionsEqual_ReturnsTrue()
     {
-        var a = new Point2D(3, 4);
-        var b = new Point2D(3, 4);
+        Point2D a = (3, 4);
+        Point2D b = (3, 4);
 
         Assert.True(a.IsGreaterThanOrEqualTo(b));
     }
@@ -104,8 +104,8 @@ public class PartialOrderingComparerTests
     [Fact]
     public void IsGreaterThanOrEqualTo_OneDimensionLess_ReturnsFalse()
     {
-        var a = new Point2D(5, 2);
-        var b = new Point2D(3, 4);
+        Point2D a = (5, 2);
+        Point2D b = (3, 4);
 
         Assert.False(a.IsGreaterThanOrEqualTo(b));
     }
@@ -113,7 +113,7 @@ public class PartialOrderingComparerTests
     [Fact]
     public void IsInBounds_PointInsideBounds_ReturnsTrue()
     {
-        var point = new Point2D(5, 5);
+        Point2D point = (5, 5);
         var size = new Size2D(10, 10);
 
         Assert.True(point.IsInBounds(size));
@@ -122,7 +122,7 @@ public class PartialOrderingComparerTests
     [Fact]
     public void IsInBounds_PointAtOrigin_ReturnsTrue()
     {
-        var point = new Point2D(0, 0);
+        Point2D point = default;
         var size = new Size2D(10, 10);
 
         Assert.True(point.IsInBounds(size));
@@ -132,7 +132,7 @@ public class PartialOrderingComparerTests
     public void IsInBounds_PointAtMaxBoundary_ReturnsFalse()
     {
         // Bounds are [0, size), so size itself is out of bounds
-        var point = new Point2D(10, 10);
+        Point2D point = (10, 10);
         var size = new Size2D(10, 10);
 
         Assert.False(point.IsInBounds(size));
@@ -141,7 +141,7 @@ public class PartialOrderingComparerTests
     [Fact]
     public void IsInBounds_PointJustInsideMaxBoundary_ReturnsTrue()
     {
-        var point = new Point2D(9, 9);
+        Point2D point = (9, 9);
         var size = new Size2D(10, 10);
 
         Assert.True(point.IsInBounds(size));
@@ -150,7 +150,7 @@ public class PartialOrderingComparerTests
     [Fact]
     public void IsInBounds_NegativeX_ReturnsFalse()
     {
-        var point = new Point2D(-1, 5);
+        Point2D point = (-1, 5);
         var size = new Size2D(10, 10);
 
         Assert.False(point.IsInBounds(size));
@@ -159,7 +159,7 @@ public class PartialOrderingComparerTests
     [Fact]
     public void IsInBounds_NegativeY_ReturnsFalse()
     {
-        var point = new Point2D(5, -1);
+        Point2D point = (5, -1);
         var size = new Size2D(10, 10);
 
         Assert.False(point.IsInBounds(size));
@@ -168,7 +168,7 @@ public class PartialOrderingComparerTests
     [Fact]
     public void IsInBounds_XOutOfBounds_ReturnsFalse()
     {
-        var point = new Point2D(15, 5);
+        Point2D point = (15, 5);
         var size = new Size2D(10, 10);
 
         Assert.False(point.IsInBounds(size));
@@ -177,7 +177,7 @@ public class PartialOrderingComparerTests
     [Fact]
     public void IsInBounds_YOutOfBounds_ReturnsFalse()
     {
-        var point = new Point2D(5, 15);
+        Point2D point = (5, 15);
         var size = new Size2D(10, 10);
 
         Assert.False(point.IsInBounds(size));

@@ -81,7 +81,7 @@ internal sealed class ShapeLoader
             {
                 if (line[x] == '#')
                 {
-                    positions.Add(new Point2D(x, y));
+                    positions.Add((x, y));
                 }
             }
         }

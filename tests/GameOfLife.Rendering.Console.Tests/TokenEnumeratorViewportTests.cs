@@ -373,10 +373,10 @@ public class TokenEnumeratorViewportTests
         // Put alive cells in a specific pattern
         var states = new Dictionary<Point2D, bool>
         {
-            [new Point2D(2, 2)] = true,
-            [new Point2D(3, 2)] = true,
-            [new Point2D(4, 2)] = true,
-            [new Point2D(7, 7)] = true,
+            [(2, 2)] = true,
+            [(3, 2)] = true,
+            [(4, 2)] = true,
+            [(7, 7)] = true,
         };
         using var generation = new DictionaryGeneration<Point2D, bool>(states, false);
         var theme = new ConsoleTheme(AliveChar: '#', DeadChar: '.', ShowBorder: false);

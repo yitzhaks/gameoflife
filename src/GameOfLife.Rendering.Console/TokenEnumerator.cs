@@ -303,7 +303,7 @@ public ref struct TokenEnumerator
     private bool MoveNextCellColor()
     {
         // Determine the color for the current cell
-        var point = new Point2D(_x, _y);
+        Point2D point = (_x, _y);
         AnsiSequence targetColor;
 
         if (_nodeSet.Contains(point))
@@ -330,7 +330,7 @@ public ref struct TokenEnumerator
 
     private bool MoveNextCellChar()
     {
-        var point = new Point2D(_x, _y);
+        Point2D point = (_x, _y);
         char character;
 
         if (_nodeSet.Contains(point))

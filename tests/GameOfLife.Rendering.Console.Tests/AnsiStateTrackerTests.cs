@@ -19,8 +19,8 @@ public class AnsiStateTrackerTests
         // Two alive cells in a row
         var states = new Dictionary<Point2D, bool>
         {
-            [new Point2D(0, 0)] = true,
-            [new Point2D(1, 0)] = true
+            [default] = true,
+            [(1, 0)] = true
         };
         using var generation = new DictionaryGeneration<Point2D, bool>(states, defaultState: false);
 
@@ -50,7 +50,7 @@ public class AnsiStateTrackerTests
         // First dead, second alive
         var states = new Dictionary<Point2D, bool>
         {
-            [new Point2D(1, 0)] = true
+            [(1, 0)] = true
         };
         using var generation = new DictionaryGeneration<Point2D, bool>(states, defaultState: false);
 
@@ -112,9 +112,9 @@ public class AnsiStateTrackerTests
         // All cells alive - color should persist
         var states = new Dictionary<Point2D, bool>
         {
-            [new Point2D(0, 0)] = true,
-            [new Point2D(1, 0)] = true,
-            [new Point2D(2, 0)] = true
+            [default] = true,
+            [(1, 0)] = true,
+            [(2, 0)] = true
         };
         using var generation = new DictionaryGeneration<Point2D, bool>(states, defaultState: false);
 
@@ -146,9 +146,9 @@ public class AnsiStateTrackerTests
         // Pattern: alive, dead, alive, dead, alive (5 color transitions)
         var states = new Dictionary<Point2D, bool>
         {
-            [new Point2D(0, 0)] = true,
-            [new Point2D(2, 0)] = true,
-            [new Point2D(4, 0)] = true
+            [default] = true,
+            [(2, 0)] = true,
+            [(4, 0)] = true
         };
         using var generation = new DictionaryGeneration<Point2D, bool>(states, defaultState: false);
 

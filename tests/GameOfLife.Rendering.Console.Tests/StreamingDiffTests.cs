@@ -72,7 +72,7 @@ public class StreamingDiffTests
 
         // Current: center cell alive
         using var currGeneration = new DictionaryGeneration<Point2D, bool>(
-            new Dictionary<Point2D, bool> { [new Point2D(1, 1)] = true },
+            new Dictionary<Point2D, bool> { [(1, 1)] = true },
             defaultState: false);
 
         ColorNormalizedGlyphEnumerator prevEnumerator = renderer.GetGlyphEnumerator(topology, prevGeneration);
@@ -142,7 +142,7 @@ public class StreamingDiffTests
 
         // Current: alive
         using var currGeneration = new DictionaryGeneration<Point2D, bool>(
-            new Dictionary<Point2D, bool> { [new Point2D(0, 0)] = true },
+            new Dictionary<Point2D, bool> { [default] = true },
             defaultState: false);
 
         ColorNormalizedGlyphEnumerator prevEnumerator = renderer.GetGlyphEnumerator(topology, prevGeneration);
@@ -167,7 +167,7 @@ public class StreamingDiffTests
 
         var topology = new RectangularTopology((2, 2));
         using var generation = new DictionaryGeneration<Point2D, bool>(
-            new Dictionary<Point2D, bool> { [new Point2D(0, 0)] = true },
+            new Dictionary<Point2D, bool> { [default] = true },
             defaultState: false);
 
         var frameBuffer = new FrameBuffer(100);
@@ -197,7 +197,7 @@ public class StreamingDiffTests
 
         // Current: one alive
         using var currGeneration = new DictionaryGeneration<Point2D, bool>(
-            new Dictionary<Point2D, bool> { [new Point2D(1, 1)] = true },
+            new Dictionary<Point2D, bool> { [(1, 1)] = true },
             defaultState: false);
 
         // Capture initial frame
@@ -230,12 +230,12 @@ public class StreamingDiffTests
 
         // Previous: first alive, second dead
         using var prevGeneration = new DictionaryGeneration<Point2D, bool>(
-            new Dictionary<Point2D, bool> { [new Point2D(0, 0)] = true },
+            new Dictionary<Point2D, bool> { [default] = true },
             defaultState: false);
 
         // Current: first dead, second alive (color change for both)
         using var currGeneration = new DictionaryGeneration<Point2D, bool>(
-            new Dictionary<Point2D, bool> { [new Point2D(1, 0)] = true },
+            new Dictionary<Point2D, bool> { [(1, 0)] = true },
             defaultState: false);
 
         ColorNormalizedGlyphEnumerator prevEnumerator = renderer.GetGlyphEnumerator(topology, prevGeneration);
@@ -316,7 +316,7 @@ public class StreamingDiffTests
         var topology = new RectangularTopology((2, 1));
         // One alive, one dead - different colors
         using var generation = new DictionaryGeneration<Point2D, bool>(
-            new Dictionary<Point2D, bool> { [new Point2D(0, 0)] = true },
+            new Dictionary<Point2D, bool> { [default] = true },
             defaultState: false);
 
         ColorNormalizedGlyphEnumerator glyphEnumerator = renderer.GetGlyphEnumerator(topology, generation);
@@ -390,7 +390,7 @@ public class StreamingDiffTests
         // Current: 1x1 (smaller)
         var currTopology = new RectangularTopology((1, 1));
         using var currGeneration = new DictionaryGeneration<Point2D, bool>(
-            new Dictionary<Point2D, bool> { [new Point2D(0, 0)] = true },
+            new Dictionary<Point2D, bool> { [default] = true },
             defaultState: false);
 
         // Capture initial larger frame
@@ -427,9 +427,9 @@ public class StreamingDiffTests
         using var currGeneration = new DictionaryGeneration<Point2D, bool>(
             new Dictionary<Point2D, bool>
             {
-                [new Point2D(0, 0)] = true,
-                [new Point2D(1, 0)] = true,
-                [new Point2D(2, 0)] = true
+                [default] = true,
+                [(1, 0)] = true,
+                [(2, 0)] = true
             },
             defaultState: false);
 
@@ -512,9 +512,9 @@ public class StreamingDiffTests
         using var generation = new DictionaryGeneration<Point2D, bool>(
             new Dictionary<Point2D, bool>
             {
-                [new Point2D(0, 0)] = true,
-                [new Point2D(1, 0)] = true,
-                [new Point2D(2, 0)] = true
+                [default] = true,
+                [(1, 0)] = true,
+                [(2, 0)] = true
             },
             defaultState: false);
 
@@ -545,9 +545,9 @@ public class StreamingDiffTests
         using var generation = new DictionaryGeneration<Point2D, bool>(
             new Dictionary<Point2D, bool>
             {
-                [new Point2D(0, 0)] = true,
-                [new Point2D(1, 0)] = true,
-                [new Point2D(2, 0)] = true
+                [default] = true,
+                [(1, 0)] = true,
+                [(2, 0)] = true
             },
             defaultState: false);
 
@@ -583,9 +583,9 @@ public class StreamingDiffTests
         using var currGeneration = new DictionaryGeneration<Point2D, bool>(
             new Dictionary<Point2D, bool>
             {
-                [new Point2D(0, 0)] = true,
-                [new Point2D(1, 0)] = true,
-                [new Point2D(2, 0)] = true
+                [default] = true,
+                [(1, 0)] = true,
+                [(2, 0)] = true
             },
             defaultState: false);
 
@@ -623,7 +623,7 @@ public class StreamingDiffTests
 
         // Second frame: only cell at (1,1) is alive (second row, middle column)
         using var currGeneration = new DictionaryGeneration<Point2D, bool>(
-            new Dictionary<Point2D, bool> { [new Point2D(1, 1)] = true },
+            new Dictionary<Point2D, bool> { [(1, 1)] = true },
             defaultState: false);
 
         // Capture first frame

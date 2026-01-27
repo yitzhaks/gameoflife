@@ -42,7 +42,7 @@ public class GlyphReaderTests
         var renderer = new ConsoleRenderer(output, engine, theme);
 
         var topology = new RectangularTopology((1, 1));
-        var states = new Dictionary<Point2D, bool> { [new Point2D(0, 0)] = true };
+        var states = new Dictionary<Point2D, bool> { [default] = true };
         using var generation = new DictionaryGeneration<Point2D, bool>(states, defaultState: false);
 
         TokenEnumerator tokenEnumerator = renderer.GetTokenEnumerator(topology, generation);
@@ -99,7 +99,7 @@ public class GlyphReaderTests
 
         var topology = new RectangularTopology((2, 1));
         // First cell dead, second cell alive
-        var states = new Dictionary<Point2D, bool> { [new Point2D(1, 0)] = true };
+        var states = new Dictionary<Point2D, bool> { [(1, 0)] = true };
         using var generation = new DictionaryGeneration<Point2D, bool>(states, defaultState: false);
 
         TokenEnumerator tokenEnumerator = renderer.GetTokenEnumerator(topology, generation);
@@ -128,9 +128,9 @@ public class GlyphReaderTests
         // All three cells alive - same color
         var states = new Dictionary<Point2D, bool>
         {
-            [new Point2D(0, 0)] = true,
-            [new Point2D(1, 0)] = true,
-            [new Point2D(2, 0)] = true
+            [default] = true,
+            [(1, 0)] = true,
+            [(2, 0)] = true
         };
         using var generation = new DictionaryGeneration<Point2D, bool>(states, defaultState: false);
 
@@ -161,8 +161,8 @@ public class GlyphReaderTests
         // Alternating alive/dead pattern
         var states = new Dictionary<Point2D, bool>
         {
-            [new Point2D(0, 0)] = true,  // alive
-            [new Point2D(2, 0)] = true   // alive
+            [default] = true,  // alive
+            [(2, 0)] = true   // alive
         };
         using var generation = new DictionaryGeneration<Point2D, bool>(states, defaultState: false);
 

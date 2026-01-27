@@ -36,8 +36,8 @@ public class IdentityLayoutEngineTests
 
         ILayout<Point2D, Point2D, RectangularBounds> layout = engine.CreateLayout(topology);
 
-        Assert.Equal(new Point2D(0, 0), layout.Bounds.Min);
-        Assert.Equal(new Point2D(2, 2), layout.Bounds.Max);
+        Assert.Equal(default, layout.Bounds.Min);
+        Assert.Equal((2, 2), layout.Bounds.Max);
     }
 
     [Fact]
@@ -48,7 +48,7 @@ public class IdentityLayoutEngineTests
 
         ILayout<Point2D, Point2D, RectangularBounds> layout = engine.CreateLayout(topology);
 
-        var testPoint = new Point2D(1, 2);
+        Point2D testPoint = (1, 2);
         Assert.Equal(testPoint, layout.Positions[testPoint]);
     }
 
@@ -60,7 +60,7 @@ public class IdentityLayoutEngineTests
 
         ILayout<Point2D, Point2D, RectangularBounds> layout = engine.CreateLayout(topology);
 
-        _ = Assert.Throws<KeyNotFoundException>(() => layout.Positions[new Point2D(10, 10)]);
+        _ = Assert.Throws<KeyNotFoundException>(() => layout.Positions[(10, 10)]);
     }
 
     [Fact]
@@ -81,9 +81,9 @@ public class IdentityLayoutEngineTests
         var nodes = layout.EnumerateNodes(comparer).ToList();
 
         Assert.Equal(9, nodes.Count);
-        Assert.Equal(new Point2D(0, 0), nodes[0]);
-        Assert.Equal(new Point2D(1, 0), nodes[1]);
-        Assert.Equal(new Point2D(2, 0), nodes[2]);
-        Assert.Equal(new Point2D(0, 1), nodes[3]);
+        Assert.Equal(default, nodes[0]);
+        Assert.Equal((1, 0), nodes[1]);
+        Assert.Equal((2, 0), nodes[2]);
+        Assert.Equal((0, 1), nodes[3]);
     }
 }

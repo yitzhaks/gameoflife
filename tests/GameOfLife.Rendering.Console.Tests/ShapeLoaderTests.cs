@@ -15,11 +15,11 @@ public class ShapeLoaderTests
         IReadOnlyList<Point2D> points = ShapeLoader.ParsePattern(pattern);
 
         Assert.Equal(5, points.Count);
-        Assert.Contains(new Point2D(1, 0), points);
-        Assert.Contains(new Point2D(2, 1), points);
-        Assert.Contains(new Point2D(0, 2), points);
-        Assert.Contains(new Point2D(1, 2), points);
-        Assert.Contains(new Point2D(2, 2), points);
+        Assert.Contains((1, 0), points);
+        Assert.Contains((2, 1), points);
+        Assert.Contains((0, 2), points);
+        Assert.Contains((1, 2), points);
+        Assert.Contains((2, 2), points);
     }
 
     [Fact]
@@ -30,10 +30,10 @@ public class ShapeLoaderTests
         IReadOnlyList<Point2D> points = ShapeLoader.ParsePattern(pattern);
 
         Assert.Equal(4, points.Count);
-        Assert.Contains(new Point2D(0, 0), points);
-        Assert.Contains(new Point2D(1, 0), points);
-        Assert.Contains(new Point2D(0, 1), points);
-        Assert.Contains(new Point2D(1, 1), points);
+        Assert.Contains(default, points);
+        Assert.Contains((1, 0), points);
+        Assert.Contains((0, 1), points);
+        Assert.Contains((1, 1), points);
     }
 
     [Fact]
@@ -44,9 +44,9 @@ public class ShapeLoaderTests
         IReadOnlyList<Point2D> points = ShapeLoader.ParsePattern(pattern);
 
         Assert.Equal(3, points.Count);
-        Assert.Contains(new Point2D(0, 0), points);
-        Assert.Contains(new Point2D(1, 0), points);
-        Assert.Contains(new Point2D(2, 0), points);
+        Assert.Contains(default, points);
+        Assert.Contains((1, 0), points);
+        Assert.Contains((2, 0), points);
     }
 
     [Fact]
@@ -67,7 +67,7 @@ public class ShapeLoaderTests
         IReadOnlyList<Point2D> points = ShapeLoader.ParsePattern(pattern);
 
         _ = Assert.Single(points);
-        Assert.Equal(new Point2D(0, 0), points[0]);
+        Assert.Equal(default, points[0]);
     }
 
     [Fact]
@@ -78,7 +78,7 @@ public class ShapeLoaderTests
         IReadOnlyList<Point2D> points = ShapeLoader.ParsePattern(pattern);
 
         Assert.Equal(5, points.Count);
-        Assert.Contains(new Point2D(1, 0), points);
+        Assert.Contains((1, 0), points);
     }
 
     [Fact]
@@ -192,11 +192,11 @@ public class ShapeLoaderTests
             IReadOnlyList<Point2D> points = loader.LoadPattern("glider");
 
             Assert.Equal(5, points.Count);
-            Assert.Contains(new Point2D(1, 0), points);
-            Assert.Contains(new Point2D(2, 1), points);
-            Assert.Contains(new Point2D(0, 2), points);
-            Assert.Contains(new Point2D(1, 2), points);
-            Assert.Contains(new Point2D(2, 2), points);
+            Assert.Contains((1, 0), points);
+            Assert.Contains((2, 1), points);
+            Assert.Contains((0, 2), points);
+            Assert.Contains((1, 2), points);
+            Assert.Contains((2, 2), points);
         }
         finally
         {

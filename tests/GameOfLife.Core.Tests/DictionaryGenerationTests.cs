@@ -64,15 +64,15 @@ public class DictionaryGenerationTests
     {
         var states = new Dictionary<Point2D, bool>
         {
-            [new Point2D(0, 0)] = true,
-            [new Point2D(1, 1)] = false,
-            [new Point2D(2, 3)] = true
+            [default] = true,
+            [(1, 1)] = false,
+            [(2, 3)] = true
         };
         using var generation = new DictionaryGeneration<Point2D, bool>(states, defaultState: false);
 
-        Assert.True(generation[new Point2D(0, 0)]);
-        Assert.False(generation[new Point2D(1, 1)]);
-        Assert.True(generation[new Point2D(2, 3)]);
+        Assert.True(generation[default]);
+        Assert.False(generation[(1, 1)]);
+        Assert.True(generation[(2, 3)]);
     }
 
     [Fact]
@@ -80,11 +80,11 @@ public class DictionaryGenerationTests
     {
         var states = new Dictionary<Point2D, bool>
         {
-            [new Point2D(0, 0)] = true
+            [default] = true
         };
         using var generation = new DictionaryGeneration<Point2D, bool>(states, defaultState: false);
 
-        Assert.False(generation[new Point2D(99, 99)]); // Node not in dictionary
+        Assert.False(generation[(99, 99)]); // Node not in dictionary
     }
 
     [Fact]
@@ -92,12 +92,12 @@ public class DictionaryGenerationTests
     {
         var states = new Dictionary<Point2D, bool>
         {
-            [new Point2D(-1, -2)] = true
+            [(-1, -2)] = true
         };
         using var generation = new DictionaryGeneration<Point2D, bool>(states, defaultState: false);
 
-        Assert.True(generation[new Point2D(-1, -2)]);
-        Assert.False(generation[new Point2D(-1, -3)]); // Different coordinate, should return default
+        Assert.True(generation[(-1, -2)]);
+        Assert.False(generation[(-1, -3)]); // Different coordinate, should return default
     }
 
     #endregion

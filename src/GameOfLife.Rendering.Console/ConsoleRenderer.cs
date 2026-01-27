@@ -88,7 +88,7 @@ public sealed class ConsoleRenderer : IRenderer<RectangularTopology, Point2D, Po
                     // When using colors, we need to write character by character
                     for (int x = bounds.Min.X; x <= bounds.Max.X; x++)
                     {
-                        var point = new Point2D(x, y);
+                        Point2D point = (x, y);
                         if (nodeSet.Contains(point))
                         {
                             bool isAlive = generation[point];
@@ -108,7 +108,7 @@ public sealed class ConsoleRenderer : IRenderer<RectangularTopology, Point2D, Po
                     var rowBuilder = new StringBuilder();
                     for (int x = bounds.Min.X; x <= bounds.Max.X; x++)
                     {
-                        var point = new Point2D(x, y);
+                        Point2D point = (x, y);
                         if (nodeSet.Contains(point))
                         {
                             bool isAlive = generation[point];

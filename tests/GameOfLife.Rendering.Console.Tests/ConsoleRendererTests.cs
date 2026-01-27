@@ -68,11 +68,11 @@ public class ConsoleRendererTests
         // ###
         var states = new Dictionary<Point2D, bool>
         {
-            [new Point2D(1, 0)] = true,
-            [new Point2D(2, 1)] = true,
-            [new Point2D(0, 2)] = true,
-            [new Point2D(1, 2)] = true,
-            [new Point2D(2, 2)] = true
+            [(1, 0)] = true,
+            [(2, 1)] = true,
+            [(0, 2)] = true,
+            [(1, 2)] = true,
+            [(2, 2)] = true
         };
 
         using var generation = new DictionaryGeneration<Point2D, bool>(states, defaultState: false);
@@ -98,8 +98,8 @@ public class ConsoleRendererTests
         var topology = new RectangularTopology((2, 2));
         var states = new Dictionary<Point2D, bool>
         {
-            [new Point2D(0, 0)] = true,
-            [new Point2D(1, 1)] = true
+            [default] = true,
+            [(1, 1)] = true
         };
 
         using var generation = new DictionaryGeneration<Point2D, bool>(states, defaultState: false);
@@ -124,8 +124,8 @@ public class ConsoleRendererTests
         var topology = new RectangularTopology((3, 2));
         var states = new Dictionary<Point2D, bool>
         {
-            [new Point2D(1, 0)] = true,
-            [new Point2D(1, 1)] = true
+            [(1, 0)] = true,
+            [(1, 1)] = true
         };
 
         using var generation = new DictionaryGeneration<Point2D, bool>(states, defaultState: false);
@@ -263,7 +263,7 @@ public class ConsoleRendererTests
 
         var topology = new RectangularTopology((2, 2));
         using var generation = new DictionaryGeneration<Point2D, bool>(
-            new Dictionary<Point2D, bool> { [new Point2D(0, 0)] = true },
+            new Dictionary<Point2D, bool> { [default] = true },
             defaultState: false);
 
         ColorNormalizedGlyphEnumerator enumerator = renderer.GetGlyphEnumerator(topology, generation);
@@ -316,7 +316,7 @@ public class ConsoleRendererTests
 
         var topology = new RectangularTopology((2, 2));
         using var generation = new DictionaryGeneration<Point2D, bool>(
-            new Dictionary<Point2D, bool> { [new Point2D(0, 0)] = true },
+            new Dictionary<Point2D, bool> { [default] = true },
             defaultState: false);
 
         string result = renderer.RenderToString(topology, generation);
