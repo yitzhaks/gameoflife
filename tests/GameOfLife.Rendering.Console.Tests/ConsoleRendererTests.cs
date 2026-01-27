@@ -201,4 +201,183 @@ public class ConsoleRendererTests
 
         Assert.Throws<ArgumentNullException>(() => renderer.Render(topology, null!));
     }
+
+    [Fact]
+    public void GetTokenEnumerator_WithoutViewport_ReturnsValidEnumerator()
+    {
+        using var output = new StringWriter();
+        var engine = new IdentityLayoutEngine();
+        var theme = new ConsoleTheme(AliveChar: '#', DeadChar: '.', ShowBorder: false);
+        var renderer = new ConsoleRenderer(output, engine, theme);
+
+        var topology = new Grid2DTopology(2, 2);
+        var generation = new DictionaryGeneration<Point2D, bool>(
+            new Dictionary<Point2D, bool>(),
+            defaultState: false);
+
+        var enumerator = renderer.GetTokenEnumerator(topology, generation);
+
+        // Should be able to enumerate tokens
+        var tokens = new List<Token>();
+        while (enumerator.MoveNext())
+        {
+            tokens.Add(enumerator.Current);
+        }
+
+        Assert.NotEmpty(tokens);
+    }
+
+    [Fact]
+    public void GetTokenEnumerator_WithViewport_ReturnsViewportBoundEnumerator()
+    {
+        using var output = new StringWriter();
+        var engine = new IdentityLayoutEngine();
+        var theme = new ConsoleTheme(AliveChar: '#', DeadChar: '.', ShowBorder: false);
+        var renderer = new ConsoleRenderer(output, engine, theme);
+
+        var topology = new Grid2DTopology(10, 10);
+        var generation = new DictionaryGeneration<Point2D, bool>(
+            new Dictionary<Point2D, bool>(),
+            defaultState: false);
+
+        var viewport = new Viewport(3, 3, 10, 10);
+        var enumerator = renderer.GetTokenEnumerator(topology, generation, viewport);
+
+        // Should be able to enumerate tokens
+        var tokens = new List<Token>();
+        while (enumerator.MoveNext())
+        {
+            tokens.Add(enumerator.Current);
+        }
+
+        Assert.NotEmpty(tokens);
+    }
+
+    [Fact]
+    public void GetGlyphEnumerator_ReturnsColorNormalizedEnumerator()
+    {
+        using var output = new StringWriter();
+        var engine = new IdentityLayoutEngine();
+        var theme = new ConsoleTheme(AliveChar: '#', DeadChar: '.', ShowBorder: false);
+        var renderer = new ConsoleRenderer(output, engine, theme);
+
+        var topology = new Grid2DTopology(2, 2);
+        var generation = new DictionaryGeneration<Point2D, bool>(
+            new Dictionary<Point2D, bool> { [new Point2D(0, 0)] = true },
+            defaultState: false);
+
+        var enumerator = renderer.GetGlyphEnumerator(topology, generation);
+
+        // Should be able to enumerate glyphs
+        var glyphs = new List<Glyph>();
+        while (enumerator.MoveNext())
+        {
+            glyphs.Add(enumerator.Current);
+        }
+
+        Assert.NotEmpty(glyphs);
+        // First glyph should have a color (alive cell)
+        Assert.True(glyphs[0].Color.HasValue);
+    }
+
+    [Fact]
+    public void GetGlyphEnumerator_WithViewport_ReturnsViewportBoundEnumerator()
+    {
+        using var output = new StringWriter();
+        var engine = new IdentityLayoutEngine();
+        var theme = new ConsoleTheme(AliveChar: '#', DeadChar: '.', ShowBorder: false);
+        var renderer = new ConsoleRenderer(output, engine, theme);
+
+        var topology = new Grid2DTopology(10, 10);
+        var generation = new DictionaryGeneration<Point2D, bool>(
+            new Dictionary<Point2D, bool>(),
+            defaultState: false);
+
+        var viewport = new Viewport(3, 3, 10, 10);
+        var enumerator = renderer.GetGlyphEnumerator(topology, generation, viewport);
+
+        // Should be able to enumerate glyphs
+        var glyphs = new List<Glyph>();
+        while (enumerator.MoveNext())
+        {
+            glyphs.Add(enumerator.Current);
+        }
+
+        Assert.NotEmpty(glyphs);
+    }
+
+    [Fact]
+    public void RenderToString_ProducesAnsiOutput()
+    {
+        using var output = new StringWriter();
+        var engine = new IdentityLayoutEngine();
+        var theme = new ConsoleTheme(AliveChar: '#', DeadChar: '.', ShowBorder: false);
+        var renderer = new ConsoleRenderer(output, engine, theme);
+
+        var topology = new Grid2DTopology(2, 2);
+        var generation = new DictionaryGeneration<Point2D, bool>(
+            new Dictionary<Point2D, bool> { [new Point2D(0, 0)] = true },
+            defaultState: false);
+
+        var result = renderer.RenderToString(topology, generation);
+
+        // Should contain ANSI escape sequences
+        Assert.Contains("\x1b[", result);
+        // Should contain the alive character
+        Assert.Contains("#", result);
+        // Should contain the dead character
+        Assert.Contains(".", result);
+    }
+
+    [Fact]
+    public void RenderToString_WithBorders_IncludesBorderCharacters()
+    {
+        using var output = new StringWriter();
+        var engine = new IdentityLayoutEngine();
+        var theme = new ConsoleTheme(AliveChar: '#', DeadChar: '.', ShowBorder: true);
+        var renderer = new ConsoleRenderer(output, engine, theme);
+
+        var topology = new Grid2DTopology(2, 2);
+        var generation = new DictionaryGeneration<Point2D, bool>(
+            new Dictionary<Point2D, bool>(),
+            defaultState: false);
+
+        var result = renderer.RenderToString(topology, generation);
+
+        // Should contain border characters
+        Assert.Contains("╔", result);
+        Assert.Contains("╗", result);
+        Assert.Contains("╚", result);
+        Assert.Contains("╝", result);
+        Assert.Contains("═", result);
+        Assert.Contains("║", result);
+    }
+
+    [Fact]
+    public void GetTokenEnumerator_NullTopology_ThrowsArgumentNullException()
+    {
+        using var output = new StringWriter();
+        var engine = new IdentityLayoutEngine();
+        var theme = ConsoleTheme.Default;
+        var renderer = new ConsoleRenderer(output, engine, theme);
+
+        var generation = new DictionaryGeneration<Point2D, bool>(
+            new Dictionary<Point2D, bool>(),
+            defaultState: false);
+
+        Assert.Throws<ArgumentNullException>(() => renderer.GetTokenEnumerator(null!, generation));
+    }
+
+    [Fact]
+    public void GetTokenEnumerator_NullGeneration_ThrowsArgumentNullException()
+    {
+        using var output = new StringWriter();
+        var engine = new IdentityLayoutEngine();
+        var theme = ConsoleTheme.Default;
+        var renderer = new ConsoleRenderer(output, engine, theme);
+
+        var topology = new Grid2DTopology(3, 3);
+
+        Assert.Throws<ArgumentNullException>(() => renderer.GetTokenEnumerator(topology, null!));
+    }
 }
