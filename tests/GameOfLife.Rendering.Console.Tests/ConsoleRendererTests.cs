@@ -15,8 +15,8 @@ public class ConsoleRendererTests
         var theme = new ConsoleTheme(AliveChar: '#', DeadChar: '.', ShowBorder: false);
         var renderer = new ConsoleRenderer(output, engine, theme);
 
-        var topology = new Grid2DTopology(3, 3);
-        var generation = new DictionaryGeneration<Point2D, bool>(
+        var topology = new RectangularTopology((3, 3));
+        using var generation = new DictionaryGeneration<Point2D, bool>(
             new Dictionary<Point2D, bool>(),
             defaultState: false);
 
@@ -36,14 +36,14 @@ public class ConsoleRendererTests
         var theme = new ConsoleTheme(AliveChar: '#', DeadChar: '.', ShowBorder: false);
         var renderer = new ConsoleRenderer(output, engine, theme);
 
-        var topology = new Grid2DTopology(3, 3);
+        var topology = new RectangularTopology((3, 3));
         var states = new Dictionary<Point2D, bool>();
         foreach (Point2D node in topology.Nodes)
         {
             states[node] = true;
         }
 
-        var generation = new DictionaryGeneration<Point2D, bool>(states, defaultState: false);
+        using var generation = new DictionaryGeneration<Point2D, bool>(states, defaultState: false);
 
         renderer.Render(topology, generation);
 
@@ -61,7 +61,7 @@ public class ConsoleRendererTests
         var theme = new ConsoleTheme(AliveChar: '#', DeadChar: '.', ShowBorder: false);
         var renderer = new ConsoleRenderer(output, engine, theme);
 
-        var topology = new Grid2DTopology(3, 3);
+        var topology = new RectangularTopology((3, 3));
         // Glider pattern:
         // .#.
         // ..#
@@ -75,7 +75,7 @@ public class ConsoleRendererTests
             [new Point2D(2, 2)] = true
         };
 
-        var generation = new DictionaryGeneration<Point2D, bool>(states, defaultState: false);
+        using var generation = new DictionaryGeneration<Point2D, bool>(states, defaultState: false);
 
         renderer.Render(topology, generation);
 
@@ -95,14 +95,14 @@ public class ConsoleRendererTests
         var theme = new ConsoleTheme(AliveChar: 'O', DeadChar: '-', ShowBorder: false);
         var renderer = new ConsoleRenderer(output, engine, theme);
 
-        var topology = new Grid2DTopology(2, 2);
+        var topology = new RectangularTopology((2, 2));
         var states = new Dictionary<Point2D, bool>
         {
             [new Point2D(0, 0)] = true,
             [new Point2D(1, 1)] = true
         };
 
-        var generation = new DictionaryGeneration<Point2D, bool>(states, defaultState: false);
+        using var generation = new DictionaryGeneration<Point2D, bool>(states, defaultState: false);
 
         renderer.Render(topology, generation);
 
@@ -121,14 +121,14 @@ public class ConsoleRendererTests
         var theme = new ConsoleTheme(AliveChar: '#', DeadChar: '.', ShowBorder: true);
         var renderer = new ConsoleRenderer(output, engine, theme);
 
-        var topology = new Grid2DTopology(3, 2);
+        var topology = new RectangularTopology((3, 2));
         var states = new Dictionary<Point2D, bool>
         {
             [new Point2D(1, 0)] = true,
             [new Point2D(1, 1)] = true
         };
 
-        var generation = new DictionaryGeneration<Point2D, bool>(states, defaultState: false);
+        using var generation = new DictionaryGeneration<Point2D, bool>(states, defaultState: false);
 
         renderer.Render(topology, generation);
 
@@ -182,7 +182,7 @@ public class ConsoleRendererTests
         ConsoleTheme theme = ConsoleTheme.Default;
         var renderer = new ConsoleRenderer(output, engine, theme);
 
-        var generation = new DictionaryGeneration<Point2D, bool>(
+        using var generation = new DictionaryGeneration<Point2D, bool>(
             new Dictionary<Point2D, bool>(),
             defaultState: false);
 
@@ -197,7 +197,7 @@ public class ConsoleRendererTests
         ConsoleTheme theme = ConsoleTheme.Default;
         var renderer = new ConsoleRenderer(output, engine, theme);
 
-        var topology = new Grid2DTopology(3, 3);
+        var topology = new RectangularTopology((3, 3));
 
         _ = Assert.Throws<ArgumentNullException>(() => renderer.Render(topology, null!));
     }
@@ -210,8 +210,8 @@ public class ConsoleRendererTests
         var theme = new ConsoleTheme(AliveChar: '#', DeadChar: '.', ShowBorder: false);
         var renderer = new ConsoleRenderer(output, engine, theme);
 
-        var topology = new Grid2DTopology(2, 2);
-        var generation = new DictionaryGeneration<Point2D, bool>(
+        var topology = new RectangularTopology((2, 2));
+        using var generation = new DictionaryGeneration<Point2D, bool>(
             new Dictionary<Point2D, bool>(),
             defaultState: false);
 
@@ -235,8 +235,8 @@ public class ConsoleRendererTests
         var theme = new ConsoleTheme(AliveChar: '#', DeadChar: '.', ShowBorder: false);
         var renderer = new ConsoleRenderer(output, engine, theme);
 
-        var topology = new Grid2DTopology(10, 10);
-        var generation = new DictionaryGeneration<Point2D, bool>(
+        var topology = new RectangularTopology((10, 10));
+        using var generation = new DictionaryGeneration<Point2D, bool>(
             new Dictionary<Point2D, bool>(),
             defaultState: false);
 
@@ -261,8 +261,8 @@ public class ConsoleRendererTests
         var theme = new ConsoleTheme(AliveChar: '#', DeadChar: '.', ShowBorder: false);
         var renderer = new ConsoleRenderer(output, engine, theme);
 
-        var topology = new Grid2DTopology(2, 2);
-        var generation = new DictionaryGeneration<Point2D, bool>(
+        var topology = new RectangularTopology((2, 2));
+        using var generation = new DictionaryGeneration<Point2D, bool>(
             new Dictionary<Point2D, bool> { [new Point2D(0, 0)] = true },
             defaultState: false);
 
@@ -288,8 +288,8 @@ public class ConsoleRendererTests
         var theme = new ConsoleTheme(AliveChar: '#', DeadChar: '.', ShowBorder: false);
         var renderer = new ConsoleRenderer(output, engine, theme);
 
-        var topology = new Grid2DTopology(10, 10);
-        var generation = new DictionaryGeneration<Point2D, bool>(
+        var topology = new RectangularTopology((10, 10));
+        using var generation = new DictionaryGeneration<Point2D, bool>(
             new Dictionary<Point2D, bool>(),
             defaultState: false);
 
@@ -314,8 +314,8 @@ public class ConsoleRendererTests
         var theme = new ConsoleTheme(AliveChar: '#', DeadChar: '.', ShowBorder: false);
         var renderer = new ConsoleRenderer(output, engine, theme);
 
-        var topology = new Grid2DTopology(2, 2);
-        var generation = new DictionaryGeneration<Point2D, bool>(
+        var topology = new RectangularTopology((2, 2));
+        using var generation = new DictionaryGeneration<Point2D, bool>(
             new Dictionary<Point2D, bool> { [new Point2D(0, 0)] = true },
             defaultState: false);
 
@@ -337,8 +337,8 @@ public class ConsoleRendererTests
         var theme = new ConsoleTheme(AliveChar: '#', DeadChar: '.', ShowBorder: true);
         var renderer = new ConsoleRenderer(output, engine, theme);
 
-        var topology = new Grid2DTopology(2, 2);
-        var generation = new DictionaryGeneration<Point2D, bool>(
+        var topology = new RectangularTopology((2, 2));
+        using var generation = new DictionaryGeneration<Point2D, bool>(
             new Dictionary<Point2D, bool>(),
             defaultState: false);
 
@@ -361,7 +361,7 @@ public class ConsoleRendererTests
         ConsoleTheme theme = ConsoleTheme.Default;
         var renderer = new ConsoleRenderer(output, engine, theme);
 
-        var generation = new DictionaryGeneration<Point2D, bool>(
+        using var generation = new DictionaryGeneration<Point2D, bool>(
             new Dictionary<Point2D, bool>(),
             defaultState: false);
 
@@ -376,7 +376,7 @@ public class ConsoleRendererTests
         ConsoleTheme theme = ConsoleTheme.Default;
         var renderer = new ConsoleRenderer(output, engine, theme);
 
-        var topology = new Grid2DTopology(3, 3);
+        var topology = new RectangularTopology((3, 3));
 
         _ = Assert.Throws<ArgumentNullException>(() => renderer.GetTokenEnumerator(topology, null!));
     }

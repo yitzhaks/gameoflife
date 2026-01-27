@@ -15,8 +15,8 @@ public class GlyphReaderTests
         var theme = new ConsoleTheme(AliveChar: '#', DeadChar: '.', ShowBorder: false);
         var renderer = new ConsoleRenderer(output, engine, theme);
 
-        var topology = new Grid2DTopology(1, 1);
-        var generation = new DictionaryGeneration<Point2D, bool>(
+        var topology = new RectangularTopology((1, 1));
+        using var generation = new DictionaryGeneration<Point2D, bool>(
             new Dictionary<Point2D, bool>(),
             defaultState: false);
 
@@ -41,9 +41,9 @@ public class GlyphReaderTests
         var theme = new ConsoleTheme(AliveChar: '#', DeadChar: '.', ShowBorder: false);
         var renderer = new ConsoleRenderer(output, engine, theme);
 
-        var topology = new Grid2DTopology(1, 1);
+        var topology = new RectangularTopology((1, 1));
         var states = new Dictionary<Point2D, bool> { [new Point2D(0, 0)] = true };
-        var generation = new DictionaryGeneration<Point2D, bool>(states, defaultState: false);
+        using var generation = new DictionaryGeneration<Point2D, bool>(states, defaultState: false);
 
         TokenEnumerator tokenEnumerator = renderer.GetTokenEnumerator(topology, generation);
         GlyphEnumerator glyphEnumerator = GlyphReader.FromTokens(tokenEnumerator);
@@ -66,8 +66,8 @@ public class GlyphReaderTests
         var theme = new ConsoleTheme(AliveChar: '#', DeadChar: '.', ShowBorder: false);
         var renderer = new ConsoleRenderer(output, engine, theme);
 
-        var topology = new Grid2DTopology(2, 2);
-        var generation = new DictionaryGeneration<Point2D, bool>(
+        var topology = new RectangularTopology((2, 2));
+        using var generation = new DictionaryGeneration<Point2D, bool>(
             new Dictionary<Point2D, bool>(),
             defaultState: false);
 
@@ -97,10 +97,10 @@ public class GlyphReaderTests
         var theme = new ConsoleTheme(AliveChar: '#', DeadChar: '.', ShowBorder: true);
         var renderer = new ConsoleRenderer(output, engine, theme);
 
-        var topology = new Grid2DTopology(2, 1);
+        var topology = new RectangularTopology((2, 1));
         // First cell dead, second cell alive
         var states = new Dictionary<Point2D, bool> { [new Point2D(1, 0)] = true };
-        var generation = new DictionaryGeneration<Point2D, bool>(states, defaultState: false);
+        using var generation = new DictionaryGeneration<Point2D, bool>(states, defaultState: false);
 
         TokenEnumerator tokenEnumerator = renderer.GetTokenEnumerator(topology, generation);
         GlyphEnumerator glyphEnumerator = GlyphReader.FromTokens(tokenEnumerator);
@@ -124,7 +124,7 @@ public class GlyphReaderTests
         var theme = new ConsoleTheme(AliveChar: '#', DeadChar: '.', ShowBorder: false);
         var renderer = new ConsoleRenderer(output, engine, theme);
 
-        var topology = new Grid2DTopology(3, 1);
+        var topology = new RectangularTopology((3, 1));
         // All three cells alive - same color
         var states = new Dictionary<Point2D, bool>
         {
@@ -132,7 +132,7 @@ public class GlyphReaderTests
             [new Point2D(1, 0)] = true,
             [new Point2D(2, 0)] = true
         };
-        var generation = new DictionaryGeneration<Point2D, bool>(states, defaultState: false);
+        using var generation = new DictionaryGeneration<Point2D, bool>(states, defaultState: false);
 
         TokenEnumerator tokenEnumerator = renderer.GetTokenEnumerator(topology, generation);
         GlyphEnumerator glyphEnumerator = GlyphReader.FromTokens(tokenEnumerator);
@@ -157,14 +157,14 @@ public class GlyphReaderTests
         var theme = new ConsoleTheme(AliveChar: '#', DeadChar: '.', ShowBorder: false);
         var renderer = new ConsoleRenderer(output, engine, theme);
 
-        var topology = new Grid2DTopology(4, 1);
+        var topology = new RectangularTopology((4, 1));
         // Alternating alive/dead pattern
         var states = new Dictionary<Point2D, bool>
         {
             [new Point2D(0, 0)] = true,  // alive
             [new Point2D(2, 0)] = true   // alive
         };
-        var generation = new DictionaryGeneration<Point2D, bool>(states, defaultState: false);
+        using var generation = new DictionaryGeneration<Point2D, bool>(states, defaultState: false);
 
         TokenEnumerator tokenEnumerator = renderer.GetTokenEnumerator(topology, generation);
         GlyphEnumerator glyphEnumerator = GlyphReader.FromTokens(tokenEnumerator);
@@ -193,8 +193,8 @@ public class GlyphReaderTests
         var theme = new ConsoleTheme(AliveChar: '#', DeadChar: '.', ShowBorder: false);
         var renderer = new ConsoleRenderer(output, engine, theme);
 
-        var topology = new Grid2DTopology(2, 3);
-        var generation = new DictionaryGeneration<Point2D, bool>(
+        var topology = new RectangularTopology((2, 3));
+        using var generation = new DictionaryGeneration<Point2D, bool>(
             new Dictionary<Point2D, bool>(),
             defaultState: false);
 

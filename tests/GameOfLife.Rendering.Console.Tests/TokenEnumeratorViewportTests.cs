@@ -19,11 +19,11 @@ public class TokenEnumeratorViewportTests
 
     private static string RenderToString(Viewport viewport)
     {
-        var topology = new Grid2DTopology(BoardWidth, BoardHeight);
+        var topology = new RectangularTopology((BoardWidth, BoardHeight));
         var engine = new IdentityLayoutEngine();
         ILayout<Point2D, Point2D, RectangularBounds> layout = engine.CreateLayout(topology);
         var nodeSet = new HashSet<Point2D>(topology.Nodes);
-        var generation = new DictionaryGeneration<Point2D, bool>(new Dictionary<Point2D, bool>(), false);
+        using var generation = new DictionaryGeneration<Point2D, bool>(new Dictionary<Point2D, bool>(), false);
         var theme = new ConsoleTheme(AliveChar: '#', DeadChar: '.', ShowBorder: true);
 
         var sb = new System.Text.StringBuilder();
@@ -329,11 +329,11 @@ public class TokenEnumeratorViewportTests
     public void Viewport_NoViewport_UsesClassicBorders()
     {
         // When viewport is null, all borders should be solid
-        var topology = new Grid2DTopology(5, 3);
+        var topology = new RectangularTopology((5, 3));
         var engine = new IdentityLayoutEngine();
         ILayout<Point2D, Point2D, RectangularBounds> layout = engine.CreateLayout(topology);
         var nodeSet = new HashSet<Point2D>(topology.Nodes);
-        var generation = new DictionaryGeneration<Point2D, bool>(new Dictionary<Point2D, bool>(), false);
+        using var generation = new DictionaryGeneration<Point2D, bool>(new Dictionary<Point2D, bool>(), false);
         var theme = new ConsoleTheme(AliveChar: '#', DeadChar: '.', ShowBorder: true);
 
         var sb = new System.Text.StringBuilder();
@@ -365,7 +365,7 @@ public class TokenEnumeratorViewportTests
     public void Viewport_CellClipping_OnlyRendersVisibleCells()
     {
         // Create a board with a pattern, verify only viewport cells are rendered
-        var topology = new Grid2DTopology(10, 10);
+        var topology = new RectangularTopology((10, 10));
         var engine = new IdentityLayoutEngine();
         ILayout<Point2D, Point2D, RectangularBounds> layout = engine.CreateLayout(topology);
         var nodeSet = new HashSet<Point2D>(topology.Nodes);
@@ -378,7 +378,7 @@ public class TokenEnumeratorViewportTests
             [new Point2D(4, 2)] = true,
             [new Point2D(7, 7)] = true,
         };
-        var generation = new DictionaryGeneration<Point2D, bool>(states, false);
+        using var generation = new DictionaryGeneration<Point2D, bool>(states, false);
         var theme = new ConsoleTheme(AliveChar: '#', DeadChar: '.', ShowBorder: false);
 
         // Viewport showing (2,2) to (4,4) - should see the three alive cells

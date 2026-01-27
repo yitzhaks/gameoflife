@@ -1,4 +1,5 @@
 ﻿using GameOfLife.Console;
+using GameOfLife.Core;
 
 using Xunit;
 
@@ -64,8 +65,8 @@ public class CommandLineOptionsTests
     {
         var injections = new List<ShapeInjection>
         {
-            new("glider", 5, 10),
-            new("block", 0, 0)
+            new("glider", (5, 10)),
+            new("block", default)
         };
         var options = new CommandLineOptions { Injections = injections };
 

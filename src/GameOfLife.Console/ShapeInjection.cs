@@ -1,12 +1,13 @@
-﻿namespace GameOfLife.Console;
+﻿using GameOfLife.Core;
+
+namespace GameOfLife.Console;
 
 /// <summary>
 /// Represents a shape to inject at a specific position.
 /// </summary>
 /// <param name="PatternName">The name of the pattern file (without extension).</param>
-/// <param name="X">The X coordinate to inject at.</param>
-/// <param name="Y">The Y coordinate to inject at.</param>
-internal readonly record struct ShapeInjection(string PatternName, int X, int Y)
+/// <param name="Position">The position to inject at.</param>
+internal readonly record struct ShapeInjection(string PatternName, Point2D Position)
 {
     /// <summary>
     /// Parses a shape injection from string format "name@x,y".
@@ -50,6 +51,6 @@ internal readonly record struct ShapeInjection(string PatternName, int X, int Y)
             throw new FormatException($"Invalid Y coordinate '{yPart}' in shape injection '{value}'.");
         }
 
-        return new ShapeInjection(name, x, y);
+        return new ShapeInjection(name, (x, y));
     }
 }

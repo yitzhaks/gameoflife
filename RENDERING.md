@@ -40,7 +40,7 @@ Layout engines map node identities to layout positions and produce layout snapsh
 See [ILayoutEngine.cs](src/GameOfLife.Rendering/ILayoutEngine.cs), [ILayout.cs](src/GameOfLife.Rendering/ILayout.cs), and [IBounds.cs](src/GameOfLife.Rendering/IBounds.cs).
 
 **Design notes:**
-- `TTopology` constrains which topology types an engine accepts (e.g., `Grid2DTopology`)
+- `TTopology` constrains which topology types an engine accepts (e.g., `RectangularTopology`)
 - `TCoordinate` is a value type representing layout coordinates; `Point2D`/`Point3D` are common examples
 - `ILayoutEngine` should be reusable and stateless
 - Layouts are bound to the topology used to create them; `EnumerateNodes` should iterate the topology's node set
@@ -63,7 +63,7 @@ The difference between square and hex grids is in how identities map to layout p
 
 | Implementation | Description |
 |----------------|-------------|
-| `IdentityLayoutEngine` | For `Grid2DTopology`, returns identity as coordinate with O(1) bounds |
+| `IdentityLayoutEngine` | For `RectangularTopology`, returns identity as coordinate with O(1) bounds |
 | `HexLayoutEngine` | Maps cube hex coordinates to staggered 2D layout positions |
 
 ### Non-Grid Topologies
@@ -87,7 +87,7 @@ Converts layout positions (built from topology via a layout engine) to visual ou
 See [IRenderer.cs](src/GameOfLife.Rendering/IRenderer.cs).
 
 **Design notes:**
-- `TTopology` constrains which topology types a renderer accepts (e.g., `Grid2DTopology` for console)
+- `TTopology` constrains which topology types a renderer accepts (e.g., `RectangularTopology` for console)
 - Renderers are bound to a coordinate type via `TCoordinate`
 - Renderers are constructed with an output target (console, stream, image path, etc.) because `Render()` returns `void`
 - Renderers are constructed with an `ILayoutEngine` instance
@@ -120,17 +120,20 @@ Generation + Viewport
 | `TokenEnumerator` | Iterates grid cells and borders, yields characters and ANSI color codes |
 | `Viewport` | Clips rendering to visible region for large boards |
 | `Glyph` | A character with its associated color |
-| `StreamingDiff` | Compares current frame against cached previous frame |
+| `FrameBuffer` | Pre-allocated buffer for storing frame glyphs (zero-allocation rendering) |
+| `StreamingDiff` | Compares current frame against cached previous frame, outputs only changes |
 
 ### Frame Buffer Differential Rendering
 
-To minimize terminal output, the renderer caches the previous frame's glyphs and only writes changes. See [StreamingDiff.cs](src/GameOfLife.Rendering.Console/StreamingDiff.cs) for implementation.
+To minimize terminal output, the renderer caches the previous frame's glyphs in a `FrameBuffer` and only writes changes. The `FrameBuffer` is a pre-allocated array that avoids per-frame allocations. See [FrameBuffer.cs](src/GameOfLife.Rendering.Console/FrameBuffer.cs) and [StreamingDiff.cs](src/GameOfLife.Rendering.Console/StreamingDiff.cs) for implementation.
 
 This approach handles both:
 - **Generation changes**: Different cells become alive/dead
 - **Viewport scrolling**: Same generation, different visible region
 
 To minimize output when many consecutive cells change (common during scrolling), `StreamingDiff` tracks the actual cursor position and only emits positioning sequences when the cursor isn't already at the target location. Since the terminal cursor advances automatically after each character write, consecutive changed cells can be written without repositioning.
+
+The `FrameBuffer.ForViewport(width, height)` factory method creates appropriately-sized buffers for a given viewport, accounting for borders and newlines.
 
 ### Viewport System
 

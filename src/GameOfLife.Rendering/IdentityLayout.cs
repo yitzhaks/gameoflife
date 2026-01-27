@@ -3,16 +3,16 @@
 namespace GameOfLife.Rendering;
 
 /// <summary>
-/// A layout implementation for Grid2DTopology where the identity is used directly as the coordinate.
+/// A layout implementation for RectangularTopology where the identity is used directly as the coordinate.
 /// </summary>
 public sealed class IdentityLayout : ILayout<Point2D, Point2D, RectangularBounds>
 {
-    private readonly Grid2DTopology _topology;
+    private readonly RectangularTopology _topology;
 
     /// <summary>
     /// Gets the bounds of the layout region.
     /// </summary>
-    public RectangularBounds Bounds { get; }
+    public RectangularBounds Bounds => new(_topology.Size);
 
     /// <summary>
     /// Gets the positions of nodes in the layout.
@@ -24,15 +24,12 @@ public sealed class IdentityLayout : ILayout<Point2D, Point2D, RectangularBounds
     /// </summary>
     /// <param name="topology">The topology to create a layout for.</param>
     /// <exception cref="ArgumentNullException">Thrown if topology is null.</exception>
-    public IdentityLayout(Grid2DTopology topology)
+    public IdentityLayout(RectangularTopology topology)
     {
         ArgumentNullException.ThrowIfNull(topology);
 
         _topology = topology;
-
-        // Compute bounds directly from grid dimensions - O(1)
-        Bounds = new RectangularBounds(new Point2D(0, 0), new Point2D(topology.Width - 1, topology.Height - 1));
-        Positions = new IdentityLayoutPositions(topology);
+        Positions = new IdentityLayoutPositions(Bounds);
     }
 
     /// <summary>
@@ -52,15 +49,15 @@ public sealed class IdentityLayout : ILayout<Point2D, Point2D, RectangularBounds
     /// </summary>
     private sealed class IdentityLayoutPositions : ILayoutPositions<Point2D, Point2D>
     {
-        private readonly Grid2DTopology _topology;
+        private readonly RectangularBounds _bounds;
 
         /// <summary>
         /// Creates a new identity layout positions instance.
         /// </summary>
-        /// <param name="topology">The grid topology defining valid nodes.</param>
-        public IdentityLayoutPositions(Grid2DTopology topology)
+        /// <param name="bounds">The bounds defining valid positions.</param>
+        public IdentityLayoutPositions(RectangularBounds bounds)
         {
-            _topology = topology;
+            _bounds = bounds;
         }
 
         /// <summary>
@@ -74,8 +71,7 @@ public sealed class IdentityLayout : ILayout<Point2D, Point2D, RectangularBounds
         {
             get
             {
-                // O(1) bounds check using grid dimensions
-                if (node.X < 0 || node.X >= _topology.Width || node.Y < 0 || node.Y >= _topology.Height)
+                if (!_bounds.Contains(node))
                 {
                     throw new KeyNotFoundException($"Node {node} is not in the layout.");
                 }

@@ -184,8 +184,8 @@ public class CommandLineParserTests
         Assert.NotNull(capturedOptions);
         _ = Assert.Single(capturedOptions.Injections);
         Assert.Equal("glider", capturedOptions.Injections[0].PatternName);
-        Assert.Equal(5, capturedOptions.Injections[0].X);
-        Assert.Equal(10, capturedOptions.Injections[0].Y);
+        Assert.Equal(5, capturedOptions.Injections[0].Position.X);
+        Assert.Equal(10, capturedOptions.Injections[0].Position.Y);
     }
 
     [Fact]

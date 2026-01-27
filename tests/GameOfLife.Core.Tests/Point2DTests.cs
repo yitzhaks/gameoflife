@@ -134,7 +134,7 @@ public class Point2DTests
     {
         var set = new HashSet<Point2D>
         {
-            (0, 0),
+            default,
             (1, 1),
             (2, 2)
         };
@@ -149,11 +149,11 @@ public class Point2DTests
     {
         var dict = new Dictionary<Point2D, string>
         {
-            [(0, 0)] = "origin",
+            [default] = "origin",
             [(1, 0)] = "right"
         };
 
-        Assert.Equal("origin", dict[(0, 0)]);
+        Assert.Equal("origin", dict[default]);
         Assert.Equal("right", dict[(1, 0)]);
     }
 
@@ -169,11 +169,59 @@ public class Point2DTests
     [Fact]
     public void ImplicitConversion_InCollection_WorksCorrectly()
     {
-        Point2D[] points = [(0, 0), (1, 2), (3, 4)];
+        Point2D[] points = [default, (1, 2), (3, 4)];
 
         Assert.Equal(3, points.Length);
         Assert.Equal(new Point2D(0, 0), points[0]);
         Assert.Equal(new Point2D(1, 2), points[1]);
         Assert.Equal(new Point2D(3, 4), points[2]);
+    }
+
+    [Fact]
+    public void Addition_TwoPoints_ReturnsSum()
+    {
+        var a = new Point2D(3, 5);
+        var b = new Point2D(2, 7);
+
+        Point2D result = a + b;
+
+        Assert.Equal(5, result.X);
+        Assert.Equal(12, result.Y);
+    }
+
+    [Fact]
+    public void Addition_WithNegativeCoordinates_ReturnsCorrectSum()
+    {
+        var a = new Point2D(-3, 5);
+        var b = new Point2D(2, -7);
+
+        Point2D result = a + b;
+
+        Assert.Equal(-1, result.X);
+        Assert.Equal(-2, result.Y);
+    }
+
+    [Fact]
+    public void Subtraction_TwoPoints_ReturnsDifference()
+    {
+        var a = new Point2D(5, 10);
+        var b = new Point2D(2, 3);
+
+        Point2D result = a - b;
+
+        Assert.Equal(3, result.X);
+        Assert.Equal(7, result.Y);
+    }
+
+    [Fact]
+    public void Subtraction_ResultsInNegative_ReturnsCorrectDifference()
+    {
+        var a = new Point2D(2, 3);
+        var b = new Point2D(5, 10);
+
+        Point2D result = a - b;
+
+        Assert.Equal(-3, result.X);
+        Assert.Equal(-7, result.Y);
     }
 }

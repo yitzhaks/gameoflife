@@ -1,4 +1,5 @@
 ﻿using GameOfLife.Console;
+using GameOfLife.Core;
 
 using Xunit;
 
@@ -143,7 +144,7 @@ public class GameControllerTests
             {
                 Width = 10,
                 Height = 10,
-                Injections = [new ShapeInjection("block", 2, 2)]
+                Injections = [new ShapeInjection("block", (2, 2))]
             };
             var loader = new ShapeLoader(tempDir);
 
@@ -170,7 +171,7 @@ public class GameControllerTests
         {
             Width = 10,
             Height = 10,
-            Injections = [new ShapeInjection("nonexistent_pattern_12345", 0, 0)]
+            Injections = [new ShapeInjection("nonexistent_pattern_12345", default)]
         };
         var loader = new ShapeLoader(".");
 
@@ -220,7 +221,7 @@ public class GameControllerTests
             {
                 Width = 3,
                 Height = 3,
-                Injections = [new ShapeInjection("wide", 0, 0)]
+                Injections = [new ShapeInjection("wide", default)]
             };
             var loader = new ShapeLoader(tempDir);
 
@@ -250,7 +251,7 @@ public class GameControllerTests
             {
                 Width = 5,
                 Height = 5,
-                Injections = [new ShapeInjection("block", -1, -1)]
+                Injections = [new ShapeInjection("block", (-1, -1))]
             };
             var loader = new ShapeLoader(tempDir);
 
@@ -301,8 +302,8 @@ public class GameControllerTests
                 Height = 20,
                 Injections =
                 [
-                    new ShapeInjection("block", 2, 2),
-                    new ShapeInjection("blinker", 10, 10)
+                    new ShapeInjection("block", (2, 2)),
+                    new ShapeInjection("blinker", (10, 10))
                 ]
             };
             var loader = new ShapeLoader(tempDir);

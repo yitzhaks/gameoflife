@@ -1,13 +1,13 @@
 ﻿namespace GameOfLife.Core.Tests;
 
-public class Grid2DTopologyTests
+public class RectangularTopologyTests
 {
     #region Constructor Tests
 
     [Fact]
     public void Constructor_ValidDimensions_CreatesGrid()
     {
-        var topology = new Grid2DTopology(5, 10);
+        var topology = new RectangularTopology((5, 10));
 
         Assert.NotNull(topology);
         Assert.Equal(50, topology.Nodes.Count());
@@ -16,33 +16,33 @@ public class Grid2DTopologyTests
     [Fact]
     public void Constructor_WidthLessThanOne_ThrowsArgumentOutOfRangeException()
     {
-        ArgumentOutOfRangeException exception = Assert.Throws<ArgumentOutOfRangeException>(() => new Grid2DTopology(-1, 5));
+        ArgumentOutOfRangeException exception = Assert.Throws<ArgumentOutOfRangeException>(() => new RectangularTopology((-1, 5)));
 
-        Assert.Equal("width", exception.ParamName);
+        Assert.Equal("size", exception.ParamName);
     }
 
     [Fact]
     public void Constructor_WidthEqualsZero_ThrowsArgumentOutOfRangeException()
     {
-        ArgumentOutOfRangeException exception = Assert.Throws<ArgumentOutOfRangeException>(() => new Grid2DTopology(0, 5));
+        ArgumentOutOfRangeException exception = Assert.Throws<ArgumentOutOfRangeException>(() => new RectangularTopology((0, 5)));
 
-        Assert.Equal("width", exception.ParamName);
+        Assert.Equal("size", exception.ParamName);
     }
 
     [Fact]
     public void Constructor_HeightLessThanOne_ThrowsArgumentOutOfRangeException()
     {
-        ArgumentOutOfRangeException exception = Assert.Throws<ArgumentOutOfRangeException>(() => new Grid2DTopology(5, -1));
+        ArgumentOutOfRangeException exception = Assert.Throws<ArgumentOutOfRangeException>(() => new RectangularTopology((5, -1)));
 
-        Assert.Equal("height", exception.ParamName);
+        Assert.Equal("size", exception.ParamName);
     }
 
     [Fact]
     public void Constructor_HeightEqualsZero_ThrowsArgumentOutOfRangeException()
     {
-        ArgumentOutOfRangeException exception = Assert.Throws<ArgumentOutOfRangeException>(() => new Grid2DTopology(5, 0));
+        ArgumentOutOfRangeException exception = Assert.Throws<ArgumentOutOfRangeException>(() => new RectangularTopology((5, 0)));
 
-        Assert.Equal("height", exception.ParamName);
+        Assert.Equal("size", exception.ParamName);
     }
 
     #endregion
@@ -52,7 +52,7 @@ public class Grid2DTopologyTests
     [Fact]
     public void Nodes_Count_EqualsWidthTimesHeight()
     {
-        var topology = new Grid2DTopology(4, 3);
+        var topology = new RectangularTopology((4, 3));
 
         Assert.Equal(12, topology.Nodes.Count());
     }
@@ -60,13 +60,13 @@ public class Grid2DTopologyTests
     [Fact]
     public void Nodes_ContainsAllExpectedPoints_FromOriginToMaxBounds()
     {
-        var topology = new Grid2DTopology(3, 2);
+        var topology = new RectangularTopology((3, 2));
         var nodes = topology.Nodes.ToList();
 
         Point2D[] expectedPoints =
         [
-            new Point2D(0, 0), new Point2D(1, 0), new Point2D(2, 0),
-            new Point2D(0, 1), new Point2D(1, 1), new Point2D(2, 1)
+            default, (1, 0), (2, 0),
+            (0, 1), (1, 1), (2, 1)
         ];
 
         Assert.Equal(expectedPoints.Length, nodes.Count);
@@ -79,11 +79,11 @@ public class Grid2DTopologyTests
     [Fact]
     public void Nodes_1x1Grid_HasExactlyOneNode()
     {
-        var topology = new Grid2DTopology(1, 1);
+        var topology = new RectangularTopology((1, 1));
         var nodes = topology.Nodes.ToList();
 
         _ = Assert.Single(nodes);
-        Assert.Equal(new Point2D(0, 0), nodes[0]);
+        Assert.Equal(default, nodes[0]);
     }
 
     #endregion
@@ -93,57 +93,57 @@ public class Grid2DTopologyTests
     [Fact]
     public void GetNeighbors_CornerCell00_HasExactly3Neighbors()
     {
-        var topology = new Grid2DTopology(5, 5);
-        var neighbors = topology.GetNeighbors(new Point2D(0, 0)).ToList();
+        var topology = new RectangularTopology((5, 5));
+        var neighbors = topology.GetNeighbors(default).ToList();
 
         Assert.Equal(3, neighbors.Count);
-        Assert.Contains(new Point2D(1, 0), neighbors);
-        Assert.Contains(new Point2D(0, 1), neighbors);
-        Assert.Contains(new Point2D(1, 1), neighbors);
+        Assert.Contains((1, 0), neighbors);
+        Assert.Contains((0, 1), neighbors);
+        Assert.Contains((1, 1), neighbors);
     }
 
     [Fact]
     public void GetNeighbors_CornerCellBottomRight_HasExactly3Neighbors()
     {
-        var topology = new Grid2DTopology(5, 5);
-        var neighbors = topology.GetNeighbors(new Point2D(4, 4)).ToList();
+        var topology = new RectangularTopology((5, 5));
+        var neighbors = topology.GetNeighbors((4, 4)).ToList();
 
         Assert.Equal(3, neighbors.Count);
-        Assert.Contains(new Point2D(3, 3), neighbors);
-        Assert.Contains(new Point2D(4, 3), neighbors);
-        Assert.Contains(new Point2D(3, 4), neighbors);
+        Assert.Contains((3, 3), neighbors);
+        Assert.Contains((4, 3), neighbors);
+        Assert.Contains((3, 4), neighbors);
     }
 
     [Fact]
     public void GetNeighbors_EdgeCell_HasExactly5Neighbors()
     {
-        var topology = new Grid2DTopology(5, 5);
+        var topology = new RectangularTopology((5, 5));
         // Testing edge cell at (2, 0) - top edge, not a corner
-        var neighbors = topology.GetNeighbors(new Point2D(2, 0)).ToList();
+        var neighbors = topology.GetNeighbors((2, 0)).ToList();
 
         Assert.Equal(5, neighbors.Count);
-        Assert.Contains(new Point2D(1, 0), neighbors);
-        Assert.Contains(new Point2D(3, 0), neighbors);
-        Assert.Contains(new Point2D(1, 1), neighbors);
-        Assert.Contains(new Point2D(2, 1), neighbors);
-        Assert.Contains(new Point2D(3, 1), neighbors);
+        Assert.Contains((1, 0), neighbors);
+        Assert.Contains((3, 0), neighbors);
+        Assert.Contains((1, 1), neighbors);
+        Assert.Contains((2, 1), neighbors);
+        Assert.Contains((3, 1), neighbors);
     }
 
     [Fact]
     public void GetNeighbors_InteriorCell_HasExactly8Neighbors()
     {
-        var topology = new Grid2DTopology(5, 5);
-        var neighbors = topology.GetNeighbors(new Point2D(2, 2)).ToList();
+        var topology = new RectangularTopology((5, 5));
+        var neighbors = topology.GetNeighbors((2, 2)).ToList();
 
         Assert.Equal(8, neighbors.Count);
-        Assert.Contains(new Point2D(1, 1), neighbors);
-        Assert.Contains(new Point2D(2, 1), neighbors);
-        Assert.Contains(new Point2D(3, 1), neighbors);
-        Assert.Contains(new Point2D(1, 2), neighbors);
-        Assert.Contains(new Point2D(3, 2), neighbors);
-        Assert.Contains(new Point2D(1, 3), neighbors);
-        Assert.Contains(new Point2D(2, 3), neighbors);
-        Assert.Contains(new Point2D(3, 3), neighbors);
+        Assert.Contains((1, 1), neighbors);
+        Assert.Contains((2, 1), neighbors);
+        Assert.Contains((3, 1), neighbors);
+        Assert.Contains((1, 2), neighbors);
+        Assert.Contains((3, 2), neighbors);
+        Assert.Contains((1, 3), neighbors);
+        Assert.Contains((2, 3), neighbors);
+        Assert.Contains((3, 3), neighbors);
     }
 
     #endregion
@@ -153,10 +153,10 @@ public class Grid2DTopologyTests
     [Fact]
     public void GetNeighbors_NegativeX_ThrowsArgumentOutOfRangeException()
     {
-        var topology = new Grid2DTopology(5, 5);
+        var topology = new RectangularTopology((5, 5));
 
         ArgumentOutOfRangeException exception = Assert.Throws<ArgumentOutOfRangeException>(() =>
-            topology.GetNeighbors(new Point2D(-1, 2)).ToList());
+            topology.GetNeighbors((-1, 2)).ToList());
 
         Assert.Equal("node", exception.ParamName);
     }
@@ -164,10 +164,10 @@ public class Grid2DTopologyTests
     [Fact]
     public void GetNeighbors_XGreaterThanOrEqualToWidth_ThrowsArgumentOutOfRangeException()
     {
-        var topology = new Grid2DTopology(5, 5);
+        var topology = new RectangularTopology((5, 5));
 
         ArgumentOutOfRangeException exception = Assert.Throws<ArgumentOutOfRangeException>(() =>
-            topology.GetNeighbors(new Point2D(5, 2)).ToList());
+            topology.GetNeighbors((5, 2)).ToList());
 
         Assert.Equal("node", exception.ParamName);
     }
@@ -175,10 +175,10 @@ public class Grid2DTopologyTests
     [Fact]
     public void GetNeighbors_NegativeY_ThrowsArgumentOutOfRangeException()
     {
-        var topology = new Grid2DTopology(5, 5);
+        var topology = new RectangularTopology((5, 5));
 
         ArgumentOutOfRangeException exception = Assert.Throws<ArgumentOutOfRangeException>(() =>
-            topology.GetNeighbors(new Point2D(2, -1)).ToList());
+            topology.GetNeighbors((2, -1)).ToList());
 
         Assert.Equal("node", exception.ParamName);
     }
@@ -186,10 +186,10 @@ public class Grid2DTopologyTests
     [Fact]
     public void GetNeighbors_YGreaterThanOrEqualToHeight_ThrowsArgumentOutOfRangeException()
     {
-        var topology = new Grid2DTopology(5, 5);
+        var topology = new RectangularTopology((5, 5));
 
         ArgumentOutOfRangeException exception = Assert.Throws<ArgumentOutOfRangeException>(() =>
-            topology.GetNeighbors(new Point2D(2, 5)).ToList());
+            topology.GetNeighbors((2, 5)).ToList());
 
         Assert.Equal("node", exception.ParamName);
     }
@@ -201,10 +201,10 @@ public class Grid2DTopologyTests
     [Fact]
     public void GetNeighbors_Symmetry_IfAIsNeighborOfB_ThenBIsNeighborOfA()
     {
-        var topology = new Grid2DTopology(5, 5);
+        var topology = new RectangularTopology((5, 5));
 
         // Test with an interior cell and verify symmetry with all its neighbors
-        var centerNode = new Point2D(2, 2);
+        Point2D centerNode = (2, 2);
         var centerNeighbors = topology.GetNeighbors(centerNode).ToList();
 
         foreach (Point2D neighbor in centerNeighbors)
@@ -217,10 +217,10 @@ public class Grid2DTopologyTests
     [Fact]
     public void GetNeighbors_Symmetry_AllEdgeCells_MaintainSymmetry()
     {
-        var topology = new Grid2DTopology(4, 4);
+        var topology = new RectangularTopology((4, 4));
 
         // Test edge cell at (0, 1)
-        var edgeNode = new Point2D(0, 1);
+        Point2D edgeNode = (0, 1);
         var edgeNeighbors = topology.GetNeighbors(edgeNode).ToList();
 
         foreach (Point2D neighbor in edgeNeighbors)
@@ -233,14 +233,14 @@ public class Grid2DTopologyTests
     [Fact]
     public void GetNeighbors_Symmetry_AllCornerCells_MaintainSymmetry()
     {
-        var topology = new Grid2DTopology(3, 3);
+        var topology = new RectangularTopology((3, 3));
 
         Point2D[] corners =
         [
-            new Point2D(0, 0),
-            new Point2D(2, 0),
-            new Point2D(0, 2),
-            new Point2D(2, 2)
+            default,
+            (2, 0),
+            (0, 2),
+            (2, 2)
         ];
 
         foreach (Point2D corner in corners)
@@ -260,9 +260,9 @@ public class Grid2DTopologyTests
     #region ITopology Interface Tests
 
     [Fact]
-    public void Grid2DTopology_ImplementsITopology()
+    public void RectangularTopology_ImplementsITopology()
     {
-        var topology = new Grid2DTopology(3, 3);
+        var topology = new RectangularTopology((3, 3));
 
         _ = Assert.IsAssignableFrom<ITopology<Point2D>>(topology);
     }

@@ -122,76 +122,57 @@ public static class StreamingDiff
     }
 
     /// <summary>
-    /// Writes the full frame to output and captures glyphs to a buffer for future diffing.
+    /// Writes the full frame to output and captures glyphs to a pre-allocated buffer.
     /// </summary>
     /// <param name="current">The glyph enumerator for the frame.</param>
     /// <param name="output">The text writer to output to.</param>
-    /// <param name="frameBuffer">The list to store glyphs in. Will be cleared first.</param>
+    /// <param name="frameBuffer">The pre-allocated buffer to store glyphs in. Will be cleared first.</param>
     /// <param name="startRow">The starting row for the board (1-indexed). Default is 1.</param>
     public static void WriteFullAndCapture(
         ref ColorNormalizedGlyphEnumerator current,
         TextWriter output,
-        IList<Glyph> frameBuffer,
+        FrameBuffer frameBuffer,
         int startRow = 1)
     {
         ArgumentNullException.ThrowIfNull(output);
         ArgumentNullException.ThrowIfNull(frameBuffer);
 
-        frameBuffer.Clear();
-
-        int row = startRow;
-        int col = 1;
-        AnsiSequence? lastWrittenColor = null;
-
-        // Position cursor at start
-        output.Write($"\x1b[{row};{col}H");
-
-        while (current.MoveNext())
-        {
-            Glyph glyph = current.Current;
-            frameBuffer.Add(new Glyph(glyph.Color, glyph.Character));
-
-            if (glyph.IsNewline)
-            {
-                output.Write('\n');
-                row++;
-                col = 1;
-            }
-            else
-            {
-                if (glyph.Color.HasValue && glyph.Color != lastWrittenColor)
-                {
-                    output.Write(glyph.Color.Value.ToAnsiString());
-                    lastWrittenColor = glyph.Color;
-                }
-
-                output.Write(glyph.Character);
-                col++;
-            }
-        }
+        ApplyAndCaptureCore(previousFrame: null, ref current, output, frameBuffer, startRow);
     }
 
     /// <summary>
-    /// Applies differences between a cached frame buffer and a glyph stream.
+    /// Applies differences between a pre-allocated frame buffer and a glyph stream.
+    /// Zero-allocation diffing using pre-allocated buffers.
     /// </summary>
-    /// <param name="previousFrame">The cached previous frame glyphs.</param>
+    /// <param name="previousFrame">The cached previous frame buffer.</param>
     /// <param name="current">The current frame's glyph enumerator.</param>
     /// <param name="output">The text writer to output changes to.</param>
-    /// <param name="frameBuffer">The list to store current frame glyphs in. Will be cleared first.</param>
+    /// <param name="currentFrame">The pre-allocated buffer to store current frame. Will be cleared first.</param>
     /// <param name="startRow">The starting row for the board (1-indexed). Default is 1.</param>
     public static void ApplyAndCapture(
-        IReadOnlyList<Glyph> previousFrame,
+        FrameBuffer previousFrame,
         ref ColorNormalizedGlyphEnumerator current,
         TextWriter output,
-        IList<Glyph> frameBuffer,
+        FrameBuffer currentFrame,
         int startRow = 1)
     {
         ArgumentNullException.ThrowIfNull(previousFrame);
         ArgumentNullException.ThrowIfNull(output);
-        ArgumentNullException.ThrowIfNull(frameBuffer);
+        ArgumentNullException.ThrowIfNull(currentFrame);
 
-        frameBuffer.Clear();
+        ApplyAndCaptureCore(previousFrame, ref current, output, currentFrame, startRow);
+    }
 
+    private static void ApplyAndCaptureCore(
+        FrameBuffer? previousFrame,
+        ref ColorNormalizedGlyphEnumerator current,
+        TextWriter output,
+        FrameBuffer currentFrame,
+        int startRow)
+    {
+        currentFrame.Clear();
+
+        bool isFullWrite = previousFrame is null || previousFrame.Count == 0;
         int row = startRow;
         int col = 1;
         int prevIndex = 0;
@@ -201,42 +182,67 @@ public static class StreamingDiff
         int cursorRow = -1;
         int cursorCol = -1;
 
+        // For full write, position cursor at start
+        if (isFullWrite)
+        {
+            output.Write($"\x1b[{row};{col}H");
+            cursorRow = row;
+            cursorCol = col;
+        }
+
         while (current.MoveNext())
         {
             Glyph currGlyph = current.Current;
-            frameBuffer.Add(new Glyph(currGlyph.Color, currGlyph.Character));
-
-            bool hasPrev = prevIndex < previousFrame.Count;
-            Glyph prevGlyph = hasPrev ? previousFrame[prevIndex] : default;
-            prevIndex++;
+            currentFrame.Add(currGlyph);
 
             if (currGlyph.IsNewline)
             {
+                if (isFullWrite)
+                {
+                    output.Write('\n');
+                }
+
+                prevIndex++; // Newlines are stored in buffer, so must increment
                 row++;
                 col = 1;
-            }
-            else if (!hasPrev || currGlyph.Color != prevGlyph.Color || currGlyph.Character != prevGlyph.Character)
-            {
-                // Glyph changed - only emit cursor position if not already there
-                if (cursorRow != row || cursorCol != col)
+                if (isFullWrite)
                 {
-                    output.Write($"\x1b[{row};{col}H");
                     cursorRow = row;
                     cursorCol = col;
                 }
-
-                if (currGlyph.Color.HasValue && currGlyph.Color != lastWrittenColor)
-                {
-                    output.Write(currGlyph.Color.Value.ToAnsiString());
-                    lastWrittenColor = currGlyph.Color;
-                }
-
-                output.Write(currGlyph.Character);
-                cursorCol++; // Cursor advances after write
-                col++;
             }
             else
             {
+                bool needsWrite = isFullWrite;
+                if (!isFullWrite)
+                {
+                    bool hasPrev = prevIndex < previousFrame!.Count;
+                    Glyph prevGlyph = hasPrev ? previousFrame[prevIndex] : default;
+                    needsWrite = !hasPrev || currGlyph.Color != prevGlyph.Color || currGlyph.Character != prevGlyph.Character;
+                }
+
+                prevIndex++;
+
+                if (needsWrite)
+                {
+                    // Only emit cursor position if not already there
+                    if (cursorRow != row || cursorCol != col)
+                    {
+                        output.Write($"\x1b[{row};{col}H");
+                        cursorRow = row;
+                        cursorCol = col;
+                    }
+
+                    if (currGlyph.Color.HasValue && currGlyph.Color != lastWrittenColor)
+                    {
+                        output.Write(currGlyph.Color.Value.ToAnsiString());
+                        lastWrittenColor = currGlyph.Color;
+                    }
+
+                    output.Write(currGlyph.Character);
+                    cursorCol++;
+                }
+
                 col++;
             }
         }

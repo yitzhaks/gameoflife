@@ -6,29 +6,14 @@
 /// Survival: Alive cell with 2 or 3 alive neighbors stays alive.
 /// Death: All other cases result in dead.
 /// </summary>
-public class ClassicRules : IRules<bool>
+public class ClassicRules : CellularAutomatonRules
 {
-    /// <summary>
-    /// Gets the default state (dead/false).
-    /// </summary>
-    public bool DefaultState => false;
+    /// <inheritdoc />
+    public override bool DefaultState => false;
 
-    /// <summary>
-    /// Computes the next state based on B3/S23 rules.
-    /// </summary>
-    public bool GetNextState(bool current, IEnumerable<bool> neighborStates)
-    {
-        int aliveNeighbors = neighborStates.Count(s => s);
-
-        if (current)
-        {
-            // Survival: alive cell with 2 or 3 neighbors survives
-            return aliveNeighbors is 2 or 3;
-        }
-        else
-        {
-            // Birth: dead cell with exactly 3 neighbors becomes alive
-            return aliveNeighbors is 3;
-        }
-    }
+    /// <inheritdoc />
+    public override bool GetNextState(bool currentState, int aliveNeighborCount) =>
+        currentState
+            ? aliveNeighborCount is 2 or 3  // Survival
+            : aliveNeighborCount is 3;      // Birth
 }

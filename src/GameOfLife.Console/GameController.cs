@@ -100,33 +100,35 @@ internal sealed class GameController
 
     private int RunGameLoop(bool isInteractiveConsole, CancellationToken cancellationToken)
     {
-        // Create topology
-        var topology = new Grid2DTopology(_options.Width, _options.Height);
+        Size2D boardSize = (_options.Width, _options.Height);
 
         // Create initial generation with injected shapes
-        var initialStates = new Dictionary<Point2D, bool>();
-        foreach (ShapeInjection injection in _options.Injections)
+        IGeneration<Point2D, bool> initialGeneration;
         {
-            IReadOnlyList<Point2D> pattern = _shapeLoader.LoadPattern(injection.PatternName);
-            foreach (Point2D point in pattern)
+            using var builder = new RectangularGenerationBuilder(boardSize);
+            foreach (ShapeInjection injection in _options.Injections)
             {
-                int targetX = injection.X + point.X;
-                int targetY = injection.Y + point.Y;
-
-                // Clip points outside bounds
-                if (targetX >= 0 && targetX < _options.Width &&
-                    targetY >= 0 && targetY < _options.Height)
+                IReadOnlyList<Point2D> pattern = _shapeLoader.LoadPattern(injection.PatternName);
+                foreach (Point2D point in pattern)
                 {
-                    initialStates[new Point2D(targetX, targetY)] = true;
+                    Point2D target = injection.Position + point;
+
+                    // Clip points outside bounds
+                    if (target.IsInBounds(boardSize))
+                    {
+                        builder[target] = true;
+                    }
                 }
             }
+
+            // Build() takes ownership of the pooled array
+            initialGeneration = builder.Build();
         }
 
-        var initialGeneration = new DictionaryGeneration<Point2D, bool>(initialStates, false);
-
-        // Create world and timeline
-        var world = new World<Point2D, bool>(topology, new ClassicRules());
-        var timeline = new Timeline<Point2D, bool>(world, initialGeneration);
+        // Create rectangular world and timeline for optimized performance
+        var world = new RectangularWorld(boardSize);
+        // the timeline takes ownership of the pooled array in initialGeneration
+        using var timeline = Timeline.Create(world, initialGeneration);
 
         // Create renderer
         var layoutEngine = new IdentityLayoutEngine();
@@ -154,8 +156,11 @@ internal sealed class GameController
         // Run game loop
         int generation = 0;
 
-        // Double-buffered frame storage for differential rendering
-        List<Glyph>[] frameBuffers = [[], []];
+        // Double-buffered frame storage for differential rendering (pre-allocated)
+        FrameBuffer[] frameBuffers = [
+            FrameBuffer.ForViewport(viewport?.Width ?? _options.Width, viewport?.Height ?? _options.Height),
+            FrameBuffer.ForViewport(viewport?.Width ?? _options.Width, viewport?.Height ?? _options.Height)
+        ];
         int currentBufferIndex = 0;
 
         // Header takes 2 lines (Generation: X + blank line), so board starts at row 3
@@ -197,9 +202,9 @@ internal sealed class GameController
             {
                 // Render using differential updates against frame buffer
                 TimeSpan elapsed = wallClock.Elapsed;
-                List<Glyph> prevBuffer = frameBuffers[currentBufferIndex];
-                List<Glyph> currBuffer = frameBuffers[1 - currentBufferIndex];
-                RenderWithDiff(renderer, topology, timeline.Current, prevBuffer, currBuffer, BoardStartRow, generation, isPlaying, viewport, viewportHeight, isPlaying ? currentFps : null, isPlaying ? elapsed : null);
+                FrameBuffer prevBuffer = frameBuffers[currentBufferIndex];
+                FrameBuffer currBuffer = frameBuffers[1 - currentBufferIndex];
+                RenderWithDiff(renderer, world.Topology, timeline.Current, prevBuffer, currBuffer, BoardStartRow, generation, isPlaying, viewport, viewportHeight, isPlaying ? currentFps : null, isPlaying ? elapsed : null);
                 currentBufferIndex = 1 - currentBufferIndex; // Swap buffers
             }
             else
@@ -207,7 +212,7 @@ internal sealed class GameController
                 // Non-interactive mode: use traditional rendering
                 _output.WriteLine($"Generation: {generation}");
                 _output.WriteLine();
-                renderer.Render(topology, timeline.Current);
+                renderer.Render(world.Topology, timeline.Current);
                 _output.WriteLine();
                 _output.WriteLine("Space/Enter: Next | P: Play | Q/Esc: Quit");
             }
@@ -359,10 +364,10 @@ internal sealed class GameController
 
     private void RenderWithDiff(
         ConsoleRenderer renderer,
-        Grid2DTopology topology,
+        RectangularTopology topology,
         IGeneration<Point2D, bool> currentGeneration,
-        List<Glyph> previousFrameBuffer,
-        List<Glyph> currentFrameBuffer,
+        FrameBuffer previousFrameBuffer,
+        FrameBuffer currentFrameBuffer,
         int startRow,
         int generationNumber,
         bool isPlaying,
@@ -492,7 +497,7 @@ internal sealed class GameController
             ConsoleKey.S or ConsoleKey.DownArrow => (0, 1),
             ConsoleKey.A or ConsoleKey.LeftArrow => (-1, 0),
             ConsoleKey.D or ConsoleKey.RightArrow => (1, 0),
-            _ => (0, 0)
+            _ => default
         };
 #pragma warning restore IDE0072
     }
