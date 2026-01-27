@@ -170,12 +170,12 @@ public class StreamingDiffTests
             new Dictionary<Point2D, bool> { [new Point2D(0, 0)] = true },
             defaultState: false);
 
-        var frameBuffer = new List<Glyph>();
+        var frameBuffer = new FrameBuffer(100);
         ColorNormalizedGlyphEnumerator glyphEnumerator = renderer.GetGlyphEnumerator(topology, generation);
         StreamingDiff.WriteFullAndCapture(ref glyphEnumerator, output, frameBuffer, startRow: 1);
 
         // Buffer should contain all glyphs (2x2 grid + newlines)
-        Assert.NotEmpty(frameBuffer);
+        Assert.True(frameBuffer.Count > 0);
         // Check first cell is alive (green)
         Assert.Equal('#', frameBuffer[0].Character);
     }
@@ -201,18 +201,18 @@ public class StreamingDiffTests
             defaultState: false);
 
         // Capture initial frame
-        var initialBuffer = new List<Glyph>();
+        var initialBuffer = new FrameBuffer(100);
         ColorNormalizedGlyphEnumerator initialEnumerator = renderer.GetGlyphEnumerator(topology, prevGeneration);
         using var discardOutput = new StringWriter();
         StreamingDiff.WriteFullAndCapture(ref initialEnumerator, discardOutput, initialBuffer, startRow: 1);
 
         // Apply diff and capture
-        var resultBuffer = new List<Glyph>();
+        var resultBuffer = new FrameBuffer(100);
         ColorNormalizedGlyphEnumerator currEnumerator = renderer.GetGlyphEnumerator(topology, currGeneration);
         StreamingDiff.ApplyAndCapture(initialBuffer, ref currEnumerator, output, resultBuffer, startRow: 1);
 
         // Buffer should match current frame
-        Assert.NotEmpty(resultBuffer);
+        Assert.True(resultBuffer.Count > 0);
         // The changed cell should be written
         string result = output.ToString();
         Assert.Contains("#", result);
@@ -346,14 +346,31 @@ public class StreamingDiffTests
             defaultState: false);
 
         // Pre-populate buffer with dummy data
-        var frameBuffer = new List<Glyph> { new(null, 'X'), new(null, 'Y') };
+        var frameBuffer = new FrameBuffer(100);
+        frameBuffer.Add(new Glyph(null, 'X'));
+        frameBuffer.Add(new Glyph(null, 'Y'));
 
         ColorNormalizedGlyphEnumerator glyphEnumerator = renderer.GetGlyphEnumerator(topology, generation);
         StreamingDiff.WriteFullAndCapture(ref glyphEnumerator, output, frameBuffer, startRow: 1);
 
         // Buffer should be cleared and only contain new glyphs (1 cell + newline = 2)
-        Assert.DoesNotContain(frameBuffer, g => g.Character == 'X');
-        Assert.DoesNotContain(frameBuffer, g => g.Character == 'Y');
+        bool containsX = false;
+        bool containsY = false;
+        for (int i = 0; i < frameBuffer.Count; i++)
+        {
+            if (frameBuffer[i].Character == 'X')
+            {
+                containsX = true;
+            }
+
+            if (frameBuffer[i].Character == 'Y')
+            {
+                containsY = true;
+            }
+        }
+
+        Assert.False(containsX);
+        Assert.False(containsY);
     }
 
     [Fact]
@@ -377,18 +394,18 @@ public class StreamingDiffTests
             defaultState: false);
 
         // Capture initial larger frame
-        var initialBuffer = new List<Glyph>();
+        var initialBuffer = new FrameBuffer(100);
         ColorNormalizedGlyphEnumerator initialEnumerator = renderer.GetGlyphEnumerator(prevTopology, prevGeneration);
         using var discardOutput = new StringWriter();
         StreamingDiff.WriteFullAndCapture(ref initialEnumerator, discardOutput, initialBuffer, startRow: 1);
 
         // Apply diff with smaller current frame
-        var resultBuffer = new List<Glyph>();
+        var resultBuffer = new FrameBuffer(100);
         ColorNormalizedGlyphEnumerator currEnumerator = renderer.GetGlyphEnumerator(currTopology, currGeneration);
         StreamingDiff.ApplyAndCapture(initialBuffer, ref currEnumerator, output, resultBuffer, startRow: 1);
 
         // Should handle gracefully
-        Assert.NotEmpty(resultBuffer);
+        Assert.True(resultBuffer.Count > 0);
     }
 
     [Fact]
@@ -502,8 +519,8 @@ public class StreamingDiffTests
             defaultState: false);
 
         // Empty previous frame forces all cells to be written
-        var emptyBuffer = new List<Glyph>();
-        var frameBuffer = new List<Glyph>();
+        var emptyBuffer = new FrameBuffer(100);
+        var frameBuffer = new FrameBuffer(100);
         ColorNormalizedGlyphEnumerator currEnumerator = renderer.GetGlyphEnumerator(topology, generation);
 
         StreamingDiff.ApplyAndCapture(emptyBuffer, ref currEnumerator, output, frameBuffer, startRow: 1);
@@ -584,5 +601,50 @@ public class StreamingDiffTests
 
         // Should only have 1 cursor move (to first cell), not 3
         Assert.Equal(1, cursorMoveCount);
+    }
+
+    [Fact]
+    public void ApplyAndCapture_MultiRowChange_TracksIndexCorrectlyAcrossNewlines()
+    {
+        // This test verifies that prevIndex increments for newlines too,
+        // otherwise the diff comparison gets out of sync after the first row.
+        using var output = new StringWriter();
+        var engine = new IdentityLayoutEngine();
+        var theme = new ConsoleTheme(AliveChar: '#', DeadChar: '.', ShowBorder: false);
+        var renderer = new ConsoleRenderer(output, engine, theme);
+
+        // 3x2 grid (3 columns, 2 rows)
+        var topology = new RectangularTopology((3, 2));
+
+        // First frame: all dead
+        using var prevGeneration = new DictionaryGeneration<Point2D, bool>(
+            new Dictionary<Point2D, bool>(),
+            defaultState: false);
+
+        // Second frame: only cell at (1,1) is alive (second row, middle column)
+        using var currGeneration = new DictionaryGeneration<Point2D, bool>(
+            new Dictionary<Point2D, bool> { [new Point2D(1, 1)] = true },
+            defaultState: false);
+
+        // Capture first frame
+        var prevBuffer = new FrameBuffer(100);
+        ColorNormalizedGlyphEnumerator prevEnumerator = renderer.GetGlyphEnumerator(topology, prevGeneration);
+        using var discardOutput = new StringWriter();
+        StreamingDiff.WriteFullAndCapture(ref prevEnumerator, discardOutput, prevBuffer, startRow: 1);
+
+        // Apply diff for second frame
+        var currBuffer = new FrameBuffer(100);
+        ColorNormalizedGlyphEnumerator currEnumerator = renderer.GetGlyphEnumerator(topology, currGeneration);
+        StreamingDiff.ApplyAndCapture(prevBuffer, ref currEnumerator, output, currBuffer, startRow: 1);
+
+        string result = output.ToString();
+
+        // Should contain exactly 1 alive character (the changed cell)
+        int aliveCount = result.Count(c => c == '#');
+        Assert.Equal(1, aliveCount);
+
+        // Should NOT contain any dead characters (unchanged cells shouldn't be written)
+        int deadCount = result.Count(c => c == '.');
+        Assert.Equal(0, deadCount);
     }
 }

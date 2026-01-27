@@ -2,7 +2,7 @@
 :: Stress test with 1000x1000 board (1 million cells!)
 :: Use WASD or arrow keys to pan around, P to play/pause, Q to quit
 
-dotnet run --project src/GameOfLife.Console -- ^
+dotnet run --configuration Release --project src/GameOfLife.Console -- ^
     --width 1000 ^
     --height 1000 ^
     --start-autoplay ^

@@ -2,7 +2,7 @@
 
 public class ClassicRulesTests
 {
-    private readonly ClassicRules _rules = new();
+    private readonly IRules<bool> _rules = new ClassicRules();
 
     #region Helper Methods
 

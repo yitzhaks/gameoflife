@@ -6,6 +6,71 @@
 public class RectangularTopology : ITopology<Point2D>
 {
     /// <summary>
+    /// Stack-allocated enumerable for neighbors. Use with foreach for zero-allocation iteration.
+    /// </summary>
+    public readonly ref struct NeighborEnumerable
+    {
+        private readonly Point2D _center;
+        private readonly Size2D _size;
+
+        internal NeighborEnumerable(Point2D center, Size2D size)
+        {
+            _center = center;
+            _size = size;
+        }
+
+        /// <summary>
+        /// Gets the enumerator.
+        /// </summary>
+        public NeighborEnumerator GetEnumerator() => new(_center, _size);
+    }
+
+    /// <summary>
+    /// Stack-allocated enumerator for neighbors. Iterates Moore neighborhood without heap allocation.
+    /// </summary>
+    public ref struct NeighborEnumerator
+    {
+        private readonly Point2D _center;
+        private readonly Size2D _size;
+        private int _index;
+
+        internal NeighborEnumerator(Point2D center, Size2D size)
+        {
+            _center = center;
+            _size = size;
+            _index = -1;
+            Current = default;
+        }
+
+        /// <summary>
+        /// Gets the current neighbor.
+        /// </summary>
+        public Point2D Current { get; private set; }
+
+        /// <summary>
+        /// Moves to the next neighbor.
+        /// </summary>
+        public bool MoveNext()
+        {
+            // Offsets for Moore neighborhood (8 directions), skipping (0,0)
+            ReadOnlySpan<int> dx = [-1, 0, 1, -1, 1, -1, 0, 1];
+            ReadOnlySpan<int> dy = [-1, -1, -1, 0, 0, 1, 1, 1];
+
+            while (++_index < 8)
+            {
+                Point2D neighbor = _center + (dx[_index], dy[_index]);
+                if (neighbor.IsInBounds(_size))
+                {
+                    Current = neighbor;
+                    return true;
+                }
+            }
+
+            return false;
+        }
+    }
+
+    /// <summary>
     /// Gets the size of the grid.
     /// </summary>
     public Size2D Size { get; }
@@ -46,6 +111,14 @@ public class RectangularTopology : ITopology<Point2D>
             }
         }
     }
+
+    /// <summary>
+    /// Gets the neighbors of a node without heap allocation.
+    /// Use this in hot paths with foreach for zero-allocation iteration.
+    /// </summary>
+    /// <param name="node">The node to get neighbors for.</param>
+    /// <returns>A stack-allocated enumerable of neighboring nodes.</returns>
+    public NeighborEnumerable GetNeighborsStack(Point2D node) => new(node, Size);
 
     /// <summary>
     /// Gets the neighbors of a node (Moore neighborhood - up to 8 adjacent cells).

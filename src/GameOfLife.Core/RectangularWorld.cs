@@ -1,21 +1,33 @@
 ﻿namespace GameOfLife.Core;
 
 /// <summary>
-/// Optimized world implementation specifically for 2D grids with classic rules.
-/// Uses array-based state storage for maximum performance.
+/// Optimized world implementation specifically for 2D rectangular grids.
+/// Uses array-based state storage and zero-allocation neighbor iteration for maximum performance.
 /// </summary>
 public class RectangularWorld : IWorld<Point2D, bool, IGeneration<Point2D, bool>>
 {
-    private readonly ClassicRules _rules = new();
+    private readonly ICellularAutomatonRules _rules;
 
     /// <summary>
-    /// Creates a new rectangular world with the specified size.
+    /// Creates a new rectangular world with the specified size and classic rules.
     /// </summary>
     /// <param name="size">The size of the grid.</param>
-    public RectangularWorld(Size2D size)
+    public RectangularWorld(Size2D size) : this(size, new ClassicRules())
     {
+    }
+
+    /// <summary>
+    /// Creates a new rectangular world with the specified size and rules.
+    /// </summary>
+    /// <param name="size">The size of the grid.</param>
+    /// <param name="rules">The cellular automata rules to apply.</param>
+    public RectangularWorld(Size2D size, ICellularAutomatonRules rules)
+    {
+        ArgumentNullException.ThrowIfNull(rules);
+
         Size = size;
         Topology = new RectangularTopology(size);
+        _rules = rules;
     }
 
     /// <summary>
@@ -44,7 +56,21 @@ public class RectangularWorld : IWorld<Point2D, bool, IGeneration<Point2D, bool>
             {
                 for (int x = 0; x < Size.Width; x++)
                 {
-                    builder[(x, y)] = _rules.GetNextState(currentGeneration[(x, y)], currentGeneration.GetNeighborStates(Topology, (x, y)));
+                    Point2D cell = (x, y);
+                    bool currentState = currentGeneration[cell];
+
+                    // Count alive neighbors using stack-allocated enumerator (zero allocation)
+                    int aliveNeighborCount = 0;
+                    foreach (Point2D neighbor in Topology.GetNeighborsStack(cell))
+                    {
+                        if (currentGeneration[neighbor])
+                        {
+                            aliveNeighborCount++;
+                        }
+                    }
+
+                    // Apply rules using count-based overload (zero allocation)
+                    builder[cell] = _rules.GetNextState(currentState, aliveNeighborCount);
                 }
             }
 

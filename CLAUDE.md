@@ -47,6 +47,8 @@ dotnet test --collect:"XPlat Code Coverage" --results-directory ./coverage
 reportgenerator -reports:"coverage/**/coverage.cobertura.xml" -targetdir:"coverage/report" -reporttypes:TextSummary
 ```
 
+**Important**: Always run code coverage before committing changes to ensure coverage hasn't regressed.
+
 ## Testing Requirements
 
 - **Framework**: xUnit
@@ -77,6 +79,7 @@ The constructor sets `_supportsColor = ReferenceEquals(output, System.Console.Ou
 ## Style Preferences
 
 - **Command-line arguments**: Always use full parameter syntax (e.g., `--start-autoplay` not `-a`, `--inject` not `-i`, `--width` not `-w`)
+- **Formatting**: Always fix formatting issues using `dotnet format` rather than editing files manually
 
 ## Project Structure
 
