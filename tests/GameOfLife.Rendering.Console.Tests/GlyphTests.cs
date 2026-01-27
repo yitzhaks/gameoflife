@@ -1,4 +1,6 @@
-﻿using Xunit;
+﻿using Shouldly;
+
+using Xunit;
 
 namespace GameOfLife.Rendering.Console.Tests;
 
@@ -9,9 +11,9 @@ public class GlyphTests
     {
         var glyph = new Glyph(AnsiSequence.ForegroundGreen, 'A');
 
-        Assert.Equal(AnsiSequence.ForegroundGreen, glyph.Color);
-        Assert.Equal('A', glyph.Character);
-        Assert.False(glyph.IsNewline);
+        glyph.Color.ShouldBe(AnsiSequence.ForegroundGreen);
+        glyph.Character.ShouldBe('A');
+        glyph.IsNewline.ShouldBeFalse();
     }
 
     [Fact]
@@ -19,8 +21,8 @@ public class GlyphTests
     {
         var glyph = new Glyph(null, 'B');
 
-        Assert.Null(glyph.Color);
-        Assert.Equal('B', glyph.Character);
+        glyph.Color.ShouldBeNull();
+        glyph.Character.ShouldBe('B');
     }
 
     [Fact]
@@ -28,7 +30,7 @@ public class GlyphTests
     {
         var glyph = new Glyph(null, '\n');
 
-        Assert.True(glyph.IsNewline);
+        glyph.IsNewline.ShouldBeTrue();
     }
 
     [Fact]
@@ -36,7 +38,7 @@ public class GlyphTests
     {
         var glyph = new Glyph(null, 'X');
 
-        Assert.False(glyph.IsNewline);
+        glyph.IsNewline.ShouldBeFalse();
     }
 
     [Fact]
@@ -45,8 +47,8 @@ public class GlyphTests
         var glyph1 = new Glyph(AnsiSequence.ForegroundGreen, 'A');
         var glyph2 = new Glyph(AnsiSequence.ForegroundGreen, 'A');
 
-        Assert.Equal(glyph1, glyph2);
-        Assert.True(glyph1 == glyph2);
+        glyph2.ShouldBe(glyph1);
+        (glyph1 == glyph2).ShouldBeTrue();
     }
 
     [Fact]
@@ -55,7 +57,7 @@ public class GlyphTests
         var glyph1 = new Glyph(AnsiSequence.ForegroundGreen, 'A');
         var glyph2 = new Glyph(AnsiSequence.ForegroundGray, 'A');
 
-        Assert.NotEqual(glyph1, glyph2);
+        glyph2.ShouldNotBe(glyph1);
     }
 
     [Fact]
@@ -64,7 +66,7 @@ public class GlyphTests
         var glyph1 = new Glyph(AnsiSequence.ForegroundGreen, 'A');
         var glyph2 = new Glyph(AnsiSequence.ForegroundGreen, 'B');
 
-        Assert.NotEqual(glyph1, glyph2);
+        glyph2.ShouldNotBe(glyph1);
     }
 
     [Fact]
@@ -73,7 +75,7 @@ public class GlyphTests
         var glyph1 = new Glyph(null, 'A');
         var glyph2 = new Glyph(AnsiSequence.ForegroundGreen, 'A');
 
-        Assert.NotEqual(glyph1, glyph2);
+        glyph2.ShouldNotBe(glyph1);
     }
 
     [Fact]
@@ -83,9 +85,9 @@ public class GlyphTests
 
         string result = glyph.ToString();
 
-        Assert.Contains("Glyph", result);
-        Assert.Contains("ForegroundGreen", result);
-        Assert.Contains("X", result);
+        result.ShouldContain("Glyph");
+        result.ShouldContain("ForegroundGreen");
+        result.ShouldContain("X");
     }
 
     [Fact]
@@ -95,7 +97,7 @@ public class GlyphTests
 
         string result = glyph.ToString();
 
-        Assert.Contains("\\n", result);
+        result.ShouldContain("\\n");
     }
 
     [Fact]
@@ -104,7 +106,7 @@ public class GlyphTests
         var glyph1 = new Glyph(AnsiSequence.ForegroundGreen, 'A');
         var glyph2 = new Glyph(AnsiSequence.ForegroundGreen, 'A');
 
-        Assert.Equal(glyph1.GetHashCode(), glyph2.GetHashCode());
+        glyph2.GetHashCode().ShouldBe(glyph1.GetHashCode());
     }
 
     [Fact]
@@ -114,7 +116,7 @@ public class GlyphTests
         var glyph2 = new Glyph(AnsiSequence.ForegroundGray, 'B');
 
         // Hash codes can theoretically collide, but different values should usually differ
-        Assert.NotEqual(glyph1.GetHashCode(), glyph2.GetHashCode());
+        glyph2.GetHashCode().ShouldNotBe(glyph1.GetHashCode());
     }
 
     [Fact]
@@ -122,7 +124,7 @@ public class GlyphTests
     {
         var glyph = new Glyph(AnsiSequence.ForegroundGreen, 'A');
 
-        Assert.False(glyph.Equals(null));
+        glyph.Equals(null).ShouldBeFalse();
     }
 
     [Fact]
@@ -130,8 +132,8 @@ public class GlyphTests
     {
         var glyph = new Glyph(AnsiSequence.ForegroundGreen, 'A');
 
-        Assert.False(glyph.Equals("not a glyph"));
-        Assert.False(glyph.Equals(42));
+        glyph.Equals("not a glyph").ShouldBeFalse();
+        glyph.Equals(42).ShouldBeFalse();
     }
 
     [Fact]
@@ -140,7 +142,7 @@ public class GlyphTests
         var glyph1 = new Glyph(AnsiSequence.ForegroundGreen, 'A');
         var glyph2 = new Glyph(AnsiSequence.ForegroundGray, 'A');
 
-        Assert.True(glyph1 != glyph2);
+        (glyph1 != glyph2).ShouldBeTrue();
     }
 
     [Fact]
@@ -149,7 +151,7 @@ public class GlyphTests
         var glyph1 = new Glyph(AnsiSequence.ForegroundGreen, 'A');
         var glyph2 = new Glyph(AnsiSequence.ForegroundGreen, 'B');
 
-        Assert.True(glyph1 != glyph2);
+        (glyph1 != glyph2).ShouldBeTrue();
     }
 
     [Fact]
@@ -159,8 +161,8 @@ public class GlyphTests
 
         string result = glyph.ToString();
 
-        Assert.Contains("null", result);
-        Assert.Contains("X", result);
+        result.ShouldContain("null");
+        result.ShouldContain("X");
     }
 
     [Fact]
@@ -168,8 +170,8 @@ public class GlyphTests
     {
         var glyph = default(Glyph);
 
-        Assert.Null(glyph.Color);
-        Assert.Equal('\0', glyph.Character);
+        glyph.Color.ShouldBeNull();
+        glyph.Character.ShouldBe('\0');
     }
 
     [Fact]
@@ -178,7 +180,7 @@ public class GlyphTests
         var glyph1 = new Glyph(null, 'A');
         var glyph2 = new Glyph(null, 'A');
 
-        Assert.True(glyph1.Equals(glyph2));
-        Assert.True(glyph1 == glyph2);
+        glyph1.Equals(glyph2).ShouldBeTrue();
+        (glyph1 == glyph2).ShouldBeTrue();
     }
 }

@@ -1,4 +1,6 @@
-﻿using Xunit;
+﻿using Shouldly;
+
+using Xunit;
 
 namespace GameOfLife.Core.Tests;
 
@@ -9,8 +11,8 @@ public class RectangularWorldTests
     {
         var world = new RectangularWorld((10, 10));
 
-        Assert.Equal(new Size2D(10, 10), world.Size);
-        Assert.NotNull(world.Topology);
+        world.Size.ShouldBe(new Size2D(10, 10));
+        _ = world.Topology.ShouldNotBeNull();
     }
 
     [Fact]
@@ -18,7 +20,7 @@ public class RectangularWorldTests
     {
         var world = new RectangularWorld((10, 10));
 
-        _ = Assert.Throws<ArgumentNullException>(() => world.Tick(null!));
+        _ = Should.Throw<ArgumentNullException>(() => world.Tick(null!));
     }
 
     [Fact]
@@ -34,7 +36,7 @@ public class RectangularWorldTests
         {
             for (int x = 0; x < 5; x++)
             {
-                Assert.False(next[(x, y)]);
+                next[(x, y)].ShouldBeFalse();
             }
         }
     }
@@ -52,7 +54,7 @@ public class RectangularWorldTests
         using IGeneration<Point2D, bool> next = world.Tick(gen);
 
         // Single cell dies from underpopulation
-        Assert.False(next[(2, 2)]);
+        next[(2, 2)].ShouldBeFalse();
     }
 
     [Fact]
@@ -73,10 +75,10 @@ public class RectangularWorldTests
 
         using IGeneration<Point2D, bool> next = world.Tick(gen);
 
-        Assert.True(next[(1, 1)]);
-        Assert.True(next[(2, 1)]);
-        Assert.True(next[(1, 2)]);
-        Assert.True(next[(2, 2)]);
+        next[(1, 1)].ShouldBeTrue();
+        next[(2, 1)].ShouldBeTrue();
+        next[(1, 2)].ShouldBeTrue();
+        next[(2, 2)].ShouldBeTrue();
     }
 
     [Fact]
@@ -98,20 +100,20 @@ public class RectangularWorldTests
         using IGeneration<Point2D, bool> next = world.Tick(gen);
 
         // Should be vertical now
-        Assert.True(next[(2, 1)]);
-        Assert.True(next[(2, 2)]);
-        Assert.True(next[(2, 3)]);
-        Assert.False(next[(1, 2)]);
-        Assert.False(next[(3, 2)]);
+        next[(2, 1)].ShouldBeTrue();
+        next[(2, 2)].ShouldBeTrue();
+        next[(2, 3)].ShouldBeTrue();
+        next[(1, 2)].ShouldBeFalse();
+        next[(3, 2)].ShouldBeFalse();
 
         using IGeneration<Point2D, bool> next2 = world.Tick(next);
 
         // Should be back to horizontal
-        Assert.True(next2[(1, 2)]);
-        Assert.True(next2[(2, 2)]);
-        Assert.True(next2[(3, 2)]);
-        Assert.False(next2[(2, 1)]);
-        Assert.False(next2[(2, 3)]);
+        next2[(1, 2)].ShouldBeTrue();
+        next2[(2, 2)].ShouldBeTrue();
+        next2[(3, 2)].ShouldBeTrue();
+        next2[(2, 1)].ShouldBeFalse();
+        next2[(2, 3)].ShouldBeFalse();
     }
 
     [Fact]
@@ -132,7 +134,7 @@ public class RectangularWorldTests
         using IGeneration<Point2D, bool> next = world.Tick(gen);
 
         // Cell at (3,1) should be born (has exactly 3 neighbors)
-        Assert.True(next[(3, 1)]);
+        next[(3, 1)].ShouldBeTrue();
     }
 
     [Fact]
@@ -156,7 +158,7 @@ public class RectangularWorldTests
         using IGeneration<Point2D, bool> next = world.Tick(gen);
 
         // Center cell should die from overpopulation
-        Assert.False(next[(2, 2)]);
+        next[(2, 2)].ShouldBeFalse();
     }
 
     [Fact]
@@ -203,7 +205,7 @@ public class RectangularWorldTests
                 for (int x = 0; x < 10; x++)
                 {
                     Point2D point = (x, y);
-                    Assert.Equal(dictGen[point], arrayGen[point]);
+                    arrayGen[point].ShouldBe(dictGen[point]);
                 }
             }
         }

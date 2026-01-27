@@ -1,4 +1,6 @@
-﻿namespace GameOfLife.Core.Tests;
+﻿using Shouldly;
+
+namespace GameOfLife.Core.Tests;
 
 public class DictionaryGenerationTests
 {
@@ -15,9 +17,9 @@ public class DictionaryGenerationTests
         };
         using var generation = new DictionaryGeneration<int, bool>(states, defaultState: false);
 
-        Assert.True(generation[1]);
-        Assert.False(generation[2]);
-        Assert.True(generation[3]);
+        generation[1].ShouldBeTrue();
+        generation[2].ShouldBeFalse();
+        generation[3].ShouldBeTrue();
     }
 
     [Fact]
@@ -29,7 +31,7 @@ public class DictionaryGenerationTests
         };
         using var generation = new DictionaryGeneration<int, bool>(states, defaultState: false);
 
-        Assert.False(generation[99]); // Node not in dictionary
+        generation[99].ShouldBeFalse(); // Node not in dictionary
     }
 
     [Fact]
@@ -41,7 +43,7 @@ public class DictionaryGenerationTests
         };
         using var generation = new DictionaryGeneration<int, bool>(states, defaultState: true);
 
-        Assert.True(generation[99]); // Missing node returns true default
+        generation[99].ShouldBeTrue(); // Missing node returns true default
     }
 
     [Fact]
@@ -50,9 +52,9 @@ public class DictionaryGenerationTests
         var states = new Dictionary<int, bool>();
         using var generation = new DictionaryGeneration<int, bool>(states, defaultState: true);
 
-        Assert.True(generation[0]);
-        Assert.True(generation[1]);
-        Assert.True(generation[-1]);
+        generation[0].ShouldBeTrue();
+        generation[1].ShouldBeTrue();
+        generation[-1].ShouldBeTrue();
     }
 
     #endregion
@@ -70,9 +72,9 @@ public class DictionaryGenerationTests
         };
         using var generation = new DictionaryGeneration<Point2D, bool>(states, defaultState: false);
 
-        Assert.True(generation[default]);
-        Assert.False(generation[(1, 1)]);
-        Assert.True(generation[(2, 3)]);
+        generation[default].ShouldBeTrue();
+        generation[(1, 1)].ShouldBeFalse();
+        generation[(2, 3)].ShouldBeTrue();
     }
 
     [Fact]
@@ -84,7 +86,7 @@ public class DictionaryGenerationTests
         };
         using var generation = new DictionaryGeneration<Point2D, bool>(states, defaultState: false);
 
-        Assert.False(generation[(99, 99)]); // Node not in dictionary
+        generation[(99, 99)].ShouldBeFalse(); // Node not in dictionary
     }
 
     [Fact]
@@ -96,8 +98,8 @@ public class DictionaryGenerationTests
         };
         using var generation = new DictionaryGeneration<Point2D, bool>(states, defaultState: false);
 
-        Assert.True(generation[(-1, -2)]);
-        Assert.False(generation[(-1, -3)]); // Different coordinate, should return default
+        generation[(-1, -2)].ShouldBeTrue();
+        generation[(-1, -3)].ShouldBeFalse(); // Different coordinate, should return default
     }
 
     #endregion
@@ -114,9 +116,9 @@ public class DictionaryGenerationTests
         };
         using var generation = new DictionaryGeneration<string, int>(states, defaultState: -1);
 
-        Assert.Equal(1, generation["alive"]);
-        Assert.Equal(0, generation["dead"]);
-        Assert.Equal(-1, generation["unknown"]);
+        generation["alive"].ShouldBe(1);
+        generation["dead"].ShouldBe(0);
+        generation["unknown"].ShouldBe(-1);
     }
 
     #endregion
@@ -133,9 +135,9 @@ public class DictionaryGenerationTests
         };
         using var generation = new DictionaryGeneration<int, int>(states, defaultState: 0);
 
-        Assert.Equal(100, generation[1]);
-        Assert.Equal(200, generation[2]);
-        Assert.Equal(0, generation[3]); // Missing
+        generation[1].ShouldBe(100);
+        generation[2].ShouldBe(200);
+        generation[3].ShouldBe(0); // Missing
     }
 
     [Fact]
@@ -148,9 +150,9 @@ public class DictionaryGenerationTests
         };
         using var generation = new DictionaryGeneration<int, string>(states, defaultState: "unknown");
 
-        Assert.Equal("alive", generation[1]);
-        Assert.Equal("dead", generation[2]);
-        Assert.Equal("unknown", generation[3]); // Missing
+        generation[1].ShouldBe("alive");
+        generation[2].ShouldBe("dead");
+        generation[3].ShouldBe("unknown"); // Missing
     }
 
     [Fact]
@@ -162,8 +164,8 @@ public class DictionaryGenerationTests
         };
         using var generation = new DictionaryGeneration<int, string?>(states, defaultState: null);
 
-        Assert.Equal("value", generation[1]);
-        Assert.Null(generation[2]); // Missing, returns null default
+        generation[1].ShouldBe("value");
+        generation[2].ShouldBeNull(); // Missing, returns null default
     }
 
     #endregion
@@ -173,7 +175,7 @@ public class DictionaryGenerationTests
     [Fact]
     public void Constructor_NullDictionary_ThrowsArgumentNullException()
     {
-        _ = Assert.Throws<ArgumentNullException>(() =>
+        _ = Should.Throw<ArgumentNullException>(() =>
             new DictionaryGeneration<int, bool>(null!, defaultState: false));
     }
 
@@ -195,8 +197,8 @@ public class DictionaryGenerationTests
         states[2] = true;
 
         // Generation should still have the original values
-        Assert.True(generation[1]); // Should still be true, not false
-        Assert.False(generation[2]); // Should be default (false), not true
+        generation[1].ShouldBeTrue(); // Should still be true, not false
+        generation[2].ShouldBeFalse(); // Should be default (false), not true
     }
 
     #endregion
@@ -209,7 +211,7 @@ public class DictionaryGenerationTests
         var states = new Dictionary<int, bool>();
         using var generation = new DictionaryGeneration<int, bool>(states, defaultState: false);
 
-        _ = Assert.IsAssignableFrom<IGeneration<int, bool>>(generation);
+        _ = generation.ShouldBeAssignableTo<IGeneration<int, bool>>();
     }
 
     #endregion

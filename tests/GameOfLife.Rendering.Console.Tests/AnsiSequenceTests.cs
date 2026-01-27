@@ -1,4 +1,6 @@
-﻿using Xunit;
+﻿using Shouldly;
+
+using Xunit;
 
 namespace GameOfLife.Rendering.Console.Tests;
 
@@ -13,7 +15,7 @@ public class AnsiSequenceTests
     {
         string result = sequence.ToAnsiString();
 
-        Assert.Equal(expected, result);
+        result.ShouldBe(expected);
     }
 
     [Fact]
@@ -21,6 +23,6 @@ public class AnsiSequenceTests
     {
         var unknownSequence = (AnsiSequence)255;
 
-        _ = Assert.Throws<ArgumentOutOfRangeException>(() => unknownSequence.ToAnsiString());
+        _ = Should.Throw<ArgumentOutOfRangeException>(() => unknownSequence.ToAnsiString());
     }
 }

@@ -12,7 +12,6 @@ public sealed class ConsoleRenderer : IRenderer<RectangularTopology, Point2D, Po
     private readonly TextWriter _output;
     private readonly ILayoutEngine<RectangularTopology, Point2D, Point2D, RectangularBounds> _layoutEngine;
     private readonly ConsoleTheme _theme;
-    private readonly bool _supportsColor;
 
     // Cached topology data to avoid re-creating per frame
     private RectangularTopology? _cachedTopology;
@@ -38,11 +37,11 @@ public sealed class ConsoleRenderer : IRenderer<RectangularTopology, Point2D, Po
         _output = output;
         _layoutEngine = layoutEngine;
         _theme = theme;
-        _supportsColor = ReferenceEquals(output, System.Console.Out);
     }
 
     /// <summary>
-    /// Renders the generation state for the specified topology.
+    /// Renders the generation state for the specified topology without colors.
+    /// For colored output, use <see cref="GetTokenEnumerator"/> or <see cref="RenderToString"/> which produce ANSI sequences.
     /// Iterates Y then X (top to bottom, left to right).
     /// </summary>
     /// <param name="topology">The topology defining the structure.</param>
@@ -55,116 +54,62 @@ public sealed class ConsoleRenderer : IRenderer<RectangularTopology, Point2D, Po
 
         (ILayout<Point2D, Point2D, RectangularBounds> layout, HashSet<Point2D> nodeSet) = GetCachedTopologyData(topology);
         RectangularBounds bounds = layout.Bounds;
+        int width = bounds.Max.X - bounds.Min.X + 1;
 
-        // Store the original color to restore later
-        ConsoleColor? originalColor = null;
-        if (_supportsColor)
+        // Draw top border
+        if (_theme.ShowBorder)
         {
-            originalColor = System.Console.ForegroundColor;
+            DrawBorder(ConsoleTheme.Border.TopLeft, ConsoleTheme.Border.Horizontal, ConsoleTheme.Border.TopRight, width);
         }
 
-        try
+        // Iterate Y then X (top to bottom, left to right)
+        for (int y = bounds.Min.Y; y <= bounds.Max.Y; y++)
         {
-            int width = bounds.Max.X - bounds.Min.X + 1;
+            var rowBuilder = new StringBuilder();
 
-            // Draw top border
+            // Left border
             if (_theme.ShowBorder)
             {
-                DrawBorder(ConsoleTheme.Border.TopLeft, ConsoleTheme.Border.Horizontal, ConsoleTheme.Border.TopRight, width);
+                _ = rowBuilder.Append(ConsoleTheme.Border.Vertical);
             }
 
-            // Iterate Y then X (top to bottom, left to right)
-            for (int y = bounds.Min.Y; y <= bounds.Max.Y; y++)
+            for (int x = bounds.Min.X; x <= bounds.Max.X; x++)
             {
-                // Left border
-                if (_theme.ShowBorder)
+                Point2D point = (x, y);
+                if (nodeSet.Contains(point))
                 {
-                    SetColor(_theme.BorderColor);
-                    _output.Write(ConsoleTheme.Border.Vertical);
-                }
-
-                if (_supportsColor)
-                {
-                    // When using colors, we need to write character by character
-                    for (int x = bounds.Min.X; x <= bounds.Max.X; x++)
-                    {
-                        Point2D point = (x, y);
-                        if (nodeSet.Contains(point))
-                        {
-                            bool isAlive = generation[point];
-                            System.Console.ForegroundColor = isAlive ? _theme.AliveColor : _theme.DeadColor;
-                            _output.Write(isAlive ? _theme.AliveChar : _theme.DeadChar);
-                        }
-                        else
-                        {
-                            // For points not in the topology, write a space
-                            _output.Write(' ');
-                        }
-                    }
+                    bool isAlive = generation[point];
+                    _ = rowBuilder.Append(isAlive ? _theme.AliveChar : _theme.DeadChar);
                 }
                 else
                 {
-                    // When not using colors, we can build the row as a string
-                    var rowBuilder = new StringBuilder();
-                    for (int x = bounds.Min.X; x <= bounds.Max.X; x++)
-                    {
-                        Point2D point = (x, y);
-                        if (nodeSet.Contains(point))
-                        {
-                            bool isAlive = generation[point];
-                            _ = rowBuilder.Append(isAlive ? _theme.AliveChar : _theme.DeadChar);
-                        }
-                        else
-                        {
-                            // For points not in the topology, write a space
-                            _ = rowBuilder.Append(' ');
-                        }
-                    }
-
-                    _output.Write(rowBuilder);
+                    // For points not in the topology, write a space
+                    _ = rowBuilder.Append(' ');
                 }
-
-                // Right border
-                if (_theme.ShowBorder)
-                {
-                    SetColor(_theme.BorderColor);
-                    _output.Write(ConsoleTheme.Border.Vertical);
-                }
-
-                _output.WriteLine();
             }
 
-            // Draw bottom border
+            // Right border
             if (_theme.ShowBorder)
             {
-                DrawBorder(ConsoleTheme.Border.BottomLeft, ConsoleTheme.Border.Horizontal, ConsoleTheme.Border.BottomRight, width);
+                _ = rowBuilder.Append(ConsoleTheme.Border.Vertical);
             }
+
+            _output.WriteLine(rowBuilder);
         }
-        finally
+
+        // Draw bottom border
+        if (_theme.ShowBorder)
         {
-            // Restore the original color
-            if (_supportsColor && originalColor.HasValue)
-            {
-                System.Console.ForegroundColor = originalColor.Value;
-            }
+            DrawBorder(ConsoleTheme.Border.BottomLeft, ConsoleTheme.Border.Horizontal, ConsoleTheme.Border.BottomRight, width);
         }
     }
 
     private void DrawBorder(char left, char middle, char right, int width)
     {
-        SetColor(_theme.BorderColor);
         _output.Write(left);
         _output.Write(new string(middle, width));
         _output.Write(right);
         _output.WriteLine();
-    }
-
-    private void SetColor(ConsoleColor color)
-    {
-        if (_supportsColor)
-        {
-            System.Console.ForegroundColor = color;
-        }
     }
 
     /// <summary>

@@ -56,26 +56,6 @@ reportgenerator -reports:"coverage/**/coverage.cobertura.xml" -targetdir:"covera
 - **Goal**: Near 100% branch coverage
 - **Naming**: `MethodName_Scenario_ExpectedBehavior`
 
-## Coverage Limitations
-
-**GameOfLife.Rendering.Console** has a practical maximum of ~90% branch coverage due to untestable code:
-
-| Class | Branch Coverage | Notes |
-|-------|-----------------|-------|
-| ConsoleRenderer | ~63% | `_supportsColor` branches require `Console.Out` |
-| ColorNormalizedGlyphEnumerator | ~87% | Unknown sequence throw is unreachable |
-| All other classes | 90-100% | Fully testable |
-
-**Why ConsoleRenderer can't reach higher coverage:**
-
-The constructor sets `_supportsColor = ReferenceEquals(output, System.Console.Out)`. This means the following code paths only execute when writing to the actual console, which unit tests cannot do:
-- Lines 59-62: Store original `Console.ForegroundColor`
-- Lines 84-102: Character-by-character colored rendering
-- Lines 144-147: Restore original color
-- Lines 162-165: `SetColor()` method
-
-**Do not attempt to improve coverage beyond ~90%** without first refactoring `ConsoleRenderer` to use an abstraction for console color operations.
-
 ## Style Preferences
 
 - **Command-line arguments**: Always use full parameter syntax (e.g., `--start-autoplay` not `-a`, `--inject` not `-i`, `--width` not `-w`)

@@ -1,6 +1,8 @@
 ﻿using GameOfLife.Console;
 using GameOfLife.Core;
 
+using Shouldly;
+
 using Xunit;
 
 namespace GameOfLife.Rendering.Console.Tests;
@@ -14,12 +16,12 @@ public class ShapeLoaderTests
 
         IReadOnlyList<Point2D> points = ShapeLoader.ParsePattern(pattern);
 
-        Assert.Equal(5, points.Count);
-        Assert.Contains((1, 0), points);
-        Assert.Contains((2, 1), points);
-        Assert.Contains((0, 2), points);
-        Assert.Contains((1, 2), points);
-        Assert.Contains((2, 2), points);
+        points.Count.ShouldBe(5);
+        points.ShouldContain((1, 0));
+        points.ShouldContain((2, 1));
+        points.ShouldContain((0, 2));
+        points.ShouldContain((1, 2));
+        points.ShouldContain((2, 2));
     }
 
     [Fact]
@@ -29,11 +31,11 @@ public class ShapeLoaderTests
 
         IReadOnlyList<Point2D> points = ShapeLoader.ParsePattern(pattern);
 
-        Assert.Equal(4, points.Count);
-        Assert.Contains(default, points);
-        Assert.Contains((1, 0), points);
-        Assert.Contains((0, 1), points);
-        Assert.Contains((1, 1), points);
+        points.Count.ShouldBe(4);
+        points.ShouldContain((0, 0));
+        points.ShouldContain((1, 0));
+        points.ShouldContain((0, 1));
+        points.ShouldContain((1, 1));
     }
 
     [Fact]
@@ -43,10 +45,10 @@ public class ShapeLoaderTests
 
         IReadOnlyList<Point2D> points = ShapeLoader.ParsePattern(pattern);
 
-        Assert.Equal(3, points.Count);
-        Assert.Contains(default, points);
-        Assert.Contains((1, 0), points);
-        Assert.Contains((2, 0), points);
+        points.Count.ShouldBe(3);
+        points.ShouldContain((0, 0));
+        points.ShouldContain((1, 0));
+        points.ShouldContain((2, 0));
     }
 
     [Fact]
@@ -56,7 +58,7 @@ public class ShapeLoaderTests
 
         IReadOnlyList<Point2D> points = ShapeLoader.ParsePattern(pattern);
 
-        Assert.Empty(points);
+        points.ShouldBeEmpty();
     }
 
     [Fact]
@@ -66,8 +68,8 @@ public class ShapeLoaderTests
 
         IReadOnlyList<Point2D> points = ShapeLoader.ParsePattern(pattern);
 
-        _ = Assert.Single(points);
-        Assert.Equal(default, points[0]);
+        _ = points.ShouldHaveSingleItem();
+        points[0].ShouldBe((0, 0));
     }
 
     [Fact]
@@ -77,8 +79,8 @@ public class ShapeLoaderTests
 
         IReadOnlyList<Point2D> points = ShapeLoader.ParsePattern(pattern);
 
-        Assert.Equal(5, points.Count);
-        Assert.Contains((1, 0), points);
+        points.Count.ShouldBe(5);
+        points.ShouldContain((1, 0));
     }
 
     [Fact]
@@ -88,22 +90,22 @@ public class ShapeLoaderTests
 
         IReadOnlyList<Point2D> points = ShapeLoader.ParsePattern(pattern);
 
-        Assert.Equal(5, points.Count);
+        points.Count.ShouldBe(5);
     }
 
     [Fact]
-    public void ParsePattern_NullInput_ThrowsArgumentNullException() => Assert.Throws<ArgumentNullException>(() => ShapeLoader.ParsePattern(null!));
+    public void ParsePattern_NullInput_ThrowsArgumentNullException() => _ = Should.Throw<ArgumentNullException>(() => ShapeLoader.ParsePattern(null!));
 
     [Fact]
     public void ParsePattern_EmptyString_ReturnsEmptyList()
     {
         IReadOnlyList<Point2D> points = ShapeLoader.ParsePattern(string.Empty);
 
-        Assert.Empty(points);
+        points.ShouldBeEmpty();
     }
 
     [Fact]
-    public void Constructor_NullDirectory_ThrowsArgumentNullException() => Assert.Throws<ArgumentNullException>(() => new ShapeLoader(null!));
+    public void Constructor_NullDirectory_ThrowsArgumentNullException() => _ = Should.Throw<ArgumentNullException>(() => new ShapeLoader(null!));
 
     [Fact]
     public void GetAvailablePatterns_NonExistentDirectory_ReturnsEmptyEnumerable()
@@ -112,7 +114,7 @@ public class ShapeLoaderTests
 
         IEnumerable<string> patterns = loader.GetAvailablePatterns();
 
-        Assert.Empty(patterns);
+        patterns.ShouldBeEmpty();
     }
 
     [Fact]
@@ -129,10 +131,10 @@ public class ShapeLoaderTests
             var loader = new ShapeLoader(tempDir);
             var patterns = loader.GetAvailablePatterns().ToList();
 
-            Assert.Equal(3, patterns.Count);
-            Assert.Contains("blinker", patterns);
-            Assert.Contains("block", patterns);
-            Assert.Contains("glider", patterns);
+            patterns.Count.ShouldBe(3);
+            patterns.ShouldContain("blinker");
+            patterns.ShouldContain("block");
+            patterns.ShouldContain("glider");
         }
         finally
         {
@@ -154,8 +156,8 @@ public class ShapeLoaderTests
             var loader = new ShapeLoader(tempDir);
             var patterns = loader.GetAvailablePatterns().ToList();
 
-            _ = Assert.Single(patterns);
-            Assert.Equal("glider", patterns[0]);
+            _ = patterns.ShouldHaveSingleItem();
+            patterns[0].ShouldBe("glider");
         }
         finally
         {
@@ -168,7 +170,7 @@ public class ShapeLoaderTests
     {
         var loader = new ShapeLoader(".");
 
-        _ = Assert.Throws<ArgumentNullException>(() => loader.LoadPattern(null!));
+        _ = Should.Throw<ArgumentNullException>(() => loader.LoadPattern(null!));
     }
 
     [Fact]
@@ -176,7 +178,7 @@ public class ShapeLoaderTests
     {
         var loader = new ShapeLoader(".");
 
-        _ = Assert.Throws<FileNotFoundException>(() => loader.LoadPattern("nonexistent_pattern_12345"));
+        _ = Should.Throw<FileNotFoundException>(() => loader.LoadPattern("nonexistent_pattern_12345"));
     }
 
     [Fact]
@@ -191,12 +193,12 @@ public class ShapeLoaderTests
             var loader = new ShapeLoader(tempDir);
             IReadOnlyList<Point2D> points = loader.LoadPattern("glider");
 
-            Assert.Equal(5, points.Count);
-            Assert.Contains((1, 0), points);
-            Assert.Contains((2, 1), points);
-            Assert.Contains((0, 2), points);
-            Assert.Contains((1, 2), points);
-            Assert.Contains((2, 2), points);
+            points.Count.ShouldBe(5);
+            points.ShouldContain((1, 0));
+            points.ShouldContain((2, 1));
+            points.ShouldContain((0, 2));
+            points.ShouldContain((1, 2));
+            points.ShouldContain((2, 2));
         }
         finally
         {

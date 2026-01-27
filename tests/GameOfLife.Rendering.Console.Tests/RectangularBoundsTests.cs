@@ -1,6 +1,8 @@
 ﻿using GameOfLife.Core;
 using GameOfLife.Rendering;
 
+using Shouldly;
+
 using Xunit;
 
 namespace GameOfLife.Rendering.Console.Tests;
@@ -15,8 +17,8 @@ public class RectangularBoundsTests
 
         var bounds = new RectangularBounds(min, max);
 
-        Assert.Equal(min, bounds.Min);
-        Assert.Equal(max, bounds.Max);
+        bounds.Min.ShouldBe(min);
+        bounds.Max.ShouldBe(max);
     }
 
     [Fact]
@@ -26,8 +28,8 @@ public class RectangularBoundsTests
 
         var bounds = new RectangularBounds(point, point);
 
-        Assert.Equal(point, bounds.Min);
-        Assert.Equal(point, bounds.Max);
+        bounds.Min.ShouldBe(point);
+        bounds.Max.ShouldBe(point);
     }
 
     [Fact]
@@ -36,8 +38,8 @@ public class RectangularBoundsTests
         Point2D min = (10, 0);
         Point2D max = (5, 10);
 
-        ArgumentException exception = Assert.Throws<ArgumentException>(() => new RectangularBounds(min, max));
-        Assert.Contains("Min", exception.Message);
+        ArgumentException exception = Should.Throw<ArgumentException>(() => new RectangularBounds(min, max));
+        exception.Message.ShouldContain("Min");
     }
 
     [Fact]
@@ -46,8 +48,8 @@ public class RectangularBoundsTests
         Point2D min = (0, 10);
         Point2D max = (10, 5);
 
-        ArgumentException exception = Assert.Throws<ArgumentException>(() => new RectangularBounds(min, max));
-        Assert.Contains("Min", exception.Message);
+        ArgumentException exception = Should.Throw<ArgumentException>(() => new RectangularBounds(min, max));
+        exception.Message.ShouldContain("Min");
     }
 
     [Fact]
@@ -55,7 +57,7 @@ public class RectangularBoundsTests
     {
         var bounds = new RectangularBounds(default, (10, 10));
 
-        Assert.True(bounds.Contains((5, 5)));
+        bounds.Contains((5, 5)).ShouldBeTrue();
     }
 
     [Fact]
@@ -63,7 +65,7 @@ public class RectangularBoundsTests
     {
         var bounds = new RectangularBounds(default, (10, 10));
 
-        Assert.True(bounds.Contains(default));
+        bounds.Contains(default).ShouldBeTrue();
     }
 
     [Fact]
@@ -71,7 +73,7 @@ public class RectangularBoundsTests
     {
         var bounds = new RectangularBounds(default, (10, 10));
 
-        Assert.True(bounds.Contains((10, 10)));
+        bounds.Contains((10, 10)).ShouldBeTrue();
     }
 
     [Fact]
@@ -79,7 +81,7 @@ public class RectangularBoundsTests
     {
         var bounds = new RectangularBounds(default, (10, 10));
 
-        Assert.False(bounds.Contains((15, 5)));
+        bounds.Contains((15, 5)).ShouldBeFalse();
     }
 
     [Fact]
@@ -87,7 +89,7 @@ public class RectangularBoundsTests
     {
         var bounds = new RectangularBounds(default, (10, 10));
 
-        Assert.False(bounds.Contains((-1, 5)));
+        bounds.Contains((-1, 5)).ShouldBeFalse();
     }
 
     [Fact]
@@ -95,6 +97,6 @@ public class RectangularBoundsTests
     {
         var bounds = new RectangularBounds(default, (10, 10));
 
-        Assert.False(bounds.Contains((5, 11)));
+        bounds.Contains((5, 11)).ShouldBeFalse();
     }
 }

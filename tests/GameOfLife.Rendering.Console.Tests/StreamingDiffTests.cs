@@ -1,6 +1,8 @@
 ﻿using GameOfLife.Core;
 using GameOfLife.Rendering;
 
+using Shouldly;
+
 using Xunit;
 
 namespace GameOfLife.Rendering.Console.Tests;
@@ -26,8 +28,8 @@ public class StreamingDiffTests
         string result = output.ToString();
 
         // Should contain the cursor positioning and characters
-        Assert.Contains("\x1b[", result); // Contains ANSI escape
-        Assert.Contains(".", result); // Contains dead character
+        result.ShouldContain("\x1b["); // Contains ANSI escape
+        result.ShouldContain("."); // Contains dead character
     }
 
     [Fact]
@@ -52,7 +54,7 @@ public class StreamingDiffTests
         string result = output.ToString();
 
         // With identical frames, nothing should be written
-        Assert.Empty(result);
+        result.ShouldBeEmpty();
     }
 
     [Fact]
@@ -83,10 +85,10 @@ public class StreamingDiffTests
         string result = output.ToString();
 
         // Should contain the alive character
-        Assert.Contains("#", result);
+        result.ShouldContain("#");
 
         // Should contain cursor positioning
-        Assert.Contains("\x1b[", result);
+        result.ShouldContain("\x1b[");
     }
 
     [Fact]
@@ -122,7 +124,7 @@ public class StreamingDiffTests
 
         // Should contain multiple alive characters
         int aliveCount = result.Count(c => c == '#');
-        Assert.Equal(4, aliveCount); // 2x2 = 4 cells
+        aliveCount.ShouldBe(4); // 2x2 = 4 cells
     }
 
     [Fact]
@@ -154,7 +156,7 @@ public class StreamingDiffTests
         string result = output.ToString();
 
         // Should contain positioning to row 5, column 1
-        Assert.Contains("\x1b[5;1H", result);
+        result.ShouldContain("\x1b[5;1H");
     }
 
     [Fact]
@@ -175,9 +177,9 @@ public class StreamingDiffTests
         StreamingDiff.WriteFullAndCapture(ref glyphEnumerator, output, frameBuffer, startRow: 1);
 
         // Buffer should contain all glyphs (2x2 grid + newlines)
-        Assert.True(frameBuffer.Count > 0);
+        (frameBuffer.Count > 0).ShouldBeTrue();
         // Check first cell is alive (green)
-        Assert.Equal('#', frameBuffer[0].Character);
+        frameBuffer[0].Character.ShouldBe('#');
     }
 
     [Fact]
@@ -212,10 +214,10 @@ public class StreamingDiffTests
         StreamingDiff.ApplyAndCapture(initialBuffer, ref currEnumerator, output, resultBuffer, startRow: 1);
 
         // Buffer should match current frame
-        Assert.True(resultBuffer.Count > 0);
+        (resultBuffer.Count > 0).ShouldBeTrue();
         // The changed cell should be written
         string result = output.ToString();
-        Assert.Contains("#", result);
+        result.ShouldContain("#");
     }
 
     [Fact]
@@ -246,7 +248,7 @@ public class StreamingDiffTests
         string result = output.ToString();
 
         // Should contain color codes for the changes
-        Assert.Contains("\x1b[", result);
+        result.ShouldContain("\x1b[");
     }
 
     [Fact]
@@ -277,7 +279,7 @@ public class StreamingDiffTests
         string result = output.ToString();
 
         // New cells beyond previous frame should be written
-        Assert.Contains(".", result);
+        result.ShouldContain(".");
     }
 
     [Fact]
@@ -302,7 +304,7 @@ public class StreamingDiffTests
         string result = output.ToString();
 
         // No output for identical frames
-        Assert.Empty(result);
+        result.ShouldBeEmpty();
     }
 
     [Fact]
@@ -325,11 +327,11 @@ public class StreamingDiffTests
         string result = output.ToString();
 
         // Should contain the alive character
-        Assert.Contains("#", result);
+        result.ShouldContain("#");
         // Should contain the dead character
-        Assert.Contains(".", result);
+        result.ShouldContain(".");
         // Should contain ANSI color codes
-        Assert.Contains("\x1b[", result);
+        result.ShouldContain("\x1b[");
     }
 
     [Fact]
@@ -369,8 +371,8 @@ public class StreamingDiffTests
             }
         }
 
-        Assert.False(containsX);
-        Assert.False(containsY);
+        containsX.ShouldBeFalse();
+        containsY.ShouldBeFalse();
     }
 
     [Fact]
@@ -405,7 +407,7 @@ public class StreamingDiffTests
         StreamingDiff.ApplyAndCapture(initialBuffer, ref currEnumerator, output, resultBuffer, startRow: 1);
 
         // Should handle gracefully
-        Assert.True(resultBuffer.Count > 0);
+        (resultBuffer.Count > 0).ShouldBeTrue();
     }
 
     [Fact]
@@ -441,12 +443,12 @@ public class StreamingDiffTests
         string result = output.ToString();
 
         // Should contain 3 alive characters
-        Assert.Equal(3, result.Count(c => c == '#'));
+        result.Count(c => c == '#').ShouldBe(3);
 
         // Color code should appear only once (for the first cell)
         // Count color code sequences by counting escape character followed by '[' and 'm'
         int colorCodeCount = CountAnsiColorCodes(result);
-        Assert.Equal(1, colorCodeCount);
+        colorCodeCount.ShouldBe(1);
     }
 
     private static int CountAnsiColorCodes(string s)
@@ -528,7 +530,7 @@ public class StreamingDiffTests
         string result = output.ToString();
 
         // Should contain 3 alive characters
-        Assert.Equal(3, result.Count(c => c == '#'));
+        result.Count(c => c == '#').ShouldBe(3);
     }
 
     [Fact]
@@ -557,11 +559,11 @@ public class StreamingDiffTests
         string result = output.ToString();
 
         // Should contain 3 alive characters
-        Assert.Equal(3, result.Count(c => c == '#'));
+        result.Count(c => c == '#').ShouldBe(3);
 
         // Color code should appear only once
         int colorCodeCount = CountAnsiColorCodes(result);
-        Assert.Equal(1, colorCodeCount);
+        colorCodeCount.ShouldBe(1);
     }
 
     [Fact]
@@ -600,7 +602,7 @@ public class StreamingDiffTests
         int cursorMoveCount = CountCursorPositionCodes(result);
 
         // Should only have 1 cursor move (to first cell), not 3
-        Assert.Equal(1, cursorMoveCount);
+        cursorMoveCount.ShouldBe(1);
     }
 
     [Fact]
@@ -641,10 +643,10 @@ public class StreamingDiffTests
 
         // Should contain exactly 1 alive character (the changed cell)
         int aliveCount = result.Count(c => c == '#');
-        Assert.Equal(1, aliveCount);
+        aliveCount.ShouldBe(1);
 
         // Should NOT contain any dead characters (unchanged cells shouldn't be written)
         int deadCount = result.Count(c => c == '.');
-        Assert.Equal(0, deadCount);
+        deadCount.ShouldBe(0);
     }
 }

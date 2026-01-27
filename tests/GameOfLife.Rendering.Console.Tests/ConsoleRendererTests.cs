@@ -1,6 +1,8 @@
 ﻿using GameOfLife.Core;
 using GameOfLife.Rendering;
 
+using Shouldly;
+
 using Xunit;
 
 namespace GameOfLife.Rendering.Console.Tests;
@@ -24,8 +26,8 @@ public class ConsoleRendererTests
 
         string result = output.ToString();
         string[] lines = result.Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries);
-        Assert.Equal(3, lines.Length);
-        Assert.All(lines, line => Assert.Equal("...", line));
+        lines.Length.ShouldBe(3);
+        lines.ShouldAllBe(line => line == "...");
     }
 
     [Fact]
@@ -49,8 +51,8 @@ public class ConsoleRendererTests
 
         string result = output.ToString();
         string[] lines = result.Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries);
-        Assert.Equal(3, lines.Length);
-        Assert.All(lines, line => Assert.Equal("###", line));
+        lines.Length.ShouldBe(3);
+        lines.ShouldAllBe(line => line == "###");
     }
 
     [Fact]
@@ -81,10 +83,10 @@ public class ConsoleRendererTests
 
         string result = output.ToString();
         string[] lines = result.Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries);
-        Assert.Equal(3, lines.Length);
-        Assert.Equal(".#.", lines[0]);
-        Assert.Equal("..#", lines[1]);
-        Assert.Equal("###", lines[2]);
+        lines.Length.ShouldBe(3);
+        lines[0].ShouldBe(".#.");
+        lines[1].ShouldBe("..#");
+        lines[2].ShouldBe("###");
     }
 
     [Fact]
@@ -108,9 +110,9 @@ public class ConsoleRendererTests
 
         string result = output.ToString();
         string[] lines = result.Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries);
-        Assert.Equal(2, lines.Length);
-        Assert.Equal("O-", lines[0]);
-        Assert.Equal("-O", lines[1]);
+        lines.Length.ShouldBe(2);
+        lines[0].ShouldBe("O-");
+        lines[1].ShouldBe("-O");
     }
 
     [Fact]
@@ -140,11 +142,11 @@ public class ConsoleRendererTests
         // ║.#.║
         // ║.#.║
         // ╚═══╝
-        Assert.Equal(4, lines.Length);
-        Assert.Equal("╔═══╗", lines[0]);
-        Assert.Equal("║.#.║", lines[1]);
-        Assert.Equal("║.#.║", lines[2]);
-        Assert.Equal("╚═══╝", lines[3]);
+        lines.Length.ShouldBe(4);
+        lines[0].ShouldBe("╔═══╗");
+        lines[1].ShouldBe("║.#.║");
+        lines[2].ShouldBe("║.#.║");
+        lines[3].ShouldBe("╚═══╝");
     }
 
     [Fact]
@@ -153,7 +155,7 @@ public class ConsoleRendererTests
         var engine = new IdentityLayoutEngine();
         ConsoleTheme theme = ConsoleTheme.Default;
 
-        _ = Assert.Throws<ArgumentNullException>(() => new ConsoleRenderer(null!, engine, theme));
+        _ = Should.Throw<ArgumentNullException>(() => new ConsoleRenderer(null!, engine, theme));
     }
 
     [Fact]
@@ -162,7 +164,7 @@ public class ConsoleRendererTests
         using var output = new StringWriter();
         ConsoleTheme theme = ConsoleTheme.Default;
 
-        _ = Assert.Throws<ArgumentNullException>(() => new ConsoleRenderer(output, null!, theme));
+        _ = Should.Throw<ArgumentNullException>(() => new ConsoleRenderer(output, null!, theme));
     }
 
     [Fact]
@@ -171,7 +173,7 @@ public class ConsoleRendererTests
         using var output = new StringWriter();
         var engine = new IdentityLayoutEngine();
 
-        _ = Assert.Throws<ArgumentNullException>(() => new ConsoleRenderer(output, engine, null!));
+        _ = Should.Throw<ArgumentNullException>(() => new ConsoleRenderer(output, engine, null!));
     }
 
     [Fact]
@@ -186,7 +188,7 @@ public class ConsoleRendererTests
             new Dictionary<Point2D, bool>(),
             defaultState: false);
 
-        _ = Assert.Throws<ArgumentNullException>(() => renderer.Render(null!, generation));
+        _ = Should.Throw<ArgumentNullException>(() => renderer.Render(null!, generation));
     }
 
     [Fact]
@@ -199,7 +201,7 @@ public class ConsoleRendererTests
 
         var topology = new RectangularTopology((3, 3));
 
-        _ = Assert.Throws<ArgumentNullException>(() => renderer.Render(topology, null!));
+        _ = Should.Throw<ArgumentNullException>(() => renderer.Render(topology, null!));
     }
 
     [Fact]
@@ -224,7 +226,7 @@ public class ConsoleRendererTests
             tokens.Add(enumerator.Current);
         }
 
-        Assert.NotEmpty(tokens);
+        tokens.ShouldNotBeEmpty();
     }
 
     [Fact]
@@ -250,7 +252,7 @@ public class ConsoleRendererTests
             tokens.Add(enumerator.Current);
         }
 
-        Assert.NotEmpty(tokens);
+        tokens.ShouldNotBeEmpty();
     }
 
     [Fact]
@@ -275,9 +277,9 @@ public class ConsoleRendererTests
             glyphs.Add(enumerator.Current);
         }
 
-        Assert.NotEmpty(glyphs);
+        glyphs.ShouldNotBeEmpty();
         // First glyph should have a color (alive cell)
-        Assert.True(glyphs[0].Color.HasValue);
+        glyphs[0].Color.HasValue.ShouldBeTrue();
     }
 
     [Fact]
@@ -303,7 +305,7 @@ public class ConsoleRendererTests
             glyphs.Add(enumerator.Current);
         }
 
-        Assert.NotEmpty(glyphs);
+        glyphs.ShouldNotBeEmpty();
     }
 
     [Fact]
@@ -322,11 +324,11 @@ public class ConsoleRendererTests
         string result = renderer.RenderToString(topology, generation);
 
         // Should contain ANSI escape sequences
-        Assert.Contains("\x1b[", result);
+        result.ShouldContain("\x1b[");
         // Should contain the alive character
-        Assert.Contains("#", result);
+        result.ShouldContain("#");
         // Should contain the dead character
-        Assert.Contains(".", result);
+        result.ShouldContain(".");
     }
 
     [Fact]
@@ -345,12 +347,12 @@ public class ConsoleRendererTests
         string result = renderer.RenderToString(topology, generation);
 
         // Should contain border characters
-        Assert.Contains("╔", result);
-        Assert.Contains("╗", result);
-        Assert.Contains("╚", result);
-        Assert.Contains("╝", result);
-        Assert.Contains("═", result);
-        Assert.Contains("║", result);
+        result.ShouldContain("╔");
+        result.ShouldContain("╗");
+        result.ShouldContain("╚");
+        result.ShouldContain("╝");
+        result.ShouldContain("═");
+        result.ShouldContain("║");
     }
 
     [Fact]
@@ -365,7 +367,7 @@ public class ConsoleRendererTests
             new Dictionary<Point2D, bool>(),
             defaultState: false);
 
-        _ = Assert.Throws<ArgumentNullException>(() => renderer.GetTokenEnumerator(null!, generation));
+        _ = Should.Throw<ArgumentNullException>(() => renderer.GetTokenEnumerator(null!, generation));
     }
 
     [Fact]
@@ -378,6 +380,6 @@ public class ConsoleRendererTests
 
         var topology = new RectangularTopology((3, 3));
 
-        _ = Assert.Throws<ArgumentNullException>(() => renderer.GetTokenEnumerator(topology, null!));
+        _ = Should.Throw<ArgumentNullException>(() => renderer.GetTokenEnumerator(topology, null!));
     }
 }

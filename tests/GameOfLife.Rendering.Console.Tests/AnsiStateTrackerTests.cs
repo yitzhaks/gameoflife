@@ -1,6 +1,8 @@
 ﻿using GameOfLife.Core;
 using GameOfLife.Rendering;
 
+using Shouldly;
+
 using Xunit;
 
 namespace GameOfLife.Rendering.Console.Tests;
@@ -34,8 +36,8 @@ public class AnsiStateTrackerTests
 
         // Both character glyphs should have the normalized color
         var characterGlyphs = glyphs.Where(g => !g.IsNewline).ToList();
-        Assert.Equal(2, characterGlyphs.Count);
-        Assert.All(characterGlyphs, g => Assert.Equal(AnsiSequence.ForegroundGreen, g.Color));
+        characterGlyphs.Count.ShouldBe(2);
+        characterGlyphs.ShouldAllBe(g => g.Color == AnsiSequence.ForegroundGreen);
     }
 
     [Fact]
@@ -63,13 +65,13 @@ public class AnsiStateTrackerTests
         }
 
         var characterGlyphs = glyphs.Where(g => !g.IsNewline).ToList();
-        Assert.Equal(2, characterGlyphs.Count);
+        characterGlyphs.Count.ShouldBe(2);
 
         // First should be dead (DarkGray)
-        Assert.Equal(AnsiSequence.ForegroundDarkGray, characterGlyphs[0].Color);
+        characterGlyphs[0].Color.ShouldBe(AnsiSequence.ForegroundDarkGray);
 
         // Second should be alive (Green)
-        Assert.Equal(AnsiSequence.ForegroundGreen, characterGlyphs[1].Color);
+        characterGlyphs[1].Color.ShouldBe(AnsiSequence.ForegroundGreen);
     }
 
     [Fact]
@@ -97,7 +99,7 @@ public class AnsiStateTrackerTests
         }
 
         // Newlines should not have color
-        Assert.All(newlineGlyphs, g => Assert.Null(g.Color));
+        newlineGlyphs.ShouldAllBe(g => g.Color == null);
     }
 
     [Fact]
@@ -130,8 +132,8 @@ public class AnsiStateTrackerTests
         }
 
         // All should have the same color (green)
-        Assert.Equal(3, characterGlyphs.Count);
-        Assert.All(characterGlyphs, g => Assert.Equal(AnsiSequence.ForegroundGreen, g.Color));
+        characterGlyphs.Count.ShouldBe(3);
+        characterGlyphs.ShouldAllBe(g => g.Color == AnsiSequence.ForegroundGreen);
     }
 
     [Fact]
@@ -163,14 +165,14 @@ public class AnsiStateTrackerTests
             }
         }
 
-        Assert.Equal(5, characterGlyphs.Count);
+        characterGlyphs.Count.ShouldBe(5);
 
         // Verify alternating colors
-        Assert.Equal(AnsiSequence.ForegroundGreen, characterGlyphs[0].Color);     // alive
-        Assert.Equal(AnsiSequence.ForegroundDarkGray, characterGlyphs[1].Color);  // dead
-        Assert.Equal(AnsiSequence.ForegroundGreen, characterGlyphs[2].Color);     // alive
-        Assert.Equal(AnsiSequence.ForegroundDarkGray, characterGlyphs[3].Color);  // dead
-        Assert.Equal(AnsiSequence.ForegroundGreen, characterGlyphs[4].Color);     // alive
+        characterGlyphs[0].Color.ShouldBe(AnsiSequence.ForegroundGreen);     // alive
+        characterGlyphs[1].Color.ShouldBe(AnsiSequence.ForegroundDarkGray);  // dead
+        characterGlyphs[2].Color.ShouldBe(AnsiSequence.ForegroundGreen);     // alive
+        characterGlyphs[3].Color.ShouldBe(AnsiSequence.ForegroundDarkGray);  // dead
+        characterGlyphs[4].Color.ShouldBe(AnsiSequence.ForegroundGreen);     // alive
     }
 
     [Fact]
@@ -195,7 +197,7 @@ public class AnsiStateTrackerTests
         }
 
         // Should include border glyphs with gray color
-        Assert.Contains(glyphs, g => g.Color == AnsiSequence.ForegroundGray);
+        glyphs.ShouldContain(g => g.Color == AnsiSequence.ForegroundGray);
     }
 
     [Fact]
@@ -221,6 +223,28 @@ public class AnsiStateTrackerTests
         }
 
         // 1x1 grid = 1 cell + 1 newline = 2 glyphs
-        Assert.Equal(2, count);
+        count.ShouldBe(2);
+    }
+
+    [Theory]
+    [InlineData(AnsiSequence.Reset)]
+    [InlineData(AnsiSequence.ForegroundGreen)]
+    [InlineData(AnsiSequence.ForegroundDarkGray)]
+    [InlineData(AnsiSequence.ForegroundGray)]
+    public void ValidateSequence_KnownSequences_DoesNotThrow(AnsiSequence sequence) =>
+        // Act & Assert - should not throw
+        ColorNormalizedGlyphEnumerator.ValidateSequence(sequence);
+
+    [Fact]
+    public void ValidateSequence_UnknownSequence_ThrowsInvalidOperationException()
+    {
+        // Arrange - cast an invalid value to AnsiSequence
+        var invalidSequence = (AnsiSequence)255;
+
+        // Act & Assert
+        InvalidOperationException ex = Should.Throw<InvalidOperationException>(() =>
+            ColorNormalizedGlyphEnumerator.ValidateSequence(invalidSequence));
+        ex.Message.ShouldContain("Unknown ANSI sequence");
+        ex.Message.ShouldContain("255");
     }
 }
