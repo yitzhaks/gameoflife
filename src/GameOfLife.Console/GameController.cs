@@ -147,7 +147,7 @@ internal sealed class GameController
 
         // In half-block mode, board height is halved for display purposes
         int effectiveBoardHeight = _options.AspectMode == AspectMode.HalfBlock
-            ? (_options.Height + 1) / 2
+            ? _options.Height / 2
             : _options.Height;
         int viewportHeight = effectiveBoardHeight;
 
