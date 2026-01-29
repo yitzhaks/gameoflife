@@ -22,16 +22,48 @@ public sealed class ViewportBorderStateTests
     private static string RenderBorder(bool atTop, bool atBottom, bool atLeft, bool atRight)
     {
         int boardW, moveX;
-        if (atLeft && atRight) { boardW = 4; moveX = 0; }
-        else if (atLeft) { boardW = 8; moveX = 0; }
-        else if (atRight) { boardW = 8; moveX = 4; }
-        else { boardW = 12; moveX = 4; }
+        if (atLeft && atRight)
+        {
+            boardW = 4;
+            moveX = 0;
+        }
+        else if (atLeft)
+        {
+            boardW = 8;
+            moveX = 0;
+        }
+        else if (atRight)
+        {
+            boardW = 8;
+            moveX = 4;
+        }
+        else
+        {
+            boardW = 12;
+            moveX = 4;
+        }
 
         int boardH, moveY;
-        if (atTop && atBottom) { boardH = 4; moveY = 0; }
-        else if (atTop) { boardH = 8; moveY = 0; }
-        else if (atBottom) { boardH = 8; moveY = 4; }
-        else { boardH = 12; moveY = 4; }
+        if (atTop && atBottom)
+        {
+            boardH = 4;
+            moveY = 0;
+        }
+        else if (atTop)
+        {
+            boardH = 8;
+            moveY = 0;
+        }
+        else if (atBottom)
+        {
+            boardH = 8;
+            moveY = 4;
+        }
+        else
+        {
+            boardH = 12;
+            moveY = 4;
+        }
 
         var topology = new RectangularTopology((boardW, boardH));
         var engine = new IdentityLayoutEngine();
