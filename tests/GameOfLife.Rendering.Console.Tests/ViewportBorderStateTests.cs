@@ -27,74 +27,6 @@ namespace GameOfLife.Rendering.Console.Tests;
 /// </summary>
 public sealed class ViewportBorderStateTests
 {
-    // Viewport position (0,0): Top=T, Bottom=F, Left=T, Right=F
-    //
-    // ╔═════
-    // ║....→
-    // ║....→
-    // ║....→
-    // ║....→
-    // ║↓↓↓↓↘
-    //
-    private const string Expected_TopLeft =
-        "╔═════\n" +
-        "║....→\n" +
-        "║....→\n" +
-        "║....→\n" +
-        "║....→\n" +
-        "║↓↓↓↓↘\n";
-
-    // Viewport position (4,0): Top=T, Bottom=F, Left=F, Right=T
-    //
-    // ═════╗
-    // ←....║
-    // ←....║
-    // ←....║
-    // ←....║
-    // ↙↓↓↓↓║
-    //
-    private const string Expected_TopRight =
-        "═════╗\n" +
-        "←....║\n" +
-        "←....║\n" +
-        "←....║\n" +
-        "←....║\n" +
-        "↙↓↓↓↓║\n";
-
-    // Viewport position (0,4): Top=F, Bottom=T, Left=T, Right=F
-    //
-    // ║↑↑↑↑↗
-    // ║....→
-    // ║....→
-    // ║....→
-    // ║....→
-    // ╚═════
-    //
-    private const string Expected_BottomLeft =
-        "║↑↑↑↑↗\n" +
-        "║....→\n" +
-        "║....→\n" +
-        "║....→\n" +
-        "║....→\n" +
-        "╚═════\n";
-
-    // Viewport position (4,4): Top=F, Bottom=T, Left=F, Right=T
-    //
-    // ↖↑↑↑↑║
-    // ←....║
-    // ←....║
-    // ←....║
-    // ←....║
-    // ═════╝
-    //
-    private const string Expected_BottomRight =
-        "↖↑↑↑↑║\n" +
-        "←....║\n" +
-        "←....║\n" +
-        "←....║\n" +
-        "←....║\n" +
-        "═════╝\n";
-
     private static string RenderBorder(int moveX, int moveY)
     {
         var topology = new RectangularTopology((8, 8));
@@ -126,28 +58,52 @@ public sealed class ViewportBorderStateTests
     public void TopLeftCorner_AtTopAndLeft_RendersSolidCorner()
     {
         // isAtTop=T, isAtLeft=T → ╔
-        RenderBorder(0, 0).ShouldBe(Expected_TopLeft);
+        RenderBorder(0, 0).ShouldBe(
+            "╔═════\n" +
+            "║....→\n" +
+            "║....→\n" +
+            "║....→\n" +
+            "║....→\n" +
+            "║↓↓↓↓↘\n");
     }
 
     [Fact]
     public void TopLeftCorner_AtTopNotAtLeft_RendersHorizontal()
     {
         // isAtTop=T, isAtLeft=F → ═ (continues the top edge)
-        RenderBorder(4, 0).ShouldBe(Expected_TopRight);
+        RenderBorder(4, 0).ShouldBe(
+            "═════╗\n" +
+            "←....║\n" +
+            "←....║\n" +
+            "←....║\n" +
+            "←....║\n" +
+            "↙↓↓↓↓║\n");
     }
 
     [Fact]
     public void TopLeftCorner_NotAtTopAtLeft_RendersVertical()
     {
         // isAtTop=F, isAtLeft=T → ║ (continues the left edge)
-        RenderBorder(0, 4).ShouldBe(Expected_BottomLeft);
+        RenderBorder(0, 4).ShouldBe(
+            "║↑↑↑↑↗\n" +
+            "║....→\n" +
+            "║....→\n" +
+            "║....→\n" +
+            "║....→\n" +
+            "╚═════\n");
     }
 
     [Fact]
     public void TopLeftCorner_NotAtTopNotAtLeft_RendersDiagonalTopLeft()
     {
         // isAtTop=F, isAtLeft=F → ↖
-        RenderBorder(4, 4).ShouldBe(Expected_BottomRight);
+        RenderBorder(4, 4).ShouldBe(
+            "↖↑↑↑↑║\n" +
+            "←....║\n" +
+            "←....║\n" +
+            "←....║\n" +
+            "←....║\n" +
+            "═════╝\n");
     }
 
     #endregion
@@ -158,28 +114,52 @@ public sealed class ViewportBorderStateTests
     public void TopRightCorner_AtTopAndRight_RendersSolidCorner()
     {
         // isAtTop=T, isAtRight=T → ╗
-        RenderBorder(4, 0).ShouldBe(Expected_TopRight);
+        RenderBorder(4, 0).ShouldBe(
+            "═════╗\n" +
+            "←....║\n" +
+            "←....║\n" +
+            "←....║\n" +
+            "←....║\n" +
+            "↙↓↓↓↓║\n");
     }
 
     [Fact]
     public void TopRightCorner_AtTopNotAtRight_RendersHorizontal()
     {
         // isAtTop=T, isAtRight=F → ═ (continues the top edge)
-        RenderBorder(0, 0).ShouldBe(Expected_TopLeft);
+        RenderBorder(0, 0).ShouldBe(
+            "╔═════\n" +
+            "║....→\n" +
+            "║....→\n" +
+            "║....→\n" +
+            "║....→\n" +
+            "║↓↓↓↓↘\n");
     }
 
     [Fact]
     public void TopRightCorner_NotAtTopAtRight_RendersVertical()
     {
         // isAtTop=F, isAtRight=T → ║ (continues the right edge)
-        RenderBorder(4, 4).ShouldBe(Expected_BottomRight);
+        RenderBorder(4, 4).ShouldBe(
+            "↖↑↑↑↑║\n" +
+            "←....║\n" +
+            "←....║\n" +
+            "←....║\n" +
+            "←....║\n" +
+            "═════╝\n");
     }
 
     [Fact]
     public void TopRightCorner_NotAtTopNotAtRight_RendersDiagonalTopRight()
     {
         // isAtTop=F, isAtRight=F → ↗
-        RenderBorder(0, 4).ShouldBe(Expected_BottomLeft);
+        RenderBorder(0, 4).ShouldBe(
+            "║↑↑↑↑↗\n" +
+            "║....→\n" +
+            "║....→\n" +
+            "║....→\n" +
+            "║....→\n" +
+            "╚═════\n");
     }
 
     #endregion
@@ -190,28 +170,52 @@ public sealed class ViewportBorderStateTests
     public void BottomLeftCorner_AtBottomAndLeft_RendersSolidCorner()
     {
         // isAtBottom=T, isAtLeft=T → ╚
-        RenderBorder(0, 4).ShouldBe(Expected_BottomLeft);
+        RenderBorder(0, 4).ShouldBe(
+            "║↑↑↑↑↗\n" +
+            "║....→\n" +
+            "║....→\n" +
+            "║....→\n" +
+            "║....→\n" +
+            "╚═════\n");
     }
 
     [Fact]
     public void BottomLeftCorner_AtBottomNotAtLeft_RendersHorizontal()
     {
         // isAtBottom=T, isAtLeft=F → ═ (continues the bottom edge)
-        RenderBorder(4, 4).ShouldBe(Expected_BottomRight);
+        RenderBorder(4, 4).ShouldBe(
+            "↖↑↑↑↑║\n" +
+            "←....║\n" +
+            "←....║\n" +
+            "←....║\n" +
+            "←....║\n" +
+            "═════╝\n");
     }
 
     [Fact]
     public void BottomLeftCorner_NotAtBottomAtLeft_RendersVertical()
     {
         // isAtBottom=F, isAtLeft=T → ║ (continues the left edge)
-        RenderBorder(0, 0).ShouldBe(Expected_TopLeft);
+        RenderBorder(0, 0).ShouldBe(
+            "╔═════\n" +
+            "║....→\n" +
+            "║....→\n" +
+            "║....→\n" +
+            "║....→\n" +
+            "║↓↓↓↓↘\n");
     }
 
     [Fact]
     public void BottomLeftCorner_NotAtBottomNotAtLeft_RendersDiagonalBottomLeft()
     {
         // isAtBottom=F, isAtLeft=F → ↙
-        RenderBorder(4, 0).ShouldBe(Expected_TopRight);
+        RenderBorder(4, 0).ShouldBe(
+            "═════╗\n" +
+            "←....║\n" +
+            "←....║\n" +
+            "←....║\n" +
+            "←....║\n" +
+            "↙↓↓↓↓║\n");
     }
 
     #endregion
@@ -222,28 +226,52 @@ public sealed class ViewportBorderStateTests
     public void BottomRightCorner_AtBottomAndRight_RendersSolidCorner()
     {
         // isAtBottom=T, isAtRight=T → ╝
-        RenderBorder(4, 4).ShouldBe(Expected_BottomRight);
+        RenderBorder(4, 4).ShouldBe(
+            "↖↑↑↑↑║\n" +
+            "←....║\n" +
+            "←....║\n" +
+            "←....║\n" +
+            "←....║\n" +
+            "═════╝\n");
     }
 
     [Fact]
     public void BottomRightCorner_AtBottomNotAtRight_RendersHorizontal()
     {
         // isAtBottom=T, isAtRight=F → ═ (continues the bottom edge)
-        RenderBorder(0, 4).ShouldBe(Expected_BottomLeft);
+        RenderBorder(0, 4).ShouldBe(
+            "║↑↑↑↑↗\n" +
+            "║....→\n" +
+            "║....→\n" +
+            "║....→\n" +
+            "║....→\n" +
+            "╚═════\n");
     }
 
     [Fact]
     public void BottomRightCorner_NotAtBottomAtRight_RendersVertical()
     {
         // isAtBottom=F, isAtRight=T → ║ (continues the right edge)
-        RenderBorder(4, 0).ShouldBe(Expected_TopRight);
+        RenderBorder(4, 0).ShouldBe(
+            "═════╗\n" +
+            "←....║\n" +
+            "←....║\n" +
+            "←....║\n" +
+            "←....║\n" +
+            "↙↓↓↓↓║\n");
     }
 
     [Fact]
     public void BottomRightCorner_NotAtBottomNotAtRight_RendersDiagonalBottomRight()
     {
         // isAtBottom=F, isAtRight=F → ↘
-        RenderBorder(0, 0).ShouldBe(Expected_TopLeft);
+        RenderBorder(0, 0).ShouldBe(
+            "╔═════\n" +
+            "║....→\n" +
+            "║....→\n" +
+            "║....→\n" +
+            "║....→\n" +
+            "║↓↓↓↓↘\n");
     }
 
     #endregion
@@ -254,14 +282,26 @@ public sealed class ViewportBorderStateTests
     public void TopEdge_AtTop_RendersSolidHorizontal()
     {
         // isAtTop=T → ════ between corners
-        RenderBorder(0, 0).ShouldBe(Expected_TopLeft);
+        RenderBorder(0, 0).ShouldBe(
+            "╔═════\n" +
+            "║....→\n" +
+            "║....→\n" +
+            "║....→\n" +
+            "║....→\n" +
+            "║↓↓↓↓↘\n");
     }
 
     [Fact]
     public void TopEdge_NotAtTop_RendersUpArrows()
     {
         // isAtTop=F → ↑↑↑↑ between corners
-        RenderBorder(0, 4).ShouldBe(Expected_BottomLeft);
+        RenderBorder(0, 4).ShouldBe(
+            "║↑↑↑↑↗\n" +
+            "║....→\n" +
+            "║....→\n" +
+            "║....→\n" +
+            "║....→\n" +
+            "╚═════\n");
     }
 
     #endregion
@@ -272,14 +312,26 @@ public sealed class ViewportBorderStateTests
     public void BottomEdge_AtBottom_RendersSolidHorizontal()
     {
         // isAtBottom=T → ════ between corners
-        RenderBorder(0, 4).ShouldBe(Expected_BottomLeft);
+        RenderBorder(0, 4).ShouldBe(
+            "║↑↑↑↑↗\n" +
+            "║....→\n" +
+            "║....→\n" +
+            "║....→\n" +
+            "║....→\n" +
+            "╚═════\n");
     }
 
     [Fact]
     public void BottomEdge_NotAtBottom_RendersDownArrows()
     {
         // isAtBottom=F → ↓↓↓↓ between corners
-        RenderBorder(0, 0).ShouldBe(Expected_TopLeft);
+        RenderBorder(0, 0).ShouldBe(
+            "╔═════\n" +
+            "║....→\n" +
+            "║....→\n" +
+            "║....→\n" +
+            "║....→\n" +
+            "║↓↓↓↓↘\n");
     }
 
     #endregion
@@ -290,14 +342,26 @@ public sealed class ViewportBorderStateTests
     public void LeftEdge_AtLeft_RendersSolidVertical()
     {
         // isAtLeft=T → ║ on each content row
-        RenderBorder(0, 0).ShouldBe(Expected_TopLeft);
+        RenderBorder(0, 0).ShouldBe(
+            "╔═════\n" +
+            "║....→\n" +
+            "║....→\n" +
+            "║....→\n" +
+            "║....→\n" +
+            "║↓↓↓↓↘\n");
     }
 
     [Fact]
     public void LeftEdge_NotAtLeft_RendersLeftArrows()
     {
         // isAtLeft=F → ← on each content row
-        RenderBorder(4, 0).ShouldBe(Expected_TopRight);
+        RenderBorder(4, 0).ShouldBe(
+            "═════╗\n" +
+            "←....║\n" +
+            "←....║\n" +
+            "←....║\n" +
+            "←....║\n" +
+            "↙↓↓↓↓║\n");
     }
 
     #endregion
@@ -308,14 +372,26 @@ public sealed class ViewportBorderStateTests
     public void RightEdge_AtRight_RendersSolidVertical()
     {
         // isAtRight=T → ║ on each content row
-        RenderBorder(4, 0).ShouldBe(Expected_TopRight);
+        RenderBorder(4, 0).ShouldBe(
+            "═════╗\n" +
+            "←....║\n" +
+            "←....║\n" +
+            "←....║\n" +
+            "←....║\n" +
+            "↙↓↓↓↓║\n");
     }
 
     [Fact]
     public void RightEdge_NotAtRight_RendersRightArrows()
     {
         // isAtRight=F → → on each content row
-        RenderBorder(0, 0).ShouldBe(Expected_TopLeft);
+        RenderBorder(0, 0).ShouldBe(
+            "╔═════\n" +
+            "║....→\n" +
+            "║....→\n" +
+            "║....→\n" +
+            "║....→\n" +
+            "║↓↓↓↓↘\n");
     }
 
     #endregion
