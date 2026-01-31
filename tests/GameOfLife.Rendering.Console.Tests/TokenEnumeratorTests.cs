@@ -707,4 +707,41 @@ public class TokenEnumeratorTests
         hasDarkGray.ShouldBeTrue();
         hasGreen.ShouldBeTrue();
     }
+
+    [Fact]
+    public void MoveNext_MultiRowWithBorder_LeftBorderSkipsColorWhenMatchingPreviousRightBorder()
+    {
+        // Test that left border skips color emission when previous right border was same color
+        // This covers the TryEmitColor false path in BorderedRenderer
+        var topology = new RectangularTopology((2, 3));
+        var engine = new IdentityLayoutEngine();
+        ILayout<Point2D, Point2D, RectangularBounds> layout = engine.CreateLayout(topology);
+        var nodeSet = new HashSet<Point2D>(topology.Nodes);
+        using var generation = new DictionaryGeneration<Point2D, bool>(new Dictionary<Point2D, bool>(), false);
+        var theme = new ConsoleTheme(AliveChar: '#', DeadChar: '.', ShowBorder: true);
+
+        var tokens = new List<Token>();
+        var enumerator = new TokenEnumerator(layout, generation, nodeSet, theme);
+
+        while (enumerator.MoveNext())
+        {
+            tokens.Add(enumerator.Current);
+        }
+
+        // Count gray color emissions
+        // Top border: 1 gray (initial)
+        // Row 0 left border: skips (LastColor is gray from top border)
+        // Row 0 cells: darkgray
+        // Row 0 right border: 1 gray (changes from darkgray)
+        // Row 1 left border: skips (LastColor is gray from row 0 right)
+        // Row 1 cells: darkgray (changes from gray)
+        // Row 1 right border: 1 gray (changes from darkgray)
+        // Row 2 left border: skips (LastColor is gray from row 1 right)
+        // Row 2 cells: darkgray (changes from gray)
+        // Row 2 right border: 1 gray (changes from darkgray)
+        // Bottom border: skips (LastColor is gray from row 2 right)
+        // Total gray: 4 (top + 3 right borders)
+        int grayCount = tokens.Count(t => t.IsSequence && t.Sequence == AnsiSequence.ForegroundGray);
+        grayCount.ShouldBe(4);
+    }
 }
