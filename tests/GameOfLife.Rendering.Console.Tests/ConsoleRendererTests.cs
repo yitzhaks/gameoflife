@@ -683,4 +683,40 @@ public class ConsoleRendererTests
         int cellCount = glyphs.Count(g => !g.IsNewline);
         cellCount.ShouldBe(6); // 3 columns x 2 packed rows = 6 cells
     }
+
+    [Fact]
+    public void GetCachedTopologyData_AfterHalfBlockCache_InvalidatesHalfBlockCacheOnTopologyChange()
+    {
+        // This test covers line 142: _cachedHalfBlockLayout = null when topology changes
+        using var output = new StringWriter();
+        var engine = new IdentityLayoutEngine();
+        var theme = new ConsoleTheme(AliveChar: '#', DeadChar: '.', ShowBorder: false);
+        var renderer = new ConsoleRenderer(output, engine, theme);
+
+        var topology1 = new RectangularTopology((2, 4));
+        var topology2 = new RectangularTopology((3, 4));
+        using var generation = new DictionaryGeneration<Point2D, bool>(
+            new Dictionary<Point2D, bool>(),
+            defaultState: false);
+
+        // First: cache half-block layout for topology1
+        _ = renderer.GetHalfBlockGlyphEnumerator(topology1, generation);
+
+        // Second: call GetTokenEnumerator with different topology
+        // This triggers GetCachedTopologyData which sets _cachedHalfBlockLayout = null
+        _ = renderer.GetTokenEnumerator(topology2, generation);
+
+        // Third: call half-block again - should work (creates new layout)
+        HalfBlockColorNormalizedGlyphEnumerator enumerator = renderer.GetHalfBlockGlyphEnumerator(topology2, generation);
+
+        var glyphs = new List<Glyph>();
+        while (enumerator.MoveNext())
+        {
+            glyphs.Add(enumerator.Current);
+        }
+
+        // Verify it works correctly with the new topology (3 columns x 2 packed rows)
+        int cellCount = glyphs.Count(g => !g.IsNewline);
+        cellCount.ShouldBe(6); // 3 columns x 2 packed rows = 6 cells
+    }
 }

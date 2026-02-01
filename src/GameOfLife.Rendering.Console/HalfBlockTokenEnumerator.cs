@@ -15,18 +15,12 @@ public ref struct HalfBlockTokenEnumerator
     private readonly IGeneration<Point2D, bool> _generation;
     private readonly HashSet<Point2D> _nodeSet;
     private readonly ConsoleTheme _theme;
-    private readonly PackedBounds _bounds;
-    private readonly Viewport? _viewport;
-    private readonly int _width;
-    private readonly int _renderStartX;
-    private readonly int _renderStartY;
-    private readonly int _renderEndX;
-    private readonly int _renderEndY;
+    private readonly ViewportRenderer _viewportRenderer;
+    private BorderedRenderer _borderedRenderer;
 
     private int _x;
     private int _y;
     private RenderPhase _phase;
-    private int _borderPosition;
     private AnsiSequence? _lastForegroundColor;
     private AnsiSequence? _lastBackgroundColor;
     private AnsiSequence _pendingForeground;
@@ -39,8 +33,10 @@ public ref struct HalfBlockTokenEnumerator
         CellForegroundColor,
         CellBackgroundColor,
         CellChar,
+        RightBorderReset,
         RightBorder,
         RowNewline,
+        BottomBorderReset,
         BottomBorder,
         Done
     }
@@ -66,31 +62,13 @@ public ref struct HalfBlockTokenEnumerator
         _generation = generation;
         _nodeSet = nodeSet;
         _theme = theme;
-        _bounds = layout.Bounds;
-        _viewport = viewport;
 
-        // Calculate render bounds based on viewport (in packed space)
-        if (viewport is not null)
-        {
-            _renderStartX = viewport.OffsetX;
-            _renderStartY = viewport.OffsetY;
-            _renderEndX = Math.Min(_renderStartX + viewport.Width - 1, _bounds.Max.X);
-            _renderEndY = Math.Min(_renderStartY + viewport.Height - 1, _bounds.Max.Y);
-            _width = _renderEndX - _renderStartX + 1;
-        }
-        else
-        {
-            _renderStartX = _bounds.Min.X;
-            _renderStartY = _bounds.Min.Y;
-            _renderEndX = _bounds.Max.X;
-            _renderEndY = _bounds.Max.Y;
-            _width = _bounds.Width;
-        }
+        _viewportRenderer = new ViewportRenderer(layout.Bounds, viewport);
+        _borderedRenderer = new BorderedRenderer(_viewportRenderer);
 
-        _x = _renderStartX;
-        _y = _renderStartY;
+        _x = _viewportRenderer.RenderStartX;
+        _y = _viewportRenderer.RenderStartY;
         _phase = theme.ShowBorder ? RenderPhase.TopBorder : RenderPhase.CellForegroundColor;
-        _borderPosition = 0;
         _lastForegroundColor = null;
         _lastBackgroundColor = null;
         _pendingForeground = default;
@@ -153,6 +131,14 @@ public ref struct HalfBlockTokenEnumerator
 
                     break;
 
+                case RenderPhase.RightBorderReset:
+                    if (MoveNextRightBorderReset())
+                    {
+                        return true;
+                    }
+
+                    break;
+
                 case RenderPhase.RightBorder:
                     if (MoveNextRightBorder())
                     {
@@ -163,6 +149,14 @@ public ref struct HalfBlockTokenEnumerator
 
                 case RenderPhase.RowNewline:
                     if (MoveNextRowNewline())
+                    {
+                        return true;
+                    }
+
+                    break;
+
+                case RenderPhase.BottomBorderReset:
+                    if (MoveNextBottomBorderReset())
                     {
                         return true;
                     }
@@ -186,98 +180,22 @@ public ref struct HalfBlockTokenEnumerator
 
     private bool MoveNextTopBorder()
     {
-        // Top border: color, left corner, horizontals, right corner, newline
-        bool isAtTop = _viewport?.IsAtTop ?? true;
-        bool isAtLeft = _viewport?.IsAtLeft ?? true;
-        bool isAtRight = _viewport?.IsAtRight ?? true;
-        AnsiSequence borderColor = (_viewport is not null && !isAtTop) ? AnsiSequence.ForegroundDarkGray : AnsiSequence.ForegroundGray;
-
-        if (_borderPosition == 0)
+        if (_borderedRenderer.TryGetTopBorderToken(out Token token))
         {
-            // Border color
-            if (TryEmitForegroundColor(borderColor))
+            Current = token;
+
+            // Check if we just emitted the newline (transition to next phase)
+            if (token.IsCharacter && token.Character == '\n')
             {
-                _borderPosition++;
-                return true;
+                _phase = RenderPhase.LeftBorder;
             }
 
-            _borderPosition++;
-        }
-
-        if (_borderPosition == 1)
-        {
-            // Top left corner
-            Current = Token.Char(GetTopLeftCorner(isAtTop, isAtLeft));
-            _borderPosition++;
-            return true;
-        }
-
-        if (_borderPosition <= _width + 1)
-        {
-            // Horizontal bars or up arrows
-            Current = Token.Char(isAtTop ? ConsoleTheme.Border.Horizontal : ConsoleTheme.ViewportBorder.Up);
-            _borderPosition++;
-            return true;
-        }
-
-        if (_borderPosition == _width + 2)
-        {
-            // Top right corner
-            Current = Token.Char(GetTopRightCorner(isAtTop, isAtRight));
-            _borderPosition++;
-            return true;
-        }
-
-        if (_borderPosition == _width + 3)
-        {
-            // Newline
-            Current = WellKnownTokens.Newline;
-            _borderPosition = 0;
-            _phase = RenderPhase.LeftBorder;
+            // Always sync color state back after border tokens
+            _lastForegroundColor = _borderedRenderer.LastColor;
             return true;
         }
 
         return false;
-    }
-
-    private static char GetTopLeftCorner(bool isAtTop, bool isAtLeft)
-    {
-        if (isAtTop && isAtLeft)
-        {
-            return ConsoleTheme.Border.TopLeft;
-        }
-
-        if (isAtTop)
-        {
-            return ConsoleTheme.Border.Horizontal;
-        }
-
-        if (isAtLeft)
-        {
-            return ConsoleTheme.Border.Vertical;
-        }
-
-        return ConsoleTheme.ViewportBorder.DiagonalTopLeft;
-    }
-
-    private static char GetTopRightCorner(bool isAtTop, bool isAtRight)
-    {
-        if (isAtTop && isAtRight)
-        {
-            return ConsoleTheme.Border.TopRight;
-        }
-
-        if (isAtTop)
-        {
-            return ConsoleTheme.Border.Horizontal;
-        }
-
-        if (isAtRight)
-        {
-            return ConsoleTheme.Border.Vertical;
-        }
-
-        return ConsoleTheme.ViewportBorder.DiagonalTopRight;
     }
 
     private bool MoveNextLeftBorder()
@@ -288,26 +206,21 @@ public ref struct HalfBlockTokenEnumerator
             return false;
         }
 
-        bool isAtLeft = _viewport?.IsAtLeft ?? true;
-        AnsiSequence borderColor = (_viewport is not null && !isAtLeft) ? AnsiSequence.ForegroundDarkGray : AnsiSequence.ForegroundGray;
+        // Sync color state TO border at start of phase
+        _borderedRenderer.SetLastColor(_lastForegroundColor);
 
-        // Left border: color, vertical bar or left arrow
-        if (_borderPosition == 0)
+        if (_borderedRenderer.TryGetLeftBorderToken(out Token token))
         {
-            if (TryEmitForegroundColor(borderColor))
+            Current = token;
+
+            // Check if we emitted the vertical bar (transition to cells)
+            if (token.IsCharacter && token.Character != '\n')
             {
-                _borderPosition++;
-                return true;
+                _phase = RenderPhase.CellForegroundColor;
             }
 
-            _borderPosition++;
-        }
-
-        if (_borderPosition == 1)
-        {
-            Current = Token.Char(isAtLeft ? ConsoleTheme.Border.Vertical : ConsoleTheme.ViewportBorder.Left);
-            _borderPosition = 0;
-            _phase = RenderPhase.CellForegroundColor;
+            // Always sync color state back after border tokens
+            _lastForegroundColor = _borderedRenderer.LastColor;
             return true;
         }
 
@@ -423,9 +336,9 @@ public ref struct HalfBlockTokenEnumerator
         Current = Token.Char(character);
         _x++;
 
-        if (_x > _renderEndX)
+        if (_x > _viewportRenderer.RenderEndX)
         {
-            _phase = _theme.ShowBorder ? RenderPhase.RightBorder : RenderPhase.RowNewline;
+            _phase = _theme.ShowBorder ? RenderPhase.RightBorderReset : RenderPhase.RowNewline;
         }
         else
         {
@@ -435,28 +348,36 @@ public ref struct HalfBlockTokenEnumerator
         return true;
     }
 
-    private bool MoveNextRightBorder()
+    private bool MoveNextRightBorderReset()
     {
-        bool isAtRight = _viewport?.IsAtRight ?? true;
-        AnsiSequence borderColor = (_viewport is not null && !isAtRight) ? AnsiSequence.ForegroundDarkGray : AnsiSequence.ForegroundGray;
-
-        // Right border: color, vertical bar or right arrow
-        if (_borderPosition == 0)
+        // Reset background to default before rendering border characters
+        if (TryEmitBackgroundColor(AnsiSequence.BackgroundDefault))
         {
-            if (TryEmitForegroundColor(borderColor))
-            {
-                _borderPosition++;
-                return true;
-            }
-
-            _borderPosition++;
+            _phase = RenderPhase.RightBorder;
+            return true;
         }
 
-        if (_borderPosition == 1)
+        _phase = RenderPhase.RightBorder;
+        return false;
+    }
+
+    private bool MoveNextRightBorder()
+    {
+        // Synchronize foreground color state
+        _borderedRenderer.SetLastColor(_lastForegroundColor);
+
+        if (_borderedRenderer.TryGetRightBorderToken(out Token token))
         {
-            Current = Token.Char(isAtRight ? ConsoleTheme.Border.Vertical : ConsoleTheme.ViewportBorder.Right);
-            _borderPosition = 0;
-            _phase = RenderPhase.RowNewline;
+            Current = token;
+
+            // Check if we emitted the vertical bar (transition to newline)
+            if (token.IsCharacter && token.Character != '\n')
+            {
+                _phase = RenderPhase.RowNewline;
+            }
+
+            // Always sync color state back after border tokens
+            _lastForegroundColor = _borderedRenderer.LastColor;
             return true;
         }
 
@@ -468,107 +389,51 @@ public ref struct HalfBlockTokenEnumerator
         Current = WellKnownTokens.Newline;
         _y++;
 
-        if (_y > _renderEndY)
+        if (_y > _viewportRenderer.RenderEndY)
         {
-            _phase = _theme.ShowBorder ? RenderPhase.BottomBorder : RenderPhase.Done;
+            _phase = _theme.ShowBorder ? RenderPhase.BottomBorderReset : RenderPhase.Done;
         }
         else
         {
-            _x = _renderStartX;
+            _x = _viewportRenderer.RenderStartX;
             _phase = _theme.ShowBorder ? RenderPhase.LeftBorder : RenderPhase.CellForegroundColor;
         }
 
         return true;
     }
 
+    private bool MoveNextBottomBorderReset()
+    {
+        // Reset background to default before rendering border characters
+        if (TryEmitBackgroundColor(AnsiSequence.BackgroundDefault))
+        {
+            _phase = RenderPhase.BottomBorder;
+            return true;
+        }
+
+        _phase = RenderPhase.BottomBorder;
+        return false;
+    }
+
     private bool MoveNextBottomBorder()
     {
-        // Bottom border: color, left corner, horizontals, right corner, newline
-        bool isAtBottom = _viewport?.IsAtBottom ?? true;
-        bool isAtLeft = _viewport?.IsAtLeft ?? true;
-        bool isAtRight = _viewport?.IsAtRight ?? true;
-        AnsiSequence borderColor = (_viewport is not null && !isAtBottom) ? AnsiSequence.ForegroundDarkGray : AnsiSequence.ForegroundGray;
+        // Synchronize foreground color state
+        _borderedRenderer.SetLastColor(_lastForegroundColor);
 
-        if (_borderPosition == 0)
+        if (_borderedRenderer.TryGetBottomBorderToken(out Token token, out bool isComplete))
         {
-            if (TryEmitForegroundColor(borderColor))
+            Current = token;
+            _lastForegroundColor = _borderedRenderer.LastColor;
+
+            if (isComplete)
             {
-                _borderPosition++;
-                return true;
+                _phase = RenderPhase.Done;
             }
 
-            _borderPosition++;
-        }
-
-        if (_borderPosition == 1)
-        {
-            Current = Token.Char(GetBottomLeftCorner(isAtBottom, isAtLeft));
-            _borderPosition++;
-            return true;
-        }
-
-        if (_borderPosition <= _width + 1)
-        {
-            Current = Token.Char(isAtBottom ? ConsoleTheme.Border.Horizontal : ConsoleTheme.ViewportBorder.Down);
-            _borderPosition++;
-            return true;
-        }
-
-        if (_borderPosition == _width + 2)
-        {
-            Current = Token.Char(GetBottomRightCorner(isAtBottom, isAtRight));
-            _borderPosition++;
-            return true;
-        }
-
-        if (_borderPosition == _width + 3)
-        {
-            Current = WellKnownTokens.Newline;
-            _phase = RenderPhase.Done;
             return true;
         }
 
         return false;
-    }
-
-    private static char GetBottomLeftCorner(bool isAtBottom, bool isAtLeft)
-    {
-        if (isAtBottom && isAtLeft)
-        {
-            return ConsoleTheme.Border.BottomLeft;
-        }
-
-        if (isAtBottom)
-        {
-            return ConsoleTheme.Border.Horizontal;
-        }
-
-        if (isAtLeft)
-        {
-            return ConsoleTheme.Border.Vertical;
-        }
-
-        return ConsoleTheme.ViewportBorder.DiagonalBottomLeft;
-    }
-
-    private static char GetBottomRightCorner(bool isAtBottom, bool isAtRight)
-    {
-        if (isAtBottom && isAtRight)
-        {
-            return ConsoleTheme.Border.BottomRight;
-        }
-
-        if (isAtBottom)
-        {
-            return ConsoleTheme.Border.Horizontal;
-        }
-
-        if (isAtRight)
-        {
-            return ConsoleTheme.Border.Vertical;
-        }
-
-        return ConsoleTheme.ViewportBorder.DiagonalBottomRight;
     }
 
     private bool TryEmitForegroundColor(AnsiSequence color)

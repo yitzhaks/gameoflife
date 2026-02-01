@@ -1220,4 +1220,124 @@ public sealed class HalfBlockTokenEnumeratorTests : IDisposable
     }
 
     #endregion
+
+    #region Background Reset Phase Tests
+
+    [Fact]
+    public void MoveNextBottomBorderReset_WhenBackgroundAlreadyDefault_SkipsBackgroundEmission()
+    {
+        // When all cells in the last row are "both alive" (full blocks), background is already default
+        // so MoveNextBottomBorderReset should skip emission (return false path)
+        var topology = new RectangularTopology((2, 2));
+        var layout = new HalfBlockLayout(topology);
+        // All cells alive = full blocks = BackgroundDefault
+        IGeneration<Point2D, bool> generation = CreateGeneration((2, 2), (0, 0), (1, 0), (0, 1), (1, 1));
+        var nodeSet = new HashSet<Point2D>(topology.Nodes);
+        var theme = new ConsoleTheme(ShowBorder: true);
+
+        var enumerator = new HalfBlockTokenEnumerator(layout, generation, nodeSet, theme);
+
+        int backgroundDefaultCount = 0;
+        while (enumerator.MoveNext())
+        {
+            Token token = enumerator.Current;
+            if (token.IsSequence && token.Sequence == AnsiSequence.BackgroundDefault)
+            {
+                backgroundDefaultCount++;
+            }
+        }
+
+        // BackgroundDefault is emitted once during cell rendering (both alive)
+        // BottomBorderReset should skip since background is already default
+        // So we expect exactly 1 BackgroundDefault emission (from cells, not from reset)
+        backgroundDefaultCount.ShouldBe(1);
+    }
+
+    [Fact]
+    public void MoveNextBottomBorderReset_WhenBackgroundNotDefault_EmitsBackgroundDefault()
+    {
+        // When cells have dark gray background, BottomBorderReset should emit BackgroundDefault
+        var topology = new RectangularTopology((2, 2));
+        var layout = new HalfBlockLayout(topology);
+        // All cells dead = BackgroundDarkGray, so reset needs to emit BackgroundDefault
+        IGeneration<Point2D, bool> generation = CreateGeneration((2, 2));
+        var nodeSet = new HashSet<Point2D>(topology.Nodes);
+        var theme = new ConsoleTheme(ShowBorder: true);
+
+        var enumerator = new HalfBlockTokenEnumerator(layout, generation, nodeSet, theme);
+
+        int backgroundDefaultCount = 0;
+        while (enumerator.MoveNext())
+        {
+            Token token = enumerator.Current;
+            if (token.IsSequence && token.Sequence == AnsiSequence.BackgroundDefault)
+            {
+                backgroundDefaultCount++;
+            }
+        }
+
+        // BottomBorderReset should emit BackgroundDefault since cells were dark gray
+        backgroundDefaultCount.ShouldBe(1);
+    }
+
+    [Fact]
+    public void MoveNextRightBorderReset_WhenBackgroundAlreadyDefault_SkipsBackgroundEmission()
+    {
+        // When all cells in a row are "both alive", background is already default
+        // so MoveNextRightBorderReset should skip emission
+        var topology = new RectangularTopology((2, 2));
+        var layout = new HalfBlockLayout(topology);
+        // All cells alive = full blocks = BackgroundDefault
+        IGeneration<Point2D, bool> generation = CreateGeneration((2, 2), (0, 0), (1, 0), (0, 1), (1, 1));
+        var nodeSet = new HashSet<Point2D>(topology.Nodes);
+        var theme = new ConsoleTheme(ShowBorder: true);
+
+        var enumerator = new HalfBlockTokenEnumerator(layout, generation, nodeSet, theme);
+
+        int backgroundDefaultCount = 0;
+        while (enumerator.MoveNext())
+        {
+            Token token = enumerator.Current;
+            if (token.IsSequence && token.Sequence == AnsiSequence.BackgroundDefault)
+            {
+                backgroundDefaultCount++;
+            }
+        }
+
+        // BackgroundDefault is emitted once during cell rendering
+        // RightBorderReset and BottomBorderReset should skip since background is already default
+        backgroundDefaultCount.ShouldBe(1);
+    }
+
+    [Fact]
+    public void MoveNextRightBorderReset_WhenBackgroundNotDefault_EmitsBackgroundDefault()
+    {
+        // When cells have dark gray background, RightBorderReset should emit BackgroundDefault
+        // Use 2x4 grid so we have 2 packed rows, each needing RightBorderReset
+        var topology = new RectangularTopology((2, 4));
+        var layout = new HalfBlockLayout(topology);
+        // All cells dead = BackgroundDarkGray, so reset needs to emit BackgroundDefault
+        IGeneration<Point2D, bool> generation = CreateGeneration((2, 4));
+        var nodeSet = new HashSet<Point2D>(topology.Nodes);
+        var theme = new ConsoleTheme(ShowBorder: true);
+
+        var enumerator = new HalfBlockTokenEnumerator(layout, generation, nodeSet, theme);
+
+        int backgroundDefaultCount = 0;
+        while (enumerator.MoveNext())
+        {
+            Token token = enumerator.Current;
+            if (token.IsSequence && token.Sequence == AnsiSequence.BackgroundDefault)
+            {
+                backgroundDefaultCount++;
+            }
+        }
+
+        // Row 1: cells emit DarkGray bg, RightBorderReset emits Default (1)
+        // Row 2: cells emit DarkGray bg, RightBorderReset emits Default (2)
+        // BottomBorderReset: bg is already Default, skips
+        backgroundDefaultCount.ShouldBe(2);
+    }
+
+    #endregion
 }
