@@ -148,14 +148,9 @@ public class HexagonalTopology : ITopology<HexPoint>
             throw new ArgumentOutOfRangeException(nameof(node), "Node is outside the hexagonal topology boundaries.");
         }
 
-        foreach (HexPoint offset in s_neighborOffsets)
-        {
-            HexPoint neighbor = node + offset;
-            if (neighbor.IsWithinRadius(Radius))
-            {
-                yield return neighbor;
-            }
-        }
+        return s_neighborOffsets
+            .Select(offset => node + offset)
+            .Where(neighbor => neighbor.IsWithinRadius(Radius));
     }
 
     /// <summary>

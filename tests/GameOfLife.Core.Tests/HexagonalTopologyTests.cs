@@ -199,8 +199,7 @@ public class HexagonalTopologyTests
 
         foreach (HexPoint neighbor in centerNeighbors)
         {
-            var neighborOfNeighbor = topology.GetNeighbors(neighbor).ToList();
-            neighborOfNeighbor.ShouldContain(centerNode);
+            topology.GetNeighbors(neighbor).ShouldContain(centerNode);
         }
     }
 
@@ -215,8 +214,7 @@ public class HexagonalTopologyTests
 
             foreach (HexPoint neighbor in nodeNeighbors)
             {
-                var neighborOfNeighbor = topology.GetNeighbors(neighbor).ToList();
-                neighborOfNeighbor.ShouldContain(node);
+                topology.GetNeighbors(neighbor).ShouldContain(node);
             }
         }
     }

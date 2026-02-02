@@ -89,14 +89,9 @@ public sealed class HexConsoleRenderer : IRenderer<HexagonalTopology, HexPoint, 
         while (enumerator.MoveNext())
         {
             Token token = enumerator.Current;
-            if (token.IsSequence)
-            {
-                _ = sb.Append(token.Sequence.ToAnsiString());
-            }
-            else
-            {
-                _ = sb.Append(token.Character);
-            }
+            _ = token.IsSequence
+                ? sb.Append(token.Sequence.ToAnsiString())
+                : sb.Append(token.Character);
         }
 
         return sb.ToString();

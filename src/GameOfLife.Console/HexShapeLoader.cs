@@ -42,10 +42,8 @@ internal sealed class HexShapeLoader
         }
 
         var points = new List<HexPoint>();
-        foreach (string line in File.ReadLines(filePath))
+        foreach (string trimmed in File.ReadLines(filePath).Select(line => line.Trim()))
         {
-            string trimmed = line.Trim();
-
             // Skip empty lines and comments
             if (string.IsNullOrEmpty(trimmed) || trimmed.StartsWith('#'))
             {
