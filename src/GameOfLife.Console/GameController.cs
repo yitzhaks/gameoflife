@@ -594,16 +594,10 @@ internal sealed class GameController
             foreach (HexShapeInjection injection in _options.HexInjections)
             {
                 IReadOnlyList<HexPoint> pattern = _hexShapeLoader.LoadPattern(injection.PatternName);
-                foreach (HexPoint point in pattern)
-                {
-                    HexPoint target = injection.Position + point;
-
-                    // Only add if within topology bounds
-                    if (target.IsWithinRadius(radius))
-                    {
-                        _ = aliveCells.Add(target);
-                    }
-                }
+                aliveCells.UnionWith(
+                    pattern
+                        .Select(point => injection.Position + point)
+                        .Where(target => target.IsWithinRadius(radius)));
             }
 
             // Apply random fill if specified
