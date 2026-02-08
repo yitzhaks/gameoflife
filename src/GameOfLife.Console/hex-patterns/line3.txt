@@ -1,0 +1,5 @@
+# Line of 3 - Period 4 oscillator
+# Horizontal line that expands and contracts
+-1,0
+0,0
+1,0
