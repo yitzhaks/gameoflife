@@ -19,6 +19,8 @@ The key insight is that the Game of Life algorithm only asks one question: *"Who
 
 This project is in the **design phase**. The architecture has been defined but the implementation has not yet started. See [ARCHITECTURE.md](ARCHITECTURE.md) for the design and [TASKS.md](TASKS.md) for the backlog.
 
+[![CI](https://github.com/yitzhaks/gameoflife/actions/workflows/ci.yml/badge.svg)](https://github.com/yitzhaks/gameoflife/actions/workflows/ci.yml)
+
 ## License
 
 MIT License - see [LICENSE](LICENSE) for details.
