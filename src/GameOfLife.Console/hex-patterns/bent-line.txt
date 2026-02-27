@@ -1,0 +1,4 @@
+# Bent Line - Period 2 oscillator
+0,0
+1,0
+1,-1
