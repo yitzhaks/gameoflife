@@ -1,0 +1,5 @@
+# Triangle - Period 2 oscillator
+# 3 cells in a triangle
+0,0
+1,0
+0,1

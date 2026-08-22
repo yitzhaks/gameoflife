@@ -1,0 +1,4 @@
+# Pair - Period 2 oscillator (simplest blinker)
+# 2 adjacent cells
+0,0
+1,0

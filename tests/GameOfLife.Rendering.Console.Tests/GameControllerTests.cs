@@ -9,14 +9,19 @@ namespace GameOfLife.Rendering.Console.Tests;
 
 public class GameControllerTests
 {
+    private static ShapeLoader CreateShapeLoader(string path = ".") => new(path);
+
+    private static HexShapeLoader CreateHexShapeLoader(string path = ".") => new(path);
+
     [Fact]
     public void Constructor_NullOptions_ThrowsArgumentNullException()
     {
         using var output = new StringWriter();
         using var input = new StringReader("");
-        var loader = new ShapeLoader(".");
+        ShapeLoader loader = CreateShapeLoader();
+        HexShapeLoader hexLoader = CreateHexShapeLoader();
 
-        _ = Should.Throw<ArgumentNullException>(() => new GameController(null!, loader, output, input));
+        _ = Should.Throw<ArgumentNullException>(() => new GameController(null!, loader, hexLoader, output, input));
     }
 
     [Fact]
@@ -25,8 +30,20 @@ public class GameControllerTests
         using var output = new StringWriter();
         using var input = new StringReader("");
         var options = new CommandLineOptions();
+        HexShapeLoader hexLoader = CreateHexShapeLoader();
 
-        _ = Should.Throw<ArgumentNullException>(() => new GameController(options, null!, output, input));
+        _ = Should.Throw<ArgumentNullException>(() => new GameController(options, null!, hexLoader, output, input));
+    }
+
+    [Fact]
+    public void Constructor_NullHexShapeLoader_ThrowsArgumentNullException()
+    {
+        using var output = new StringWriter();
+        using var input = new StringReader("");
+        var options = new CommandLineOptions();
+        ShapeLoader loader = CreateShapeLoader();
+
+        _ = Should.Throw<ArgumentNullException>(() => new GameController(options, loader, null!, output, input));
     }
 
     [Fact]
@@ -34,9 +51,10 @@ public class GameControllerTests
     {
         using var input = new StringReader("");
         var options = new CommandLineOptions();
-        var loader = new ShapeLoader(".");
+        ShapeLoader loader = CreateShapeLoader();
+        HexShapeLoader hexLoader = CreateHexShapeLoader();
 
-        _ = Should.Throw<ArgumentNullException>(() => new GameController(options, loader, null!, input));
+        _ = Should.Throw<ArgumentNullException>(() => new GameController(options, loader, hexLoader, null!, input));
     }
 
     [Fact]
@@ -44,9 +62,10 @@ public class GameControllerTests
     {
         using var output = new StringWriter();
         var options = new CommandLineOptions();
-        var loader = new ShapeLoader(".");
+        ShapeLoader loader = CreateShapeLoader();
+        HexShapeLoader hexLoader = CreateHexShapeLoader();
 
-        _ = Should.Throw<ArgumentNullException>(() => new GameController(options, loader, output, null!));
+        _ = Should.Throw<ArgumentNullException>(() => new GameController(options, loader, hexLoader, output, null!));
     }
 
     [Fact]
@@ -60,9 +79,10 @@ public class GameControllerTests
             Height = 5,
             MaxGenerations = 0
         };
-        var loader = new ShapeLoader(".");
+        ShapeLoader loader = CreateShapeLoader();
+        HexShapeLoader hexLoader = CreateHexShapeLoader();
 
-        var controller = new GameController(options, loader, output, input);
+        var controller = new GameController(options, loader, hexLoader, output, input);
         int result = await controller.RunAsync();
 
         result.ShouldBe(0);
@@ -80,9 +100,10 @@ public class GameControllerTests
             Width = 5,
             Height = 5
         };
-        var loader = new ShapeLoader(".");
+        ShapeLoader loader = CreateShapeLoader();
+        HexShapeLoader hexLoader = CreateHexShapeLoader();
 
-        var controller = new GameController(options, loader, output, input);
+        var controller = new GameController(options, loader, hexLoader, output, input);
         int result = await controller.RunAsync();
 
         result.ShouldBe(0);
@@ -98,9 +119,10 @@ public class GameControllerTests
             Width = 5,
             Height = 5
         };
-        var loader = new ShapeLoader(".");
+        ShapeLoader loader = CreateShapeLoader();
+        HexShapeLoader hexLoader = CreateHexShapeLoader();
 
-        var controller = new GameController(options, loader, output, input);
+        var controller = new GameController(options, loader, hexLoader, output, input);
         int result = await controller.RunAsync();
 
         result.ShouldBe(0);
@@ -117,9 +139,10 @@ public class GameControllerTests
             Width = 5,
             Height = 5
         };
-        var loader = new ShapeLoader(".");
+        ShapeLoader loader = CreateShapeLoader();
+        HexShapeLoader hexLoader = CreateHexShapeLoader();
 
-        var controller = new GameController(options, loader, output, input);
+        var controller = new GameController(options, loader, hexLoader, output, input);
         int result = await controller.RunAsync();
 
         string outputText = output.ToString();
@@ -149,8 +172,9 @@ public class GameControllerTests
                 Injections = [new ShapeInjection("block", (2, 2))]
             };
             var loader = new ShapeLoader(tempDir);
+            HexShapeLoader hexLoader = CreateHexShapeLoader();
 
-            var controller = new GameController(options, loader, output, input);
+            var controller = new GameController(options, loader, hexLoader, output, input);
             int result = await controller.RunAsync();
 
             result.ShouldBe(0);
@@ -175,9 +199,10 @@ public class GameControllerTests
             Height = 10,
             Injections = [new ShapeInjection("nonexistent_pattern_12345", default)]
         };
-        var loader = new ShapeLoader(".");
+        ShapeLoader loader = CreateShapeLoader();
+        HexShapeLoader hexLoader = CreateHexShapeLoader();
 
-        var controller = new GameController(options, loader, output, input);
+        var controller = new GameController(options, loader, hexLoader, output, input);
         int result = await controller.RunAsync();
 
         result.ShouldBe(1);
@@ -195,9 +220,10 @@ public class GameControllerTests
             Height = 5,
             MaxGenerations = 1000
         };
-        var loader = new ShapeLoader(".");
+        ShapeLoader loader = CreateShapeLoader();
+        HexShapeLoader hexLoader = CreateHexShapeLoader();
 
-        var controller = new GameController(options, loader, output, input);
+        var controller = new GameController(options, loader, hexLoader, output, input);
 
         using var cts = new CancellationTokenSource();
         cts.CancelAfter(100);
@@ -226,8 +252,9 @@ public class GameControllerTests
                 Injections = [new ShapeInjection("wide", default)]
             };
             var loader = new ShapeLoader(tempDir);
+            HexShapeLoader hexLoader = CreateHexShapeLoader();
 
-            var controller = new GameController(options, loader, output, input);
+            var controller = new GameController(options, loader, hexLoader, output, input);
             int result = await controller.RunAsync();
 
             result.ShouldBe(0);
@@ -256,8 +283,9 @@ public class GameControllerTests
                 Injections = [new ShapeInjection("block", (-1, -1))]
             };
             var loader = new ShapeLoader(tempDir);
+            HexShapeLoader hexLoader = CreateHexShapeLoader();
 
-            var controller = new GameController(options, loader, output, input);
+            var controller = new GameController(options, loader, hexLoader, output, input);
             int result = await controller.RunAsync();
 
             result.ShouldBe(0);
@@ -278,9 +306,10 @@ public class GameControllerTests
             Width = 5,
             Height = 5
         };
-        var loader = new ShapeLoader(".");
+        ShapeLoader loader = CreateShapeLoader();
+        HexShapeLoader hexLoader = CreateHexShapeLoader();
 
-        var controller = new GameController(options, loader, output, input);
+        var controller = new GameController(options, loader, hexLoader, output, input);
         _ = await controller.RunAsync();
 
         output.ToString().ShouldContain("Space/Enter: Next | P: Play | Q/Esc: Quit");
@@ -309,8 +338,9 @@ public class GameControllerTests
                 ]
             };
             var loader = new ShapeLoader(tempDir);
+            HexShapeLoader hexLoader = CreateHexShapeLoader();
 
-            var controller = new GameController(options, loader, output, input);
+            var controller = new GameController(options, loader, hexLoader, output, input);
             int result = await controller.RunAsync();
 
             result.ShouldBe(0);
