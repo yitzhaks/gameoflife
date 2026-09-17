@@ -1,0 +1,8 @@
+# Hex Ring - Period 3 oscillator
+# 6 cells forming a ring around the origin
+1,0
+-1,0
+0,1
+0,-1
+1,-1
+-1,1
