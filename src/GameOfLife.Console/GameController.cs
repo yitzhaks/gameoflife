@@ -13,6 +13,7 @@ internal sealed class GameController
 {
     private readonly CommandLineOptions _options;
     private readonly ShapeLoader _shapeLoader;
+    private readonly HexShapeLoader _hexShapeLoader;
     private readonly TextWriter _output;
     private readonly TextReader _input;
 
@@ -28,23 +29,27 @@ internal sealed class GameController
     /// Creates a new game controller.
     /// </summary>
     /// <param name="options">The command-line options.</param>
-    /// <param name="shapeLoader">The shape loader for loading patterns.</param>
+    /// <param name="shapeLoader">The shape loader for loading rectangular patterns.</param>
+    /// <param name="hexShapeLoader">The shape loader for loading hex patterns.</param>
     /// <param name="output">The text writer for output.</param>
     /// <param name="input">The text reader for input.</param>
     /// <exception cref="ArgumentNullException">Thrown if any parameter is null.</exception>
     public GameController(
         CommandLineOptions options,
         ShapeLoader shapeLoader,
+        HexShapeLoader hexShapeLoader,
         TextWriter output,
         TextReader input)
     {
         ArgumentNullException.ThrowIfNull(options);
         ArgumentNullException.ThrowIfNull(shapeLoader);
+        ArgumentNullException.ThrowIfNull(hexShapeLoader);
         ArgumentNullException.ThrowIfNull(output);
         ArgumentNullException.ThrowIfNull(input);
 
         _options = options;
         _shapeLoader = shapeLoader;
+        _hexShapeLoader = hexShapeLoader;
         _output = output;
         _input = input;
     }
@@ -99,6 +104,24 @@ internal sealed class GameController
     }
 
     private int RunGameLoop(bool isInteractiveConsole, CancellationToken cancellationToken)
+    {
+        // Check for pattern analysis mode
+        if (_options.AnalyzePatterns)
+        {
+            PatternAnalyzer.AnalyzePatterns(_output);
+            return 0;
+        }
+
+        // Branch based on topology type
+        if (_options.Topology == BoardTopology.Hexagonal)
+        {
+            return RunHexGameLoop(isInteractiveConsole, cancellationToken);
+        }
+
+        return RunRectangularGameLoop(isInteractiveConsole, cancellationToken);
+    }
+
+    private int RunRectangularGameLoop(bool isInteractiveConsole, CancellationToken cancellationToken)
     {
         // Validate even height for half-block mode
         if (_options.AspectMode == AspectMode.HalfBlock && _options.Height % 2 != 0)
@@ -534,5 +557,264 @@ internal sealed class GameController
             _ => default
         };
 #pragma warning restore IDE0072
+    }
+
+    private int RunHexGameLoop(bool isInteractiveConsole, CancellationToken cancellationToken)
+    {
+        int radius = _options.HexRadius;
+        var topology = new HexagonalTopology(radius);
+
+        // Create hexagonal world with selected rules
+        ICellularAutomatonRules rules = _options.HexRules.ToUpperInvariant() switch
+        {
+            "B2S34" => new HexRulesB2S34(),
+            "B2S35" => new HexRulesB2S35(),
+            "B24S35" => new HexRulesB24S35(),
+            "B2S23" => new HexRulesB2S23(),
+            "CLASSIC" => new ClassicRules(),
+            _ => new HexRulesB2S34()
+        };
+        var world = new HexagonalWorld(radius, rules);
+
+        // Create renderer
+        var layoutEngine = new HexLayoutEngine();
+        ConsoleTheme theme = ConsoleTheme.Default;
+        var hexRenderer = new HexConsoleRenderer(_output, layoutEngine, theme);
+
+        // Run game loop
+        int generation = 0;
+
+        // Create initial generation with injected shapes and/or random fill
+        IGeneration<HexPoint, bool>? currentGeneration = null;
+        try
+        {
+            var aliveCells = new HashSet<HexPoint>();
+
+            // Apply hex shape injections
+            foreach (HexShapeInjection injection in _options.HexInjections)
+            {
+                IReadOnlyList<HexPoint> pattern = _hexShapeLoader.LoadPattern(injection.PatternName);
+                aliveCells.UnionWith(
+                    pattern
+                        .Select(point => injection.Position + point)
+                        .Where(target => target.IsWithinRadius(radius)));
+            }
+
+            // Apply random fill if specified
+            if (_options.HexFillPercent > 0)
+            {
+#pragma warning disable CA5394 // Random is used for game simulation, not security
+                var random = new Random();
+                foreach (HexPoint cell in topology.Nodes)
+                {
+                    if (random.Next(100) < _options.HexFillPercent)
+                    {
+                        _ = aliveCells.Add(cell);
+                    }
+                }
+#pragma warning restore CA5394
+            }
+
+            currentGeneration = new HexGeneration(aliveCells);
+
+            // Play/pause state
+            bool isPlaying = _options.StartAutoplay;
+
+            // Frame timing for FPS cap
+            var frameStopwatch = new Stopwatch();
+
+            // FPS tracking
+            var fpsStopwatch = Stopwatch.StartNew();
+            int frameCount = 0;
+            double currentFps = 0.0;
+
+            // Wall clock for elapsed time
+            var wallClock = Stopwatch.StartNew();
+
+            while (!cancellationToken.IsCancellationRequested)
+            {
+                frameStopwatch.Restart();
+
+                // Update FPS when playing
+                if (isPlaying && isInteractiveConsole)
+                {
+                    frameCount++;
+                    double elapsed = fpsStopwatch.Elapsed.TotalSeconds;
+                    if (elapsed >= 0.5)
+                    {
+                        currentFps = frameCount / elapsed;
+                        frameCount = 0;
+                        fpsStopwatch.Restart();
+                    }
+                }
+
+                if (isInteractiveConsole)
+                {
+                    // Render with header
+                    _output.Write("\x1b[0m\x1b[1;1H"); // Reset color, move to top-left
+
+                    var headerParts = new List<string>
+                {
+                    $"Generation: {generation}",
+                    $"Hex r={radius} {_options.HexRules}"
+                };
+
+                    if (isPlaying)
+                    {
+                        string timeStr = $"{(int)wallClock.Elapsed.TotalMinutes:D2}:{wallClock.Elapsed.Seconds:D2}";
+                        headerParts.Add($"{currentFps:F1} FPS");
+                        headerParts.Add(timeStr);
+                    }
+
+                    _output.Write(string.Join("  |  ", headerParts));
+                    _output.Write("\x1b[K\n\n"); // Clear to end and add blank line
+
+                    hexRenderer.Render(topology, currentGeneration);
+
+                    // Write controls
+                    _output.Write("\x1b[0m\n");
+                    if (isPlaying)
+                    {
+                        _output.Write("P/Space: Pause | Q/Esc: Quit");
+                    }
+                    else
+                    {
+                        _output.Write("Space/Enter: Next | P: Play | Q/Esc: Quit");
+                    }
+
+                    _output.Write("\x1b[K");
+                    _output.Flush();
+                }
+                else
+                {
+                    _output.WriteLine($"Generation: {generation}");
+                    _output.WriteLine();
+                    hexRenderer.Render(topology, currentGeneration);
+                    _output.WriteLine();
+                    _output.WriteLine("Space/Enter: Next | P: Play | Q/Esc: Quit");
+                }
+
+                // Check max generations
+                if (_options.MaxGenerations is { } maxGen && generation >= maxGen)
+                {
+                    if (!isInteractiveConsole)
+                    {
+                        _output.WriteLine();
+                        _output.WriteLine($"Reached maximum generations ({maxGen}).");
+                    }
+
+                    break;
+                }
+
+                // Handle input
+                bool isInteractiveInput = ReferenceEquals(_input, System.Console.In) &&
+                                         !System.Console.IsInputRedirected;
+
+                if (isInteractiveInput)
+                {
+                    if (isPlaying)
+                    {
+                        if (System.Console.KeyAvailable)
+                        {
+                            ConsoleKeyInfo key = System.Console.ReadKey(true);
+                            if (key.Key is ConsoleKey.Q or ConsoleKey.Escape)
+                            {
+                                return 0;
+                            }
+
+                            if (key.Key is ConsoleKey.P or ConsoleKey.Spacebar)
+                            {
+                                isPlaying = false;
+                                wallClock.Stop();
+                                continue;
+                            }
+                        }
+                    }
+                    else
+                    {
+                        while (!System.Console.KeyAvailable)
+                        {
+                            if (cancellationToken.IsCancellationRequested)
+                            {
+                                return 0;
+                            }
+
+                            Thread.Sleep(1);
+                        }
+
+                        ConsoleKeyInfo key = System.Console.ReadKey(true);
+                        if (key.Key is ConsoleKey.Q or ConsoleKey.Escape)
+                        {
+                            return 0;
+                        }
+
+                        if (key.Key is ConsoleKey.P)
+                        {
+                            isPlaying = true;
+                            wallClock.Start();
+                            fpsStopwatch.Restart();
+                            frameCount = 0;
+                            continue;
+                        }
+
+                        if (key.Key is not ConsoleKey.Spacebar and not ConsoleKey.Enter)
+                        {
+                            continue;
+                        }
+                    }
+                }
+                else
+                {
+                    string? line = _input.ReadLine();
+                    if (line is null || line.Trim().Equals("q", StringComparison.OrdinalIgnoreCase))
+                    {
+                        return 0;
+                    }
+                }
+
+                // Advance generation
+                IGeneration<HexPoint, bool> nextGeneration = world.Tick(currentGeneration);
+                currentGeneration.Dispose();
+                currentGeneration = nextGeneration;
+                generation++;
+
+                // Frame rate cap
+                if (isPlaying && isInteractiveInput)
+                {
+                    int minFrameTimeMs = 1000 / _options.MaxFps;
+                    while (frameStopwatch.ElapsedMilliseconds < minFrameTimeMs)
+                    {
+                        if (cancellationToken.IsCancellationRequested)
+                        {
+                            return 0;
+                        }
+
+                        if (System.Console.KeyAvailable)
+                        {
+                            ConsoleKeyInfo key = System.Console.ReadKey(true);
+                            if (key.Key is ConsoleKey.Q or ConsoleKey.Escape)
+                            {
+                                return 0;
+                            }
+
+                            if (key.Key is ConsoleKey.P or ConsoleKey.Spacebar)
+                            {
+                                isPlaying = false;
+                                wallClock.Stop();
+                                break;
+                            }
+                        }
+
+                        Thread.SpinWait(100);
+                    }
+                }
+            }
+
+            return 0;
+        }
+        finally
+        {
+            currentGeneration?.Dispose();
+        }
     }
 }

@@ -65,7 +65,33 @@ The difference between square and hex grids is in how identities map to layout p
 |----------------|-------------|
 | `IdentityLayoutEngine` | For `RectangularTopology`, returns identity as coordinate with O(1) bounds |
 | `HalfBlockLayoutEngine` | For `RectangularTopology`, packs two Y rows into one for half-block rendering |
-| `HexLayoutEngine` | Maps cube hex coordinates to staggered 2D layout positions |
+| `HexLayoutEngine` | For `HexagonalTopology`, maps axial hex coordinates to 2D layout positions |
+
+### Hexagonal Layouts
+
+The `HexLayoutEngine` maps hexagonal topologies to 2D layout positions using a staggered representation: 2 characters per cell with rows offset to form a hexagonal shape.
+
+**Staggered layout example (radius 2):**
+```
+      O   O   O        <- r = -2 (3 cells)
+    O   O   O   O      <- r = -1 (4 cells)
+  O   O   O   O   O    <- r = 0 (5 cells, center row)
+    O   O   O   O      <- r = 1 (4 cells)
+      O   O   O        <- r = 2 (3 cells)
+```
+
+**Coordinate mapping (staggered):**
+- Y = r + radius
+- X = (q + radius) × 2 + |r|
+
+The hexagonal topology uses **axial coordinates** (Q, R) with a derived cube coordinate S = -Q - R. The board is a hexagonal region defined by radius: all cells where `max(|q|, |r|, |s|) ≤ radius`.
+
+**Cell count:** `3 × radius × (radius + 1) + 1`
+
+**6-neighbor connectivity:**
+- East: (+1, 0), West: (-1, 0)
+- Northeast: (+1, -1), Northwest: (0, -1)
+- Southeast: (0, +1), Southwest: (-1, +1)
 
 ### Non-Grid Topologies
 
@@ -132,17 +158,31 @@ Generation + Viewport
 
 All enumerators are `ref struct` types for zero-allocation rendering. The parallel pipelines are necessary because ref structs cannot implement interfaces, so each stage must wrap a specific inner type.
 
+**Hexagonal Mode:**
+```
+Generation + Topology
+        ↓
+   HexStaggeredTokenEnumerator  → Yields Token for staggered hex layout
+        ↓
+   Terminal Output (via HexConsoleRenderer.RenderToString)
+```
+
+The hexagonal renderer uses a simpler pipeline since it doesn't currently support differential rendering or viewports.
+
 ### Key Components
 
 | Component | Purpose |
 |-----------|---------|
 | `TokenEnumerator` | Iterates grid cells and borders, yields characters and ANSI color codes |
 | `HalfBlockTokenEnumerator` | Half-block variant that emits half-block chars with background colors |
+| `HexStaggeredTokenEnumerator` | Hexagonal staggered layout: yields tokens row by row with offset |
+| `HexConsoleRenderer` | Combines hex layout engine with staggered token enumerator |
 | `Viewport` | Clips rendering to visible region for large boards |
 | `Glyph` | A character with its foreground and background color |
 | `FrameBuffer` | Pre-allocated buffer for storing frame glyphs (zero-allocation rendering) |
 | `StreamingDiff` | Compares current frame against cached previous frame, outputs only changes |
 | `HalfBlockLayoutEngine` | Creates layouts with packed Y coordinates for half-block rendering |
+| `HexLayoutEngine` | Creates layouts mapping axial coordinates to screen positions |
 
 ### Frame Buffer Differential Rendering
 
