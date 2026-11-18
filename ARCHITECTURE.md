@@ -47,7 +47,8 @@ public interface ITopology<TIdentity> where TIdentity : notnull, IEquatable<TIde
 
 | Identity Type | Use Case |
 |---------------|----------|
-| `Point2D` | Square or hexagonal grids with 2D coordinates |
+| `Point2D` | Square grids with 2D Cartesian coordinates |
+| `HexPoint` | Hexagonal grids using axial coordinates (Q, R) |
 | `Point3D` | 3D cubic lattices |
 | `string` | Named regions ("Sector7", "RoomA") in Doom-like maps |
 | `int` | Simple numeric IDs for arbitrary graphs |
@@ -139,21 +140,28 @@ src/
 │   ├── IRules.cs
 │   ├── World.cs
 │   ├── Timeline.cs
-│   ├── Point2D.cs                   # Coordinate/identity type
-│   └── Point3D.cs                   # Coordinate/identity type
+│   ├── Point2D.cs                   # Cartesian coordinate/identity type
+│   ├── HexPoint.cs                  # Hexagonal axial coordinate (Q, R)
+│   ├── RectangularTopology.cs       # Square grid topology
+│   ├── HexagonalTopology.cs         # Hexagonal grid topology (radius-based)
+│   ├── RectangularWorld.cs          # World for rectangular boards
+│   └── HexagonalWorld.cs            # World for hexagonal boards
 ├── GameOfLife.Rendering/            # Base rendering abstractions
 │   ├── ILayoutEngine.cs
 │   ├── ILayout.cs
 │   ├── IBounds.cs
-│   └── IRenderer.cs
+│   ├── IRenderer.cs
+│   └── HexLayoutEngine.cs           # Hexagonal layout engine
 ├── GameOfLife.Rendering.Console/    # Console renderer
-│   └── ConsoleRenderer.cs
+│   ├── ConsoleRenderer.cs
+│   ├── HexConsoleRenderer.cs        # Hexagonal console renderer
+│   └── HexStaggeredTokenEnumerator.cs
 └── GameOfLife.Rendering.Image/      # Image renderer (ImageSharp dependency)
     └── ImageRenderer.cs
 
 tests/
-└── GameOfLife.Core.Tests/           # Unit tests (xUnit + Coverlet)
-    └── ...
+├── GameOfLife.Core.Tests/           # Core unit tests (xUnit + Coverlet)
+└── GameOfLife.Rendering.Console.Tests/  # Rendering unit tests
 ```
 
 ## Design Decisions
